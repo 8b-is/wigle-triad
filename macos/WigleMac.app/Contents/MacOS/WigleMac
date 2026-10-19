@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+RES="$(cd "$(dirname "$0")/../Resources" && pwd)"
+exec /usr/bin/swift "$RES/wigle-macos.swift" --gui "$@"

@@ -42,20 +42,31 @@ Send newline-terminated commands over USB serial or directly from [https://esp32
 
 ---
 
-## 3. Build, Flash, `wiglewww` Local Server, and Merge
+## 3. Wigle for macOS (`MAC:MEDUSA` · Dual-Band `CoreWLAN en0` + SwiftUI App + `wiglewww` Bridge)
+
+On Apple Silicon macOS (`aarch64-darwin`), `macos/wigle-macos.swift` turns the MacBook Pro's `en0` radio into a dual-band (`2.4 GHz + 5 GHz`) passive **WiGLE v1.4 + N=NP + MarineSense** node (`MAC:MEDUSA`) with 4-tier BSSID resolution (TCC hardware BSSID → embedded 12-hex SSID MAC → 8b-is MEDUSA Triad codebook → deterministic `02:8B:xx:xx:xx:xx` LAA hash):
 
 ```bash
-# 1. Launch local wiglewww web + pyserial bridge on http://127.0.0.1:8088:
+# Build macOS CLI wrapper + native SwiftUI app bundle (macos/WigleMac.app):
+./macos/build_app.sh
+
+# 1. Native macOS SwiftUI Window + Menu Bar App (📡 WigleMac):
+open macos/WigleMac.app
+# or:
+./macos/bin/wigle-macos --gui
+
+# 2. Live W| + Q| + # JSON| wire stream from macOS CoreWLAN en0:
+./macos/bin/wigle-macos --wire
+
+# 3. Direct WiGLE v1.4 CSV or JSON export from macOS CoreWLAN en0:
+./macos/bin/wigle-macos --csv > wigle-macos.csv
+./macos/bin/wigle-macos --json
+
+# 4. Launch local wiglewww web + CoreWLAN + pyserial bridge on http://127.0.0.1:8088:
 uv run --with pyserial python host/wiglewww.py --port 8088
 
-# 2. One-shot JSON probe across attached /dev/cu.usbmodem* ports:
+# 5. One-shot JSON probe across macOS CoreWLAN en0 + attached /dev/cu.usbmodem* ports:
 uv run --with pyserial python host/wiglewww.py --once
-
-# 3. Host merger -> writes wigle-wifi.csv + triad-telemetry.json:
-uv run --with pyserial python host/merge.py \
-  --ports /dev/cu.usbmodem101 /dev/cu.usbmodem1101 /dev/cu.usbmodem2101 \
-  --lat 35.6895 --lon 139.6917 \
-  --out-dir session-01
 ```
 
 ---

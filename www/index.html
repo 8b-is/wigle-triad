@@ -582,9 +582,29 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
   function applyStatusJson(j) {
     if (!j || typeof j !== "object") return;
     const rawNode = String(j.medusa_node || j.node || "");
-    const key = rawNode.toUpperCase().includes("ADA") ? "ada" : (rawNode.toUpperCase().includes("VAK") ? "vak" : (rawNode.toUpperCase().includes("OMN") ? "omn" : null));
+    const upper = rawNode.toUpperCase();
+    const key = upper.includes("ADA") ? "ada" : (upper.includes("VAK") ? "vak" : (upper.includes("OMN") ? "omn" : (upper.includes("MAC") ? "ada" : null)));
+    if (Array.isArray(j.beacons)) {
+      j.beacons.forEach(b => {
+        if (!b || !b.bssid) return;
+        const bssid = String(b.bssid).toUpperCase();
+        const existing = beacons.get(bssid);
+        if (!existing || b.rssi > existing.rssi) {
+          beacons.set(bssid, {
+            node: b.node || rawNode || "MAC:MEDUSA",
+            bssid,
+            ssid: b.ssid || "",
+            auth: b.auth || "WPA2-PSK",
+            ch: Number(b.channel || b.ch || 1),
+            rssi: Number(b.rssi || -90),
+            seen: b.seen || new Date().toISOString().replace("T", " ").slice(0, 19)
+          });
+        }
+      });
+      renderSpectrumAndTable();
+    }
     if (!key) return;
-    activeNodeLabel = `${key.toUpperCase()}:MEDUSA`;
+    activeNodeLabel = upper.includes("MAC") ? "MAC:MEDUSA" : `${key.toUpperCase()}:MEDUSA`;
     const nets = j.wigle_aps ?? j.networks;
     if (nets !== undefined) {
       const el = document.getElementById(`nets-${key}`);
@@ -621,7 +641,9 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
     const statEl = document.getElementById(`status-${key}`);
     if (statEl) {
       statEl.className = "status-dot live";
-      statEl.textContent = `● LIVE · ${j.version || "v0.8.0"} · ${j.freq_hz || (key === "ada" ? 432 : key === "vak" ? 528 : 852)} Hz`;
+      statEl.textContent = upper.includes("MAC")
+        ? `● MAC COREWLAN (${j.interfaceName || "en0"}) · ${j.count_2g || 0}×2.4G + ${j.count_5g || 0}×5G`
+        : `● LIVE · ${j.version || "v0.8.0"} · ${j.freq_hz || (key === "ada" ? 432 : key === "vak" ? 528 : 852)} Hz`;
     }
   }
 

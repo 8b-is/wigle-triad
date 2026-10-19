@@ -15,6 +15,7 @@ import datetime as dt
 import glob
 import json
 import pathlib
+import subprocess
 import sys
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -27,6 +28,7 @@ except ImportError:
 
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 WWW_INDEX = ROOT_DIR / "www" / "index.html"
+MACOS_BIN = ROOT_DIR / "macos" / "bin" / "wigle-macos"
 BAUD = 115200
 
 BEACONS: dict[str, dict[str, Any]] = {}
@@ -38,11 +40,35 @@ def discover_ports() -> list[str]:
     return ports
 
 
+def run_macos_corewlan_scan() -> list[str]:
+    if sys.platform != "darwin" or not MACOS_BIN.exists():
+        return []
+    try:
+        proc = subprocess.run(
+            [str(MACOS_BIN), "--wire"],
+            capture_output=True,
+            text=True,
+            timeout=10.0,
+            check=False,
+        )
+        lines = [l.strip() for l in proc.stdout.splitlines() if l.strip()]
+        for l in lines:
+            ingest_line("en0 (CoreWLAN)", l)
+        return lines
+    except Exception as exc:
+        return [f"# ERR|en0|{exc}"]
+
+
 def send_and_collect(ports: list[str], cmd: str, wait_s: float = 0.45) -> list[str]:
-    if serial is None:
-        return [f"# WARN|pyserial not installed; run via: uv run --with pyserial python host/wiglewww.py"]
     lines_out: list[str] = []
     clean = cmd.strip()
+    if clean.upper() in ("STATUS", "JSON", "SCAN", "TRIAD", "PING"):
+        lines_out.extend(run_macos_corewlan_scan())
+    if not ports:
+        return lines_out
+    if serial is None:
+        lines_out.append("# WARN|pyserial not installed; run via: uv run --with pyserial python host/wiglewww.py")
+        return lines_out
     for port in ports:
         try:
             with serial.Serial(port, BAUD, timeout=0.15) as ser:
@@ -145,7 +171,7 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             return
         if self.path in ("/api/triad.json", "/triad.json"):
             ports = discover_ports()
-            lines = send_and_collect(ports, "JSON", wait_s=0.35) if ports else []
+            lines = send_and_collect(ports, "JSON", wait_s=0.35)
             payload = {
                 "surface": "http://127.0.0.1:8088",
                 "mirror": "https://esp32.vaked.dev",
@@ -158,6 +184,8 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             self._send(200, json.dumps(payload, indent=2).encode("utf-8"), "application/json; charset=utf-8")
             return
         if self.path == "/api/wigle.csv":
+            if not BEACONS:
+                send_and_collect(discover_ports(), "SCAN", wait_s=0.35)
             self._send(200, build_wigle_csv().encode("utf-8"), "text/csv; charset=utf-8")
             return
         self._send(404, b"Not Found", "text/plain; charset=utf-8")
@@ -173,7 +201,7 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
                 cmd = "STATUS"
             ports = discover_ports()
             wait_s = 1.6 if cmd.upper() == "SCAN" else 0.4
-            lines = send_and_collect(ports, cmd, wait_s=wait_s) if ports else [f"# SIM|{cmd}|0 physical ports"]
+            lines = send_and_collect(ports, cmd, wait_s=wait_s)
             resp = {"ok": True, "cmd": cmd, "ports": ports, "lines": lines, "nodes": list(NODES_CACHE.values())}
             self._send(200, json.dumps(resp).encode("utf-8"), "application/json; charset=utf-8")
             return
@@ -184,12 +212,12 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="wiglewww — Local HTTP + USB Serial Bridge for ESP32-S3 MEDUSA Triad")
     ap.add_argument("--host", default="127.0.0.1", help="Bind address (default: 127.0.0.1)")
     ap.add_argument("--port", type=int, default=8088, help="HTTP port (default: 8088)")
-    ap.add_argument("--once", action="store_true", help="Probe attached serial ports once, print triad JSON, and exit")
+    ap.add_argument("--once", action="store_true", help="Probe attached serial ports + macOS CoreWLAN once, print triad JSON, and exit")
     args = ap.parse_args()
 
     ports = discover_ports()
     if args.once:
-        lines = send_and_collect(ports, "JSON", wait_s=0.45) if ports else []
+        lines = send_and_collect(ports, "JSON", wait_s=0.45)
         print(
             json.dumps(
                 {
@@ -197,6 +225,7 @@ def main() -> int:
                     "mirror": "https://esp32.vaked.dev",
                     "version": "0.8.0+medusa-omni",
                     "ports": ports,
+                    "beacons_count": len(BEACONS),
                     "nodes": list(NODES_CACHE.values()),
                     "lines": lines,
                 },
