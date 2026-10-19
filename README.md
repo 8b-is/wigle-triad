@@ -1,4 +1,4 @@
-# wigle-triad — the MEDUSA triad (`v0.3.0-ULTRA`)
+# wigle-triad — the MEDUSA triad (`v0.42.1` OMNI-ZENO)
 
 **Live Psychedelic ENTHEAI & WebSerial Surface:** [https://esp32.vaked.dev/](https://esp32.vaked.dev/)  
 **Live Triad Telemetry JSON:** [https://esp32.vaked.dev/api/triad.json](https://esp32.vaked.dev/api/triad.json)

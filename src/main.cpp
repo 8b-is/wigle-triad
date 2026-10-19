@@ -27,7 +27,7 @@
 #define NODE_NAME "MEDUSA:AUTO"
 #endif
 
-#define TRIAD_VERSION "0.3.0-ULTRA"
+#define TRIAD_VERSION "0.42.1"
 
 static const uint32_t SCAN_INTERVAL_MS = 5000;
 static uint32_t lastScan = 0;
@@ -158,7 +158,7 @@ void setup() {
   const String mac = WiFi.macAddress();
   const TriadIdentity id = resolveIdentity(mac);
 
-  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · passive scan only · no association\n",
+  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · OMNI-ZENO · passive scan only · no association\n",
                 id.name, id.vertex, TRIAD_VERSION);
   Serial.printf("# MAC %s · archetype %s · carrier %u Hz · interval %lu ms\n",
                 mac.c_str(), id.archetype, (unsigned)id.freqHz, (unsigned long)SCAN_INTERVAL_MS);
