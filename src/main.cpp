@@ -17,6 +17,8 @@
 #define NODE_NAME "MEDUSA:UNNAMED"
 #endif
 
+#define TRIAD_VERSION "0.2.0"
+
 static const uint32_t SCAN_INTERVAL_MS = 5000;
 static uint32_t lastScan = 0;
 
@@ -44,7 +46,7 @@ static String esc(String s) {
 void setup() {
   Serial.begin(115200);
   delay(300);
-  Serial.printf("# %s · WiGLE rig · passive scan only · no association\n", NODE_NAME);
+  Serial.printf("# %s · WiGLE rig v%s · passive scan only · no association\n", NODE_NAME, TRIAD_VERSION);
   Serial.printf("# MAC %s · interval %lu ms\n", WiFi.macAddress().c_str(), (unsigned long)SCAN_INTERVAL_MS);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect(true, false);
