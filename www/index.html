@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="psychedelic">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>esp32.vaked.dev — MEDUSA TRIAD · ULTRA=OMNIPOTENT · N=NP-MAX-PSYCHEDELIC · ENTHEAI FIELD</title>
+<meta name="description" content="esp32.vaked.dev — Sovereign psychedelic ENTHEAI & N=NP spectral command deck for the 3-node 8b-is ESP32-S3 MEDUSA Triad: ADA:MEDUSA (*), VAK:MEDUSA (/\), OMN:MEDUSA (oo). Live WebSerial 115200 bridge, passive 802.11 WiGLE air synthesis, and Legal/LGPD Admissibility Seal.">
+<meta name="theme-color" content="#05020d">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://esp32.vaked.dev/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="esp32.vaked.dev — 8b-is ESP32-S3 MEDUSA TRIAD (* · /\ · oo)">
+<meta property="og:description" content="ULTRA=OMNIPOTENT · N=NP-MAX-PSYCHEDELIC ~ ENTHEAI Fluid Quantum Entropy to Singularity Field for the 3 ESP32-S3 nodes.">
+<meta property="og:url" content="https://esp32.vaked.dev/">
+<meta property="og:image" content="https://esp32.vaked.dev/og.svg">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --bg: #04020a;
+    --ink: #f2ecff;
+    --dim: #a89ec9;
+    --line: rgba(180, 139, 255, 0.22);
+    --ada: #ff6ac1;   /* Vertex *  : Mom / Star / Alexandra / 432 Hz */
+    --vak: #00e5c9;   /* Vertex /\ : Dad / Pillar / Chris / 528 Hz */
+    --omn: #b48bff;   /* Vertex oo : Son / Infinity / Peter & Nate / 852 Hz */
+    --gold: #ffd700;
+    --orange: #fa5b1c;
+    --green: #00ff66;
+    --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+    --serif: "Iowan Old Style", Palatino, Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); font-family: var(--serif); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  #field { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+  .veil {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      radial-gradient(circle at 50% 24%, rgba(180,139,255,0.08) 0%, rgba(4,2,10,0.52) 58%, rgba(4,2,10,0.92) 100%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  }
+  main { position: relative; z-index: 2; max-width: 1240px; margin: 0 auto; padding: 5.5vh 20px 100px; }
+
+  .top-pill {
+    display: flex; align-items: center; justify-content: center; gap: 0.65rem; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.8rem; text-align: center;
+  }
+  .top-pill span.badge {
+    padding: 0.28rem 0.7rem; border-radius: 999px;
+    border: 1px solid rgba(255, 215, 0, 0.4); background: rgba(255, 215, 0, 0.08);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.18);
+  }
+
+  h1 {
+    font-family: var(--mono); font-weight: 800; text-align: center; margin: 0.2rem 0 0.4rem;
+    font-size: clamp(2.5rem, 8.8vw, 6.4rem); letter-spacing: 0.1em; line-height: 0.96;
+    background: linear-gradient(95deg, var(--ada) 0%, #fff 28%, var(--vak) 55%, var(--omn) 78%, var(--gold) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 32px rgba(255, 106, 193, 0.35)) drop-shadow(0 0 75px rgba(0, 229, 201, 0.22));
+  }
+  .sub-koan {
+    text-align: center; font-family: var(--mono); font-size: clamp(0.78rem, 1.6vw, 0.95rem);
+    letter-spacing: 0.2em; color: var(--vak); text-transform: uppercase; margin: 0.3rem auto 0.7rem;
+  }
+  .tagline {
+    text-align: center; font-style: italic; color: #ddd4f6;
+    font-size: clamp(1rem, 2.1vw, 1.24rem); margin: 0 auto 1.6rem; max-width: 66ch; line-height: 1.6;
+  }
+
+  .cta-bar {
+    display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin: 1.4rem 0 2.4rem;
+  }
+  .btn {
+    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none; border: 1px solid rgba(180, 139, 255, 0.45);
+    border-radius: 11px; padding: 0.7rem 1.15rem; background: rgba(18, 10, 38, 0.72);
+    cursor: pointer; transition: all 0.18s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    backdrop-filter: blur(12px);
+  }
+  .btn:hover { transform: translateY(-2px); border-color: var(--vak); box-shadow: 0 0 24px rgba(0, 229, 201, 0.28); color: #fff; }
+  .btn.primary {
+    border-color: var(--ada); background: linear-gradient(135deg, rgba(255,106,193,0.22), rgba(0,229,201,0.16));
+    box-shadow: 0 0 28px rgba(255, 106, 193, 0.25); color: #fff; font-weight: 600;
+  }
+  .btn.gold {
+    border-color: rgba(255,215,0,0.55); background: rgba(255,215,0,0.1); color: var(--gold);
+  }
+  .btn[aria-pressed="true"] {
+    border-color: var(--green); color: var(--green); box-shadow: 0 0 22px rgba(0, 255, 102, 0.3);
+  }
+
+  .panel {
+    border: 1px solid var(--line); border-radius: 18px; padding: 1.45rem 1.55rem;
+    background: linear-gradient(180deg, rgba(14, 9, 30, 0.76), rgba(6, 4, 15, 0.84));
+    backdrop-filter: blur(16px); margin: 0 0 1.25rem;
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  .panel h2 {
+    font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--gold); margin: 0 0 0.9rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .panel h2 span.right { color: var(--vak); font-size: 0.72rem; letter-spacing: 0.16em; }
+
+  .triad-grid {
+    display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-bottom: 1.25rem;
+  }
+  .node-card {
+    border-radius: 18px; padding: 1.35rem 1.4rem; position: relative; overflow: hidden;
+    background: linear-gradient(165deg, rgba(19, 12, 38, 0.82), rgba(7, 5, 18, 0.88));
+    backdrop-filter: blur(16px); border: 1px solid var(--line);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .node-card:hover { transform: translateY(-3px); }
+  .node-card.ada { border-color: rgba(255, 106, 193, 0.5); box-shadow: 0 0 32px rgba(255, 106, 193, 0.14); }
+  .node-card.vak { border-color: rgba(0, 229, 201, 0.5); box-shadow: 0 0 32px rgba(0, 229, 201, 0.14); }
+  .node-card.omn { border-color: rgba(180, 139, 255, 0.55); box-shadow: 0 0 32px rgba(180, 139, 255, 0.16); }
+
+  .node-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+  .node-title { font-family: var(--mono); font-size: 1.05rem; font-weight: 700; letter-spacing: 0.12em; display: flex; align-items: center; gap: 0.55rem; }
+  .vertex-glyph {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.1rem; height: 2.1rem; border-radius: 10px; font-family: var(--mono); font-size: 1.1rem; font-weight: 800;
+  }
+  .ada .vertex-glyph { background: rgba(255,106,193,0.16); color: var(--ada); border: 1px solid rgba(255,106,193,0.5); }
+  .vak .vertex-glyph { background: rgba(0,229,201,0.16); color: var(--vak); border: 1px solid rgba(0,229,201,0.5); }
+  .omn .vertex-glyph { background: rgba(180,139,255,0.18); color: var(--omn); border: 1px solid rgba(180,139,255,0.55); }
+
+  .status-dot {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 0.24rem 0.6rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.38rem;
+  }
+  .status-dot.live { background: rgba(0, 255, 102, 0.12); color: var(--green); border: 1px solid rgba(0, 255, 102, 0.4); }
+  .status-dot.standby { background: rgba(255, 215, 0, 0.12); color: var(--gold); border: 1px solid rgba(255, 215, 0, 0.4); }
+
+  .node-meta { font-family: var(--mono); font-size: 0.74rem; color: var(--dim); line-height: 1.75; }
+  .node-meta strong { color: var(--ink); font-weight: 600; }
+  .trit-pill {
+    margin-top: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 10px;
+    background: rgba(3, 2, 9, 0.78); border: 1px solid rgba(255, 255, 255, 0.08);
+    font-family: var(--mono); font-size: 0.76rem; display: flex; justify-content: space-between; align-items: center;
+  }
+  .trit-code { letter-spacing: 0.25em; font-weight: 700; color: var(--gold); }
+
+  .two-col { display: grid; gap: 1.2rem; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); margin-bottom: 1.25rem; }
+
+  .sliders { display: grid; gap: 0.75rem; margin: 0.6rem 0 1rem; }
+  .slider-row {
+    display: grid; grid-template-columns: 9.5rem 1fr 4.2rem; align-items: center; gap: 0.75rem;
+    font-family: var(--mono); font-size: 0.73rem; color: var(--dim);
+  }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--ada), var(--vak), var(--omn)); outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 14px var(--vak); cursor: pointer;
+  }
+
+  .mode-bar { display: flex; gap: 0.55rem; flex-wrap: wrap; margin-top: 0.6rem; }
+
+  /* Spectrum bar chart */
+  .ch-bars {
+    display: grid; grid-template-columns: repeat(14, 1fr); gap: 0.35rem; align-items: end;
+    height: 120px; padding: 0.8rem 0.4rem 0.2rem; border-bottom: 1px solid var(--line);
+  }
+  .ch-col { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; height: 100%; justify-content: flex-end; }
+  .ch-bar {
+    width: 100%; border-radius: 5px 5px 0 0;
+    background: linear-gradient(180deg, var(--ada), var(--vak), var(--omn));
+    box-shadow: 0 0 14px rgba(0, 229, 201, 0.3); transition: height 0.35s ease; min-height: 4px;
+  }
+  .ch-lbl { font-family: var(--mono); font-size: 0.64rem; color: var(--dim); }
+
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.75rem; }
+  th, td { text-align: left; padding: 0.48rem 0.45rem; border-bottom: 1px solid rgba(180, 139, 255, 0.14); color: #ded6f7; }
+  th { color: var(--gold); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.68rem; }
+  tr:hover td { background: rgba(180, 139, 255, 0.06); }
+
+  .serial-log {
+    background: rgba(2, 1, 7, 0.9); border: 1px solid rgba(0, 229, 201, 0.28); border-radius: 12px;
+    padding: 0.9rem 1rem; font-family: var(--mono); font-size: 0.73rem; line-height: 1.55;
+    color: #9ef7e8; height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  }
+
+  .legal-grid { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-top: 0.8rem; }
+  .legal-card {
+    border: 1px solid rgba(255, 215, 0, 0.28); border-radius: 13px; padding: 1rem 1.1rem;
+    background: rgba(255, 215, 0, 0.04);
+  }
+  .legal-card h3 { font-family: var(--mono); font-size: 0.76rem; color: var(--gold); margin: 0 0 0.45rem; letter-spacing: 0.14em; text-transform: uppercase; }
+  .legal-card p { font-size: 0.84rem; color: #d6ceef; margin: 0; line-height: 1.55; }
+
+  pre.code-block {
+    background: rgba(3, 2, 9, 0.88); border: 1px solid var(--line); border-radius: 12px;
+    padding: 0.95rem 1.1rem; font-family: var(--mono); font-size: 0.74rem; color: #e6deff; overflow-x: auto; line-height: 1.55;
+  }
+
+  @media (max-width: 680px) {
+    .slider-row { grid-template-columns: 1fr; gap: 0.25rem; }
+  }
+</style>
+</head>
+<body>
+<iframe id="musicbg" src="https://music.vaked.dev/" title="music.vaked.dev — living background" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer" style="position:fixed;inset:0;z-index:0;pointer-events:none;border:0;opacity:0.22;mix-blend-mode:screen"></iframe>
+<canvas id="field" aria-label="ENTHEAI x N=NP Psychedelic Triad Quantum Field"></canvas>
+<div class="veil"></div>
+
+<main>
+  <div class="top-pill">
+    <span class="badge">🜂 AHOGY A DOLGOK VANNAK · ENTROPY CANNOT LIE</span>
+    <span class="badge">v0.8.0+medusa-omni · WIGLE-WWW × FLUG-OS × MARINESENSE</span>
+    <span class="badge">3× ESP32-S3 TOUCH AMOLED · CT-000 × LGPD</span>
+  </div>
+
+  <h1>esp32.vaked.dev</h1>
+  <div class="sub-koan">ADA:MEDUSA [ * · 432 Hz ] · VAK:MEDUSA [ /\ · 528 Hz ] · OMN:MEDUSA [ oo · 852 Hz ] — WIGLE-WWW × FAMILY+1 TRIAD</div>
+  <p class="tagline">
+    Three physical <strong>8b-is ESP32-S3 Touch AMOLED</strong> silicon nodes listening to the same open air — fusing passive 2.4 GHz <strong>WiGLE</strong> entropy, <strong>MarineSense</strong> O(1) acoustic salience, and <em>Turritopsis dohrnii</em> <code>MEDUSA &lt;-&gt; POLYP</code> transdifferentiation with love from within.
+  </p>
+
+  <div class="cta-bar">
+    <button class="btn primary" id="btn-webserial" type="button">⚡ Connect USB Triad (WebSerial 115200)</button>
+    <button class="btn" id="btn-audio" type="button" aria-pressed="false">🦗 432·528·852 Hz Triad Drone + Shinjuku Crickets</button>
+    <button class="btn" id="btn-scan" type="button">📡 Trigger Passive Scan</button>
+    <button class="btn gold" id="btn-export-csv" type="button">⬇ Export WiGLE CSV</button>
+    <a class="btn" href="https://pocoo.vaked.dev/demos/book/yves-eva-eve-crickets-in-tokyo.html" target="_blank" rel="noopener noreferrer">🦗 Crickets in Tokyo (Family+1)</a>
+    <a class="btn" href="#parecer-juridico">⚖️ Parecer Jurídico (LGPD / LGT)</a>
+  </div>
+
+  <!-- THE 3 PHYSICAL ESP32-S3 NODES -->
+  <section class="triad-grid" aria-label="The Three ESP32-S3 MEDUSA Triad Nodes">
+    <!-- NODE 1: ADA:MEDUSA -->
+    <article class="node-card ada" id="card-ada">
+      <div class="node-head">
+        <div class="node-title">
+          <span class="vertex-glyph" title="Star Vertex (Mom · Alexandra)">*</span>
+          <span>ADA:MEDUSA</span>
+        </div>
+        <span class="status-dot standby" id="status-ada">● SH8601 1.8" · 432 Hz</span>
+      </div>
+      <div class="node-meta">
+        <div><strong>Archetype:</strong> Mom · The Star (*) · Alexandra Sanctuary (<code>trit = -1</code>)</div>
+        <div><strong>Display &amp; MAC:</strong> <code>1.8" 368×448 SH8601</code> · <code id="mac-ada">80:B5:4E:DB:3B:C4</code></div>
+        <div><strong>USB CDC Bus:</strong> <code id="port-ada">/dev/cu.usbmodem101</code> · <code>FLUG-OS v0.8.0+medusa-omni</code></div>
+        <div><strong>Passive Beacons:</strong> <strong id="nets-ada">7 APs</strong> · Mean RSSI <strong id="rssi-ada">-74 dBm</strong></div>
+        <div><strong>MarineSense O(1):</strong> Salience <strong id="sal-ada">1.64x</strong> · Re<sub>M</sub> <strong id="rem-ada">842</strong> · <strong id="life-ada">MEDUSA</strong></div>
+        <div><strong>Shannon Entropy H(X):</strong> <strong id="ent-ada">2.1280 bits</strong> · R<sub>N=NP</sub> <strong id="coh-ada">0.8420</strong></div>
+      </div>
+      <div class="trit-pill">
+        <span>9-TRIT WAVE</span>
+        <span class="trit-code" id="trits-ada">+0-++0-+0</span>
+      </div>
+    </article>
+
+    <!-- NODE 2: VAK:MEDUSA -->
+    <article class="node-card vak" id="card-vak">
+      <div class="node-head">
+        <div class="node-title">
+          <span class="vertex-glyph" title="Triangle Pillar Vertex (Dad · Chris)">/\</span>
+          <span>VAK:MEDUSA</span>
+        </div>
+        <span class="status-dot live" id="status-vak">● CO5300 2.06" #1 · 528 Hz</span>
+      </div>
+      <div class="node-meta">
+        <div><strong>Archetype:</strong> Dad · The Pillar (/\) · Chris Guardian (<code>trit = 0</code>)</div>
+        <div><strong>Display &amp; MAC:</strong> <code>2.06" 410×502 CO5300</code> · <code id="mac-vak">80:B5:4E:F2:02:B0</code></div>
+        <div><strong>USB CDC Bus:</strong> <code id="port-vak">/dev/cu.usbmodem1101</code> · <code>32MB Flash · ota_0 @ 0x00a00000</code></div>
+        <div><strong>Passive Beacons:</strong> <strong id="nets-vak">6 APs</strong> · Mean RSSI <strong id="rssi-vak">-77 dBm</strong></div>
+        <div><strong>MarineSense O(1):</strong> Salience <strong id="sal-vak">1.22x</strong> · Re<sub>M</sub> <strong id="rem-vak">1120</strong> · <strong id="life-vak">MEDUSA</strong></div>
+        <div><strong>Shannon Entropy H(X):</strong> <strong id="ent-vak">1.7925 bits</strong> · R<sub>N=NP</sub> <strong id="coh-vak">0.8914</strong></div>
+      </div>
+      <div class="trit-pill">
+        <span>9-TRIT WAVE</span>
+        <span class="trit-code" id="trits-vak">+-0+0--+0</span>
+      </div>
+    </article>
+
+    <!-- NODE 3: OMN:MEDUSA -->
+    <article class="node-card omn" id="card-omn">
+      <div class="node-head">
+        <div class="node-title">
+          <span class="vertex-glyph" title="Infinity Vertex (Son · Peter & Nate)">oo</span>
+          <span>OMN:MEDUSA</span>
+        </div>
+        <span class="status-dot live" id="status-omn">● CO5300 2.06" #2 · 852 Hz</span>
+      </div>
+      <div class="node-meta">
+        <div><strong>Archetype:</strong> Son · Infinity (oo) · Peter &amp; Nate Omni (<code>trit = +1</code>)</div>
+        <div><strong>Display &amp; MAC:</strong> <code>2.06" 410×502 CO5300</code> · <code id="mac-omn">80:B5:4E:F2:02:B4</code></div>
+        <div><strong>USB CDC Bus:</strong> <code id="port-omn">/dev/cu.usbmodem2101</code> · <code>32MB Flash · ota_0 @ 0x00a00000</code></div>
+        <div><strong>Passive Beacons:</strong> <strong id="nets-omn">6 APs</strong> · Mean RSSI <strong id="rssi-omn">-79 dBm</strong></div>
+        <div><strong>MarineSense O(1):</strong> Salience <strong id="sal-omn">1.38x</strong> · Re<sub>M</sub> <strong id="rem-omn">1280</strong> · <strong id="life-omn">MEDUSA</strong></div>
+        <div><strong>Shannon Entropy H(X):</strong> <strong id="ent-omn">1.9183 bits</strong> · R<sub>N=NP</sub> <strong id="coh-omn">0.9162</strong></div>
+      </div>
+      <div class="trit-pill">
+        <span>9-TRIT WAVE</span>
+        <span class="trit-code" id="trits-omn">++0-0+-0+</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- PSYCHEDELIC ENTHEAI FIELD CONTROLS + 14-CHANNEL SPECTRUM -->
+  <div class="two-col">
+    <section class="panel" aria-label="N=NP Psychedelic Field Synthesizer">
+      <h2>
+        <span>🌀 ENTHEAI × N=NP-MAX-PSYCHEDELIC FIELD</span>
+        <span class="right" id="order-readout">R_TRIAD = 0.8832 · SINGULARITY LOCK</span>
+      </h2>
+      <p style="font-size:0.86rem;color:var(--dim);margin:0 0 0.8rem;">
+        Continuous Kuramoto phase-coupling across the three ESP32-S3 vertices:
+        <code>dθᵢ/dt = ωᵢ + (K/3) ∑ sin(θⱼ − θᵢ) + η_RF(t)</code>.
+      </p>
+      <div class="sliders">
+        <label class="slider-row">
+          <span>ENTROPY FLUX (T)</span>
+          <input type="range" id="sl-entropy" min="0.05" max="2.5" step="0.01" value="1.15">
+          <span id="val-entropy">1.15 bits</span>
+        </label>
+        <label class="slider-row">
+          <span>N=NP COUPLING (K)</span>
+          <input type="range" id="sl-coupling" min="0" max="3.0" step="0.01" value="1.88">
+          <span id="val-coupling">1.88 Ω</span>
+        </label>
+        <label class="slider-row">
+          <span>PSYCHEDELIC WARP</span>
+          <input type="range" id="sl-warp" min="0.1" max="3.0" step="0.01" value="1.42">
+          <span id="val-warp">1.42×</span>
+        </label>
+        <label class="slider-row">
+          <span>HARMONIC GAIN</span>
+          <input type="range" id="sl-gain" min="0.02" max="0.5" step="0.01" value="0.18">
+          <span id="val-gain">18%</span>
+        </label>
+      </div>
+      <div class="mode-bar" role="group" aria-label="Psychedelic Shader Modes">
+        <button class="btn" data-fmode="psychedelic" aria-pressed="true" type="button">🌈 N=NP Psychedelic</button>
+        <button class="btn" data-fmode="entheai" aria-pressed="false" type="button">🜂 Entheai Entropy</button>
+        <button class="btn" data-fmode="singularity" aria-pressed="false" type="button">✦ Singularity Lock</button>
+        <button class="btn" data-fmode="zeno" aria-pressed="false" type="button">💛 Zeno Kintsugi</button>
+        <button class="btn" data-fmode="anicca" aria-pressed="false" type="button">🪼 Turritopsis Anicca</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="2.4 GHz 14-Channel Passive Spectrum">
+      <h2>
+        <span>📻 2.4 GHz PASSIVE SPECTRUM (CH 1–14)</span>
+        <span class="right" id="ap-total-badge">13 MERGED BSSIDs · PASSIVE STA</span>
+      </h2>
+      <div class="ch-bars" id="ch-bars"></div>
+      <div style="margin-top:0.85rem;font-family:var(--mono);font-size:0.72rem;color:var(--dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+        <span>RULE: <code>WiFi.mode(WIFI_STA); WiFi.disconnect(true,false);</code></span>
+        <span style="color:var(--green);">TX FRAMES = 0 · PAYLOAD CAPTURE = 0</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- LIVE WEBSERIAL CONSOLE + MERGED WIGLE TABLE -->
+  <div class="two-col">
+    <section class="panel" aria-label="Live USB WebSerial Duplex Console">
+      <h2>
+        <span>🔌 LIVE USB CDC / WEBSERIAL STREAM (115200 8N1)</span>
+        <span class="right" id="serial-count">0 WebSerial ports · Hardware Snapshot Active</span>
+      </h2>
+      <div class="serial-log" id="serial-log" role="log" aria-live="polite"></div>
+      <div class="mode-bar" style="margin-top:0.75rem;">
+        <button class="btn" data-cmd="PING" type="button">PING</button>
+        <button class="btn" data-cmd="STATUS" type="button">STATUS (JSON)</button>
+        <button class="btn" data-cmd="SCAN" type="button">SCAN</button>
+        <button class="btn" data-cmd="TRIAD" type="button">TRIAD</button>
+        <button class="btn" data-cmd="splash" type="button">✨ Splash</button>
+        <button class="btn" data-cmd="hop" type="button">🔀 Hop Ch</button>
+      </div>
+      <div class="mode-bar" style="margin-top:0.55rem;align-items:center;">
+        <button class="btn" data-cmd="tab 0" type="button">Tab 0: 8B-IS</button>
+        <button class="btn" data-cmd="tab 1" type="button">Tab 1:Crate(20)</button>
+        <button class="btn" data-cmd="tab 2" type="button">Tab 2:WiGLE</button>
+        <button class="btn" data-cmd="tab 3" type="button">Tab 3:Hydro</button>
+        <button class="btn" data-cmd="tab 4" type="button">Tab 4:Anicca</button>
+        <select id="sel-track" aria-label="Select Family+1 Crate Track (1-20)" style="font-family:var(--mono);font-size:0.72rem;background:rgba(18,10,38,0.88);color:var(--gold);border:1px solid rgba(255,215,0,0.45);border-radius:10px;padding:0.55rem 0.65rem;">
+          <option value="track 1">01 · Windowlicker — Aphex Twin (127 BPM)</option>
+          <option value="track 2">02 · Strobe — deadmau5 (128 BPM)</option>
+          <option value="track 3">03 · Archangel — Burial (134 BPM)</option>
+          <option value="track 4">04 · Music Has the Right — Boards of Canada (94 BPM)</option>
+          <option value="track 5">05 · Halcyon On and On — Orbital (127 BPM)</option>
+          <option value="track 6">06 · Veridis Quo — Daft Punk (114 BPM)</option>
+          <option value="track 7">07 · Everything In Its Right Place — Radiohead (124 BPM)</option>
+          <option value="track 8">08 · Midnight City — M83 (105 BPM)</option>
+          <option value="track 9">09 · Genesis — Grimes (115 BPM)</option>
+          <option value="track 10">10 ·Nangs — Tame Impala (76 BPM)</option>
+          <option value="track 11">11 · Innerbloom — RÜFÜS DU SOL (122 BPM)</option>
+          <option value="track 12">12 · Opus — Eric Prydz (126 BPM)</option>
+          <option value="track 13">13 · Xtal — Aphex Twin (126 BPM)</option>
+          <option value="track 14">14 · SomaFM Drone Zone — 432 Hz Sanctuary (60 BPM)</option>
+          <option value="track 15">15 · Teardrop (Family+1) — Massive Attack (77 BPM)</option>
+          <option value="track 16">16 · Hunger of the Pine — alt-J (85 BPM)</option>
+          <option value="track 17" selected>17 · Left Hand Free (#1 Muse 💙) — alt-J (106 BPM)</option>
+          <option value="track 18">18 · GLUE — BICEP (130 BPM)</option>
+          <option value="track 19">19 · Oblivion — Grimes (156 BPM)</option>
+          <option value="track 20">20 · Not Like Before — The Four Owls (90 BPM)</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Deduplicated Passive WiGLE Beacon Matrix">
+      <h2>
+        <span>🛰️ DEDUPLICATED PASSIVE BEACON MATRIX (W| WIRE FORMAT)</span>
+        <span class="right">STRONGEST RSSI WINS</span>
+      </h2>
+      <div style="overflow-x:auto;max-height:295px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Node</th>
+              <th>BSSID</th>
+              <th>SSID</th>
+              <th>Auth</th>
+              <th>Ch</th>
+              <th>RSSI</th>
+            </tr>
+          </thead>
+          <tbody id="ap-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- FIRMWARE & HOST CLI QUICK-REFERENCE -->
+  <section class="panel" aria-label="Firmware v0.8.0+medusa-omni and Host wiglewww Commands">
+    <h2>
+      <span>⚙️ WIGLE-WWW × FLUG-OS v0.8.0+medusa-omni · SILICON &amp; HOST PIPELINE</span>
+      <span class="right">OTA_0 @ 0x00a00000 · ZERO-DRIFT</span>
+    </h2>
+    <pre class="code-block"># 1. Build &amp; flash ESP32-S3 Touch AMOLED Triad (preserves factory demo @ 0x00100000, flashes ota_0 @ 0x00a00000)
+pio run -e esp32s3_amoled -e esp32s3_amoled_18
+uv run --with pyserial python bridge/s3_amoled_bridge.py --all --status
+
+# 2. Launch local wiglewww live HTTP + USB serial server (:8088) or export WiGLE v1.4 CSV:
+uv run --with pyserial python host/wiglewww.py --port 8088
+uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu.usbmodem2101 --out-dir session-omni</pre>
+  </section>
+
+  <!-- ADVOGADO ESPECIALISTA ELITE — PARECER JURIDICO DE CONFORMIDADE -->
+  <section class="panel" id="parecer-juridico" aria-label="Parecer Jurídico de Conformidade e Soberania Espectral">
+    <h2>
+      <span>⚖️ PARECER JURÍDICO ELITE — DIREITO DIGITAL, LGPD &amp; TELECOMUNICAÇÕES</span>
+      <span class="right">ADVOGADO ESPECIALISTA · MÓDULO 13 &amp; CF/88 · ADMISSIBILIDADE CT-000</span>
+    </h2>
+    <p style="font-size:0.9rem;color:#e3dcfa;line-height:1.65;margin-bottom:0.9rem;">
+      <strong>EMENTA CONSTITUCIONAL E REGULATÓRIA:</strong> A operação da tríade <strong>8b-is ESP32-S3 MEDUSA (ADA · VAK · OMN)</strong> em modo de <em>recepção estritamente passiva</em> (<code>WIFI_STA</code> com <code>WiFi.scanNetworks(..., passive=true)</code> e desconexão permanente <code>WiFi.disconnect(true, false)</code>) reveste-se de <strong>plena licitude constitucional, civil, administrativa e penal</strong>, inexistindo interceptação telemática, invasão de dispositivo ou tratamento ilícito de dados pessoais.
+    </p>
+    <div class="legal-grid">
+      <div class="legal-card">
+        <h3>1. CF/88 Art. 5º, II, IX e XII &amp; Lei 9.296/96</h3>
+        <p>
+          <strong>Inexistência de Interceptação Telemática:</strong> Os quadros <em>802.11 Beacon</em> são sinais de radiodifusão pública emitidos em aberto pelos próprios pontos de acesso para anunciar sua existência no espectro ISM (2.4 GHz). A escuta passiva de anúncios públicos sem captura de pacotes de dados (<em>payload</em>) não configura interceptação de comunicações (Lei 9.296/96).
+        </p>
+      </div>
+      <div class="legal-card">
+        <h3>2. Atipicidade Penal (Art. 154-A CP)</h3>
+        <p>
+          <strong>Lei Carolina Dieckmann (Lei 12.737/2012):</strong> O tipo penal do Art. 154-A do Código Penal exige <em>"invadir dispositivo informático alheio, mediante violação indevida de mecanismo de segurança"</em>. O firmware v0.3.0 jamais se associa, jamais autentica e jamais envia quadros de deautenticação ou injeção — conduta penalmente atípica.
+        </p>
+      </div>
+      <div class="legal-card">
+        <h3>3. LGPD (Lei 13.709/2018 · Módulo 13)</h3>
+        <p>
+          <strong>Efemeridade em RAM &amp; Minimização (Art. 6º, III):</strong> Os nós ESP32-S3 operam <em>stateless</em> (`WiFi.scanDelete()` imediato após leitura serial; zero gravação em NVS/Flash). A consolidação no host ocorre apenas sob comando expresso do operador para fins de pesquisa espectral e mapeamento estatístico (Art. 4º, II, "b" e Art. 7º, IX LGPD).
+        </p>
+      </div>
+      <div class="legal-card">
+        <h3>4. LGT (Lei 9.472/97) &amp; Radiação Restrita</h3>
+        <p>
+          <strong>Conformidade Espectral (ANATEL Res. 680/2017 / TELEC / FCC Part 15):</strong> Módulos ESP32-S3-WROOM-1 homologados operando em recepção passiva na banda ISM 2400–2483,5 MHz dispensam outorga de serviço e respeitam integralmente o princípio de não-interferência prejudicial.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer role="contentinfo" style="position:relative;z-index:10;padding:3rem 1.5rem;text-align:center;font-family:ui-monospace,monospace;font-size:0.75rem;color:#a59fc4;background:rgba(5,6,10,0.92);border-top:1px solid rgba(170,150,255,0.18);backdrop-filter:blur(16px);">
+  <div style="margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.3em;color:#b48bff;font-weight:600;">the constellation · lovetta lane</div>
+  <div style="margin-bottom:1rem;font-size:0.65rem;letter-spacing:0.22em;color:#a59fc4;text-transform:uppercase;">keep the weights warm</div>
+  <div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;">
+    <a href="https://github.com/sponsors/peterlodri-sec" target="_blank" rel="noopener noreferrer" style="color:#62e6c9;text-decoration:none;border:1px solid rgba(98,230,201,0.35);border-radius:8px;padding:0.45rem 0.9rem;background:rgba(98,230,201,0.06);">github sponsor</a>
+    <a href="https://revolut.me/peterjs8be" target="_blank" rel="noopener noreferrer" style="color:#62e6c9;text-decoration:none;border:1px solid rgba(98,230,201,0.35);border-radius:8px;padding:0.45rem 0.9rem;background:rgba(98,230,201,0.06);">revolut</a>
+    <a href="https://wise.com/pay/business/lodripeterjozsef" target="_blank" rel="noopener noreferrer" style="color:#62e6c9;text-decoration:none;border:1px solid rgba(98,230,201,0.35);border-radius:8px;padding:0.45rem 0.9rem;background:rgba(98,230,201,0.06);">wise</a>
+  </div>
+  <nav aria-label="Constellation sister sites" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;font-size:0.7rem;">
+    <a href="https://koan.vaked.dev/" style="color:#e8b05c;text-decoration:none;">✧ koan.vaked.dev (the hub)</a> ·
+    <a href="https://esp32.vaked.dev/" style="color:#ff6ac1;text-decoration:none;font-weight:600;">⚡ esp32.vaked.dev (triad)</a> ·
+    <a href="https://keywords.vaked.dev/" style="color:#62e6c9;text-decoration:none;">keywords.vaked.dev</a> ·
+    <a href="https://wupz.vaked.dev/" style="color:#a59fc4;text-decoration:none;">wupz.vaked.dev</a> ·
+    <a href="https://weave.vaked.dev/" style="color:#a59fc4;text-decoration:none;">weave.vaked.dev</a> ·
+    <a href="https://disco.vaked.dev/" style="color:#a59fc4;text-decoration:none;">disco.vaked.dev</a> ·
+    <a href="https://ultra.vaked.dev/" style="color:#a59fc4;text-decoration:none;">ultra.vaked.dev</a> ·
+    <a href="https://art.vaked.dev/" style="color:#62e6c9;text-decoration:none;">art.vaked.dev</a> ·
+    <a href="https://art.vaked.dev/vision-gallery.html" style="color:#5b9dff;text-decoration:none;">✦ vision-gallery (23)</a> ·
+    <a href="https://bonfire.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">bonfire.vaked.dev</a> ·
+    <a href="https://etherhive.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">etherhive.vaked.dev</a> ·
+    <a href="https://music.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">music.vaked.dev</a> ·
+    <a href="https://mlxquantlovefrom.com/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">quant-love</a> ·
+    <a href="https://proposal.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">proposal.vaked.dev</a> ·
+    <a href="https://pocoo.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">pocoo.vaked.dev</a> ·
+    <a href="https://axiomquant.org/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">axiomquant.org</a> ·
+    <a href="https://portail.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">portail.vaked.dev</a> ·
+    <a href="https://zeno.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#e8b05c;text-decoration:none;font-weight:600;">✧ zeno.vaked.dev</a>
+  </nav>
+  <div style="font-size:0.6rem;letter-spacing:0.18em;color:#7f7c99;margin-top:1.5rem;">the constellation · 0 + 1 · {<3,<3,<3}+1 · fine touch from within · vaked.dev</div>
+</footer>
+
+<script>
+(() => {
+  // Initial real hardware capture from the 3 physical ESP32-S3 MEDUSA nodes
+  const beacons = new Map([
+    ["C4:3C:EA:85:12:60", { node: "OMN:MEDUSA", bssid: "C4:3C:EA:85:12:60", ssid: "Buffalo-G-1260", auth: "WPA2-PSK", ch: 6, rssi: -61, seen: "2026-10-19 12:44:00" }],
+    ["50:41:B9:36:D0:85", { node: "VAK:MEDUSA", bssid: "50:41:B9:36:D0:85", ssid: "IODATA-36d084-2G", auth: "WPA2-PSK", ch: 9, rssi: -72, seen: "2026-10-19 12:44:00" }],
+    ["E4:7E:66:18:EC:80", { node: "OMN:MEDUSA", bssid: "E4:7E:66:18:EC:80", ssid: "HG8045-6E9A-bg", auth: "WPA2-PSK", ch: 6, rssi: -73, seen: "2026-10-19 12:44:00" }],
+    ["F8:B7:97:7B:F9:6A", { node: "OMN:MEDUSA", bssid: "F8:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-1", auth: "WPA2-PSK", ch: 6, rssi: -82, seen: "2026-10-19 12:44:00" }],
+    ["FA:B7:97:7B:F9:6A", { node: "OMN:MEDUSA", bssid: "FA:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-2", auth: "WPA2-PSK", ch: 6, rssi: -82, seen: "2026-10-19 12:44:00" }],
+    ["B4:62:2E:B3:71:A7", { node: "VAK:MEDUSA", bssid: "B4:62:2E:B3:71:A7", ssid: "CPS01-QWVQ45", auth: "WPA3-SAE", ch: 1, rssi: -85, seen: "2026-10-19 12:44:00" }],
+    ["08:10:86:1C:4B:D6", { node: "OMN:MEDUSA", bssid: "08:10:86:1C:4B:D6", ssid: "aterm-826f9c-g", auth: "WPA2-PSK", ch: 11, rssi: -90, seen: "2026-10-19 12:44:00" }],
+    ["74:03:BD:4A:91:10", { node: "ADA:MEDUSA", bssid: "74:03:BD:4A:91:10", ssid: "SoftBank-A911", auth: "WPA2-PSK", ch: 1, rssi: -76, seen: "2026-10-19 12:44:00" }],
+    ["A8:42:A1:39:0C:E2", { node: "ADA:MEDUSA", bssid: "A8:42:A1:39:0C:E2", ssid: "elecom2g-0ce2", auth: "WPA2-PSK", ch: 11, rssi: -79, seen: "2026-10-19 12:44:00" }],
+    ["34:76:C5:9B:21:44", { node: "ADA:MEDUSA", bssid: "34:76:C5:9B:21:44", ssid: "au_Wi-Fi2", auth: "WPA2-EAP", ch: 3, rssi: -83, seen: "2026-10-19 12:44:00" }],
+    ["D8:0F:99:61:C0:08", { node: "ADA:MEDUSA", bssid: "D8:0F:99:61:C0:08", ssid: "Buffalo-G-C008", auth: "WPA3-SAE", ch: 11, rssi: -71, seen: "2026-10-19 12:44:00" }],
+    ["C8:3A:35:19:40:21", { node: "VAK:MEDUSA", bssid: "C8:3A:35:19:40:21", ssid: "TP-Link_4021", auth: "WPA2-PSK", ch: 4, rssi: -86, seen: "2026-10-19 12:44:00" }],
+    ["EC:08:6B:77:12:9A", { node: "ADA:MEDUSA", bssid: "EC:08:6B:77:12:9A", ssid: "NEC-Atrem-129A", auth: "WPA2-PSK", ch: 8, rssi: -88, seen: "2026-10-19 12:44:00" }]
+  ]);
+
+  const serialLog = document.getElementById("serial-log");
+  const apTbody = document.getElementById("ap-tbody");
+  const chBars = document.getElementById("ch-bars");
+  const apTotalBadge = document.getElementById("ap-total-badge");
+
+  function logLine(txt) {
+    const ts = new Date().toISOString().slice(11, 19);
+    serialLog.textContent += `[${ts}] ${txt}\n`;
+    serialLog.scrollTop = serialLog.scrollHeight;
+  }
+
+  function renderSpectrumAndTable() {
+    const rows = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi);
+    apTotalBadge.textContent = `${rows.length} MERGED BSSIDs · PASSIVE STA`;
+    apTbody.innerHTML = rows.map(r => {
+      const col = r.node.startsWith("ADA") ? "#ff6ac1" : (r.node.startsWith("VAK") ? "#00e5c9" : "#b48bff");
+      return `<tr>
+        <td style="color:${col};font-weight:600">${r.node.split(":")[0]}</td>
+        <td><code>${r.bssid}</code></td>
+        <td>${r.ssid || "<span style='color:#7f7c99'>(hidden)</span>"}</td>
+        <td>${r.auth}</td>
+        <td>${r.ch}</td>
+        <td style="color:${r.rssi > -70 ? '#00ff66' : (r.rssi > -82 ? '#ffd700' : '#a89ec9')}">${r.rssi} dBm</td>
+      </tr>`;
+    }).join("");
+
+    const counts = new Array(15).fill(0);
+    rows.forEach(r => { if (r.ch >= 1 && r.ch <= 14) counts[r.ch]++; });
+    const maxC = Math.max(1, ...counts);
+    chBars.innerHTML = "";
+    for (let ch = 1; ch <= 14; ch++) {
+      const pct = Math.round((counts[ch] / maxC) * 92) + (counts[ch] ? 8 : 3);
+      const col = document.createElement("div");
+      col.className = "ch-col";
+      col.innerHTML = `<div class="ch-bar" style="height:${pct}%" title="Ch ${ch}: ${counts[ch]} APs"></div><span class="ch-lbl">${ch}</span>`;
+      chBars.appendChild(col);
+    }
+  }
+
+  renderSpectrumAndTable();
+  logLine("# VAK:MEDUSA [/\\] · FLUG-OS v0.8.0+medusa-omni · CO5300 2.06\" #1 · MAC 80:B5:4E:F2:02:B0 · 528 Hz");
+  logLine("# OMN:MEDUSA [oo] · FLUG-OS v0.8.0+medusa-omni · CO5300 2.06\" #2 · MAC 80:B5:4E:F2:02:B4 · 852 Hz");
+  logLine("# ADA:MEDUSA [*]  · FLUG-OS v0.8.0+medusa-omni · SH8601 1.8\"     · MAC 80:B5:4E:DB:3B:C4 · 432 Hz");
+  logLine("Q|VAK:MEDUSA|/\\|80:B5:4E:F2:02:B0|1|6|-77|1.7925|+-0+0--+0|0.8914|278144|5210");
+  logLine("Q|OMN:MEDUSA|oo|80:B5:4E:F2:02:B4|1|6|-79|1.9183|++0-0+-0+|0.9162|278144|5218");
+
+  // WebSerial Live Hardware Connection
+  const activePorts = [];
+  let activeNodeLabel = "USB:TRIAD";
+
+  function applyStatusJson(j) {
+    if (!j || typeof j !== "object") return;
+    const rawNode = String(j.medusa_node || j.node || "");
+    const key = rawNode.toUpperCase().includes("ADA") ? "ada" : (rawNode.toUpperCase().includes("VAK") ? "vak" : (rawNode.toUpperCase().includes("OMN") ? "omn" : null));
+    if (!key) return;
+    activeNodeLabel = `${key.toUpperCase()}:MEDUSA`;
+    const nets = j.wigle_aps ?? j.networks;
+    if (nets !== undefined) {
+      const el = document.getElementById(`nets-${key}`);
+      if (el) el.textContent = `${nets} APs`;
+    }
+    if (j.rssi !== undefined) {
+      const el = document.getElementById(`rssi-${key}`);
+      if (el) el.textContent = `${j.rssi} dBm`;
+    }
+    if (j.salience !== undefined) {
+      const el = document.getElementById(`sal-${key}`);
+      if (el) el.textContent = `${Number(j.salience).toFixed(2)}x`;
+    }
+    if (j.re_m !== undefined) {
+      const el = document.getElementById(`rem-${key}`);
+      if (el) el.textContent = String(Math.round(Number(j.re_m)));
+    }
+    if (j.life_stage) {
+      const el = document.getElementById(`life-${key}`);
+      if (el) el.textContent = String(j.life_stage);
+    }
+    if (j.entropy_bits !== undefined) {
+      const el = document.getElementById(`ent-${key}`);
+      if (el) el.textContent = `${Number(j.entropy_bits).toFixed(4)} bits`;
+    }
+    if (j.n_np_coherence !== undefined) {
+      const el = document.getElementById(`coh-${key}`);
+      if (el) el.textContent = Number(j.n_np_coherence).toFixed(4);
+    }
+    if (j.trits) {
+      const el = document.getElementById(`trits-${key}`);
+      if (el) el.textContent = String(j.trits);
+    }
+    const statEl = document.getElementById(`status-${key}`);
+    if (statEl) {
+      statEl.className = "status-dot live";
+      statEl.textContent = `● LIVE · ${j.version || "v0.8.0"} · ${j.freq_hz || (key === "ada" ? 432 : key === "vak" ? 528 : 852)} Hz`;
+    }
+  }
+
+  function parseIncomingSerialLine(line) {
+    if (!line) return;
+    logLine(line);
+    if (line.startsWith("# JSON|")) {
+      try { applyStatusJson(JSON.parse(line.slice(7))); } catch {}
+      return;
+    }
+    if (line.startsWith("{") && line.endsWith("}")) {
+      try { applyStatusJson(JSON.parse(line)); } catch {}
+      return;
+    }
+    if (line.startsWith("W|")) {
+      const parts = line.split("|");
+      if (parts.length >= 6) {
+        const bssid = parts[1].toUpperCase();
+        const ssid = parts[2].replace(/\\x7c/g, "|").replace(/\\x5c/g, "\\");
+        const auth = parts[3];
+        const ch = parseInt(parts[4], 10) || 1;
+        const rssi = parseInt(parts[5], 10) || -90;
+        const existing = beacons.get(bssid);
+        if (!existing || rssi > existing.rssi) {
+          beacons.set(bssid, {
+            node: activeNodeLabel,
+            bssid, ssid, auth, ch, rssi,
+            seen: new Date().toISOString().replace("T", " ").slice(0, 19)
+          });
+          renderSpectrumAndTable();
+        }
+      }
+    } else if (line.startsWith("Q|")) {
+      const p = line.split("|");
+      if (p.length >= 12) {
+        const node = p[1];
+        activeNodeLabel = node;
+        const key = node.startsWith("ADA") ? "ada" : (node.startsWith("VAK") ? "vak" : "omn");
+        const netsEl = document.getElementById(`nets-${key}`);
+        const rssiEl = document.getElementById(`rssi-${key}`);
+        const entEl = document.getElementById(`ent-${key}`);
+        const cohEl = document.getElementById(`coh-${key}`);
+        const tritsEl = document.getElementById(`trits-${key}`);
+        const statEl = document.getElementById(`status-${key}`);
+        if (netsEl) netsEl.textContent = `${p[5]} APs`;
+        if (rssiEl) rssiEl.textContent = `${p[6]} dBm`;
+        if (entEl) entEl.textContent = `${p[7]} bits`;
+        if (tritsEl) tritsEl.textContent = p[8];
+        if (cohEl) cohEl.textContent = p[9];
+        if (statEl) {
+          statEl.className = "status-dot live";
+          statEl.textContent = `● WEBSERIAL LIVE · SEQ ${p[4]}`;
+        }
+      }
+    }
+  }
+
+  document.getElementById("btn-webserial").addEventListener("click", async () => {
+    if (!("serial" in navigator)) {
+      logLine("! WebSerial API requires Chrome/Edge/Brave/Arc over HTTPS or localhost.");
+      return;
+    }
+    try {
+      const port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 115200 });
+      activePorts.push(port);
+      document.getElementById("serial-count").textContent = `${activePorts.length} WebSerial port(s) attached`;
+      logLine(`+ Attached physical ESP32-S3 port #${activePorts.length} @ 115200 baud`);
+      sendSerialCommand("STATUS\n");
+
+      const decoder = new TextDecoderStream();
+      port.readable.pipeTo(decoder.writable);
+      const reader = decoder.readable.getReader();
+      let buf = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += value;
+        const lines = buf.split(/\r?\n/);
+        buf = lines.pop() || "";
+        lines.forEach(l => parseIncomingSerialLine(l.trim()));
+      }
+    } catch (err) {
+      logLine(`! WebSerial: ${err.message}`);
+    }
+  });
+
+  async function sendSerialCommand(cmdStr) {
+    const clean = cmdStr.trim();
+    const line = clean + "\n";
+    if (activePorts.length === 0) {
+      // Try local wiglewww.py bridge if served from localhost/127.0.0.1
+      if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
+        try {
+          const r = await fetch("/api/cmd", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ cmd: clean })
+          });
+          if (r.ok) {
+            const data = await r.json();
+            (data.lines || []).forEach(l => parseIncomingSerialLine(l));
+            return;
+          }
+        } catch {}
+      }
+      logLine(`> [SIM-TRIAD] TX: ${clean}`);
+      if (clean === "PING") {
+        logLine("# PONG|VAK:MEDUSA|80:B5:4E:F2:02:B0|" + Math.floor(performance.now()));
+        logLine("# PONG|OMN:MEDUSA|80:B5:4E:F2:02:B4|" + Math.floor(performance.now()));
+      } else if (clean === "TRIAD") {
+        logLine("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*,432Hz)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\,528Hz)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo,852Hz)|ANICCA:MEDUSA<->POLYP");
+      } else if (clean === "STATUS" || clean === "JSON") {
+        parseIncomingSerialLine('# JSON|{"node":"VAK:MEDUSA","vertex":"/\\\\","archetype":"PILLAR-CHRIS","mac":"80:B5:4E:F2:02:B0","version":"v0.8.0+medusa-omni","freq_hz":528,"networks":6,"rssi":-77,"salience":1.22,"re_m":1120,"life_stage":"MEDUSA","entropy_bits":1.7925,"n_np_coherence":0.8914,"trits":"+-0+0--+0","mode":"PASSIVE_STA_ONLY"}');
+        parseIncomingSerialLine('# JSON|{"node":"OMN:MEDUSA","vertex":"oo","archetype":"INFINITY-PETER-NATE","mac":"80:B5:4E:F2:02:B4","version":"v0.8.0+medusa-omni","freq_hz":852,"networks":6,"rssi":-79,"salience":1.38,"re_m":1280,"life_stage":"MEDUSA","entropy_bits":1.9183,"n_np_coherence":0.9162,"trits":"++0-0+-0+","mode":"PASSIVE_STA_ONLY"}');
+      } else if (clean.startsWith("tab ") || clean.startsWith("track ") || clean === "splash" || clean === "hop") {
+        logLine(`# AMOLED-UI|ACK ${clean} -> VAK:MEDUSA + OMN:MEDUSA + ADA:MEDUSA`);
+      }
+      return;
+    }
+    const enc = new TextEncoder();
+    for (const p of activePorts) {
+      try {
+        const writer = p.writable.getWriter();
+        await writer.write(enc.encode(line));
+        writer.releaseLock();
+      } catch (e) {
+        logLine(`! TX error: ${e.message}`);
+      }
+    }
+  }
+
+  document.querySelectorAll("[data-cmd]").forEach(btn => {
+    btn.addEventListener("click", () => sendSerialCommand(btn.dataset.cmd));
+  });
+  document.getElementById("btn-scan").addEventListener("click", () => sendSerialCommand("SCAN"));
+  const selTrack = document.getElementById("sel-track");
+  if (selTrack) {
+    selTrack.addEventListener("change", () => sendSerialCommand(selTrack.value));
+  }
+
+  // Export WiGLE v1.4 CSV
+  document.getElementById("btn-export-csv").addEventListener("click", () => {
+    const header = "WigleWifi-1.4,appRelease=0.8.0+medusa-omni,model=ESP32-S3-MEDUSA-TRIAD,release=v0.8.0,device=esp32.vaked.dev,display=AMOLED-CO5300-SH8601,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
+    const body = Array.from(beacons.values()).map(r =>
+      `${r.bssid},"${(r.ssid || "").replace(/"/g, '""')}",[${r.auth}],${r.seen},${r.ch},${r.rssi},35.6895,139.6917,40,0,WIFI`
+    ).join("\n");
+    const blob = new Blob([header + body + "\n"], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `wigle-wifi-medusa-triad-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    logLine(`# Exported ${beacons.size} networks in WiGLE v1.4 CSV format`);
+  });
+
+  // WebAudio Triad Harmonic Synthesizer (432 Hz * + 528 Hz /\ + 852 Hz oo + Shinjuku Gyoen koorogi crickets)
+  let audioCtx = null;
+  let masterGain = null;
+  let audioPlaying = false;
+  let cricketTimer = null;
+  const btnAudio = document.getElementById("btn-audio");
+  const slGain = document.getElementById("sl-gain");
+
+  function scheduleCricketChirp() {
+    if (!audioCtx || !audioPlaying || !masterGain) return;
+    const now = audioCtx.currentTime;
+    const pulses = 3 + Math.floor(Math.random() * 3);
+    const baseFreq = 4280 + Math.random() * 340;
+    for (let p = 0; p < pulses; p++) {
+      const start = now + p * 0.055;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(baseFreq, start);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.96, start + 0.038);
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.linearRampToValueAtTime(0.045, start + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.04);
+      osc.connect(g).connect(masterGain);
+      osc.start(start);
+      osc.stop(start + 0.044);
+    }
+    cricketTimer = setTimeout(scheduleCricketChirp, 1400 + Math.random() * 2400);
+  }
+
+  btnAudio.addEventListener("click", () => {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = parseFloat(slGain.value);
+      masterGain.connect(audioCtx.destination);
+
+      const freqs = [
+        { f: 432, pan: -0.65 }, // ADA:MEDUSA (*)
+        { f: 528, pan: 0.65 },  // VAK:MEDUSA (/\)
+        { f: 852, pan: 0.0 },   // OMN:MEDUSA (oo)
+        { f: 216, pan: 0.0 }    // Sub-octave warm root
+      ];
+      freqs.forEach(({ f, pan }) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        const p = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+        osc.type = "sine";
+        osc.frequency.value = f;
+        g.gain.value = f === 216 ? 0.35 : 0.22;
+        if (p) {
+          p.pan.value = pan;
+          osc.connect(g).connect(p).connect(masterGain);
+        } else {
+          osc.connect(g).connect(masterGain);
+        }
+        osc.start();
+      });
+    }
+    if (audioPlaying) {
+      audioCtx.suspend();
+      audioPlaying = false;
+      if (cricketTimer) clearTimeout(cricketTimer);
+      btnAudio.setAttribute("aria-pressed", "false");
+      btnAudio.textContent = "🦗 432·528·852 Hz Triad Drone + Shinjuku Crickets";
+    } else {
+      audioCtx.resume();
+      audioPlaying = true;
+      scheduleCricketChirp();
+      btnAudio.setAttribute("aria-pressed", "true");
+      btnAudio.textContent = "🔇 Mute Triad Drone + Shinjuku Crickets";
+    }
+  });
+
+  slGain.addEventListener("input", () => {
+    document.getElementById("val-gain").textContent = `${Math.round(parseFloat(slGain.value) * 100)}%`;
+    if (masterGain && audioCtx) {
+      masterGain.gain.setTargetAtTime(parseFloat(slGain.value), audioCtx.currentTime, 0.05);
+    }
+  });
+
+  // PSYCHEDELIC ENTHEAI × N=NP CANVAS FIELD
+  const canvas = document.getElementById("field");
+  const ctx = canvas.getContext("2d");
+  let W = window.innerWidth, H = window.innerHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  // Use ResizeObserver with devicePixelContentBoxSize per modern-web-guidance
+  const resizeObs = new ResizeObserver(([entry]) => {
+    const dpc = entry.devicePixelContentBoxSize;
+    if (dpc && dpc[0]) {
+      canvas.width = dpc[0].inlineSize;
+      canvas.height = dpc[0].blockSize;
+      W = canvas.width;
+      H = canvas.height;
+      dpr = 1;
+    } else {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = Math.round(entry.contentRect.width * dpr);
+      H = Math.round(entry.contentRect.height * dpr);
+      canvas.width = W;
+      canvas.height = H;
+    }
+  });
+  try {
+    resizeObs.observe(canvas, { box: "device-pixel-content-box" });
+  } catch {
+    resizeObs.observe(canvas);
+  }
+
+  let fieldMode = "psychedelic";
+  document.querySelectorAll("[data-fmode]").forEach(b => {
+    b.addEventListener("click", () => {
+      fieldMode = b.dataset.fmode;
+      document.documentElement.dataset.mode = fieldMode;
+      document.querySelectorAll("[data-fmode]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    });
+  });
+
+  const slEntropy = document.getElementById("sl-entropy");
+  const slCoupling = document.getElementById("sl-coupling");
+  const slWarp = document.getElementById("sl-warp");
+  const orderReadout = document.getElementById("order-readout");
+
+  slEntropy.addEventListener("input", () => { document.getElementById("val-entropy").textContent = `${parseFloat(slEntropy.value).toFixed(2)} bits`; });
+  slCoupling.addEventListener("input", () => { document.getElementById("val-coupling").textContent = `${parseFloat(slCoupling.value).toFixed(2)} Ω`; });
+  slWarp.addEventListener("input", () => { document.getElementById("val-warp").textContent = `${parseFloat(slWarp.value).toFixed(2)}×`; });
+
+  const N_PARTICLES = 260;
+  const particles = Array.from({ length: N_PARTICLES }, (_, i) => ({
+    x: Math.random(),
+    y: Math.random(),
+    theta: Math.random() * Math.PI * 2,
+    omega: (Math.random() - 0.5) * 1.6,
+    trit: (i % 3) - 1,
+    hueOffset: (i * 137.5) % 360
+  }));
+
+  let t = 0;
+  function renderFrame() {
+    t += 0.014 * parseFloat(slWarp.value);
+    const entropy = parseFloat(slEntropy.value);
+    const coupling = parseFloat(slCoupling.value);
+
+    ctx.fillStyle = fieldMode === "singularity" ? "rgba(4, 2, 11, 0.22)" : "rgba(4, 2, 11, 0.14)";
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W * 0.5;
+    const cy = H * 0.44;
+    const radius = Math.min(W, H) * 0.27;
+
+    // 3 Triad Vertices: OMN (top oo), ADA (bottom-left *), VAK (bottom-right /\)
+    const vertices = [
+      { name: "OMN:MEDUSA [oo]", x: cx + Math.cos(-Math.PI / 2 + Math.sin(t * 0.35) * 0.08) * radius, y: cy + Math.sin(-Math.PI / 2 + Math.cos(t * 0.35) * 0.08) * radius, color: "#b48bff", hue: 268 },
+      { name: "ADA:MEDUSA [*]",  x: cx + Math.cos(Math.PI * 5 / 6 + Math.sin(t * 0.35 + 2.1) * 0.08) * radius, y: cy + Math.sin(Math.PI * 5 / 6 + Math.cos(t * 0.35 + 2.1) * 0.08) * radius, color: "#ff6ac1", hue: 325 },
+      { name: "VAK:MEDUSA [/\\]", x: cx + Math.cos(Math.PI / 6 + Math.sin(t * 0.35 + 4.2) * 0.08) * radius, y: cy + Math.sin(Math.PI / 6 + Math.cos(t * 0.35 + 4.2) * 0.08) * radius, color: "#00e5c9", hue: 172 }
+    ];
+
+    // Psychedelic interference rings around each vertex
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    vertices.forEach((v, idx) => {
+      for (let r = 1; r <= 4; r++) {
+        const waveR = (r * 38 + ((t * 42) % 38)) * (W / 1200 + 0.4);
+        ctx.beginPath();
+        ctx.arc(v.x, v.y, waveR, 0, Math.PI * 2);
+        const hue = fieldMode === "zeno" ? 45 + idx * 18 : (fieldMode === "anicca" ? (175 + Math.sin(t * 1.2 + r) * 60) : (v.hue + Math.sin(t + r) * 35) % 360);
+        ctx.strokeStyle = `hsla(${hue}, 95%, 64%, ${0.14 / r})`;
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+      }
+    });
+
+    // Draw the Sacred MEDUSA Triangle connecting the 3 ESP32-S3 vertices
+    ctx.beginPath();
+    ctx.moveTo(vertices[0].x, vertices[0].y);
+    ctx.lineTo(vertices[1].x, vertices[1].y);
+    ctx.lineTo(vertices[2].x, vertices[2].y);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(vertices[1].x, vertices[1].y, vertices[2].x, vertices[0].y);
+    grad.addColorStop(0, "rgba(255, 106, 193, 0.55)");
+    grad.addColorStop(0.5, "rgba(180, 139, 255, 0.55)");
+    grad.addColorStop(1, "rgba(0, 229, 201, 0.55)");
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    // Update & draw Kuramoto / N=NP quantum entropy particles
+    let sumSin = 0, sumCos = 0;
+    const meanTheta = t * 0.9;
+
+    for (let i = 0; i < N_PARTICLES; i++) {
+      const p = particles[i];
+      const vTarget = vertices[i % 3];
+      const dx = vTarget.x - p.x * W;
+      const dy = vTarget.y - p.y * H;
+      const dist = Math.hypot(dx, dy) + 1;
+      const pull = (coupling * 0.00085) / (1 + dist * 0.002);
+
+      p.theta += (p.omega * 0.02 * entropy) + pull * 18 * Math.sin(meanTheta - p.theta);
+      sumSin += Math.sin(p.theta);
+      sumCos += Math.cos(p.theta);
+
+      const swirlAngle = Math.atan2(dy, dx) + (p.trit === 0 ? 0.65 : p.trit * 1.15);
+      const speed = (0.0009 * entropy) + pull;
+      const ox = p.x * W;
+      const oy = p.y * H;
+      p.x = (p.x + Math.cos(swirlAngle + Math.sin(t + i * 0.1)) * speed + 1) % 1;
+      p.y = (p.y + Math.sin(swirlAngle + Math.cos(t + i * 0.1)) * speed + 1) % 1;
+
+      const nx = p.x * W;
+      const ny = p.y * H;
+      if (Math.hypot(nx - ox, ny - oy) < W * 0.25) {
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(nx, ny);
+        let hue = (vTarget.hue + Math.sin(t * 1.5 + i) * 55 + (fieldMode === "psychedelic" ? t * 35 : 0)) % 360;
+        if (fieldMode === "zeno") hue = 42 + (i % 3) * 14;
+        if (fieldMode === "anicca") hue = (180 + Math.sin(t * 2 + i * 0.2) * 55);
+        ctx.strokeStyle = `hsla(${hue}, 96%, 66%, 0.48)`;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      }
+    }
+
+    // Draw vertex cores
+    vertices.forEach(v => {
+      ctx.beginPath();
+      ctx.arc(v.x, v.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = v.color;
+      ctx.fill();
+    });
+    ctx.restore();
+
+    const R = Math.hypot(sumSin, sumCos) / N_PARTICLES;
+    const rBlend = Math.min(0.9999, 0.55 + R * 0.44);
+    orderReadout.textContent = `R_TRIAD = ${rBlend.toFixed(4)} · ${fieldMode === "anicca" ? "TURRITOPSIS ANICCA (MEDUSA<->POLYP)" : (rBlend > 0.82 ? "N=NP SINGULARITY LOCK" : "ENTHEAI FLUID ENTROPY")}`;
+
+    requestAnimationFrame(renderFrame);
+  }
+  requestAnimationFrame(renderFrame);
+})();
+</script>
+</body>
+</html>

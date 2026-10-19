@@ -1,7 +1,8 @@
-# wigle-triad — the MEDUSA triad (`v0.42.1` OMNI-ZENO)
+# wigle-triad — the MEDUSA triad (`v0.8.0+medusa-omni` · `WIGLE-WWW × FLUG-OS`)
 
 **Live Psychedelic ENTHEAI & WebSerial Surface:** [https://esp32.vaked.dev/](https://esp32.vaked.dev/)  
-**Live Triad Telemetry JSON:** [https://esp32.vaked.dev/api/triad.json](https://esp32.vaked.dev/api/triad.json)
+**Live Triad Telemetry JSON:** [https://esp32.vaked.dev/api/triad.json](https://esp32.vaked.dev/api/triad.json)  
+**Local Web + USB Bridge (`wiglewww`):** `www/index.html` + `host/wiglewww.py` (`http://127.0.0.1:8088`)
 
 Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. Each node listens exclusively to passive 2.4 GHz WiFi beacon frames (`WIFI_STA` + `WiFi.scanNetworks(false, true, true, 180)`, zero association, zero frame injection, zero payload capture) and streams real-time `W|` beacon lines, `Q|` balanced-ternary Kuramoto coherence frames, and `# JSON|` status frames over USB CDC serial (115200 baud).
 
@@ -9,13 +10,13 @@ Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. E
 
 ## 1. The Three Nodes (`Mom * + Dad /\ + Son oo`)
 
-> Ports are not stable across replugging. Every node auto-identifies its sovereign persona, vertex symbol, carrier frequency, and RGB NeoPixel breathing color directly from its factory silicon eFuse MAC (`resolveIdentity(WiFi.macAddress())`).
+> Ports are not stable across replugging. Every node auto-identifies its sovereign persona, vertex symbol, carrier frequency, and AMOLED / RGB breathing color directly from its factory silicon eFuse MAC (`resolveIdentity(WiFi.macAddress())`).
 
-| Node | Vertex | Silicon eFuse MAC | Carrier | Archetype | Role |
-|---|---|---|---|---|---|
-| **`ADA:MEDUSA`** | `*` | `80:B5:4E:DB:3B:C4` | `432 Hz` | Mom · Star · Alexandra | Passive Scan + N=NP Trit Field |
-| **`VAK:MEDUSA`** | `/\` | `80:B5:4E:F2:02:B0` | `528 Hz` | Dad · Pillar · Chris | Passive Scan + N=NP Trit Field |
-| **`OMN:MEDUSA`** | `oo` | `80:B5:4E:F2:02:B4` | `852 Hz` | Son · Infinity · Peter & Nate | Passive Scan + N=NP Trit Field |
+| Node | Trit | Vertex | Display | Silicon eFuse MAC | Carrier | Archetype |
+|---|---|---|---|---|---|---|
+| **`ADA:MEDUSA`** | `-1` | `*` | `1.8" 368×448 SH8601` | `80:B5:4E:DB:3B:C4` | `432 Hz` | Mom · Star · Alexandra |
+| **`VAK:MEDUSA`** | `0` | `/\` | `2.06" 410×502 CO5300 #1` | `80:B5:4E:F2:02:B0` | `528 Hz` | Dad · Pillar · Chris |
+| **`OMN:MEDUSA`** | `+1` | `oo` | `2.06" 410×502 CO5300 #2` | `80:B5:4E:F2:02:B4` | `852 Hz` | Son · Infinity · Peter & Nate |
 
 ---
 
@@ -32,25 +33,27 @@ Q|node|vertex|mac|seq|n_ap|mean_rssi|entropy_bits|trit_vec|n_np_coherence|free_h
 ```
 
 ### Interactive WebSerial / USB Commands
-Send newline-terminated commands over USB serial or directly from [https://esp32.vaked.dev/](https://esp32.vaked.dev/) via WebSerial:
+Send newline-terminated commands over USB serial or directly from [https://esp32.vaked.dev/](https://esp32.vaked.dev/) / `http://127.0.0.1:8088`:
 - `PING` → `# PONG|<node>|<mac>|<uptime_ms>`
 - `STATUS` / `JSON` → `# JSON|{"node":...,"trits":"+-0+0--+0","mode":"PASSIVE_STA_ONLY"}`
 - `SCAN` → Triggers immediate passive 14-channel scan
 - `TRIAD` → Emits full 3-node MEDUSA triad manifest
+- `tab 0..4` / `track 1..20` / `splash` / `hop` → Controls the 5-tab AMOLED UI and 20-track `family+1` crate on `FLUG-OS v0.8.0+medusa-omni`
 
 ---
 
-## 3. Build, Flash, and Merge
+## 3. Build, Flash, `wiglewww` Local Server, and Merge
 
 ```bash
-# Compile & upload (auto-identifies ADA/VAK/OMN by hardware MAC at boot):
-pio run -e vak -t upload --upload-port /dev/cu.usbmodem212301
-pio run -e omn -t upload --upload-port /dev/cu.usbmodem212101
-pio run -e ada -t upload --upload-port /dev/cu.usbmodem101
+# 1. Launch local wiglewww web + pyserial bridge on http://127.0.0.1:8088:
+uv run --with pyserial python host/wiglewww.py --port 8088
 
-# Host merger -> writes wigle-wifi.csv + triad-telemetry.json:
-python3 host/merge.py \
-  --ports /dev/cu.usbmodem101 /dev/cu.usbmodem212101 /dev/cu.usbmodem212301 \
+# 2. One-shot JSON probe across attached /dev/cu.usbmodem* ports:
+uv run --with pyserial python host/wiglewww.py --once
+
+# 3. Host merger -> writes wigle-wifi.csv + triad-telemetry.json:
+uv run --with pyserial python host/merge.py \
+  --ports /dev/cu.usbmodem101 /dev/cu.usbmodem1101 /dev/cu.usbmodem2101 \
   --lat 35.6895 --lon 139.6917 \
   --out-dir session-01
 ```
