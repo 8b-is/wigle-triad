@@ -42,9 +42,9 @@ Send newline-terminated commands over USB serial or directly from [https://esp32
 
 ---
 
-## 3. Wigle for macOS (`MAC:MEDUSA` · Dual-Band `CoreWLAN en0` + SwiftUI App + `wiglewww` Bridge)
+## 3. Wigle for macOS (`MAC:MEDUSA` · Quad-Spectrum `CoreWLAN + BLE/BT + AirPlay` + Anonymous Dual Upload)
 
-On Apple Silicon macOS (`aarch64-darwin`), `macos/wigle-macos.swift` turns the MacBook Pro's `en0` radio into a dual-band (`2.4 GHz + 5 GHz`) passive **WiGLE v1.4 + N=NP + MarineSense** node (`MAC:MEDUSA`) with 4-tier BSSID resolution (TCC hardware BSSID → embedded 12-hex SSID MAC → 8b-is MEDUSA Triad codebook → deterministic `02:8B:xx:xx:xx:xx` LAA hash):
+On Apple Silicon macOS (`aarch64-darwin`), `macos/wigle-macos.swift` turns the MacBook Pro into a quad-spectrum (`2.4 GHz + 5 GHz Wi-Fi + Bluetooth BLE/Classic + AirPlay/RAOP/Companion-Link mDNS`) passive **WiGLE v1.4 + N=NP + MarineSense** node (`MAC:MEDUSA`) with 4-tier BSSID resolution and **1-click / 1-command anonymous dual upload** (`donate=on`, `observer=anonymous`) to **both** `https://esp32.vaked.dev/api/upload` and `https://api.wigle.net/api/v2/file/upload`:
 
 ```bash
 # Build macOS CLI wrapper + native SwiftUI app bundle (macos/WigleMac.app):
@@ -55,18 +55,20 @@ open macos/WigleMac.app
 # or:
 ./macos/bin/wigle-macos --gui
 
-# 2. Live W| + Q| + # JSON| wire stream from macOS CoreWLAN en0:
+# 2. Scan Wi-Fi + BLE/BT + AirPlay and upload anonymously to BOTH esp32.vaked.dev AND api.wigle.net:
+./macos/bin/wigle-macos --upload
+# or via the Python bridge:
+uv run --with pyserial python host/wiglewww.py --upload
+
+# 3. Live W| (Wi-Fi) + B| (BLE/BT) + A| (AirPlay) + Q| + # JSON| wire stream:
 ./macos/bin/wigle-macos --wire
 
-# 3. Direct WiGLE v1.4 CSV or JSON export from macOS CoreWLAN en0:
+# 4. Direct WiGLE v1.4 CSV (WIFI + BLE + BT + AirPlay) or JSON export:
 ./macos/bin/wigle-macos --csv > wigle-macos.csv
 ./macos/bin/wigle-macos --json
 
-# 4. Launch local wiglewww web + CoreWLAN + pyserial bridge on http://127.0.0.1:8088:
+# 5. Launch local wiglewww web + CoreWLAN/BLE/AirPlay + pyserial bridge on http://127.0.0.1:8088:
 uv run --with pyserial python host/wiglewww.py --port 8088
-
-# 5. One-shot JSON probe across macOS CoreWLAN en0 + attached /dev/cu.usbmodem* ports:
-uv run --with pyserial python host/wiglewww.py --once
 ```
 
 ---

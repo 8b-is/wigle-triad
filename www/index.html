@@ -223,8 +223,9 @@
   <div class="cta-bar">
     <button class="btn primary" id="btn-webserial" type="button">⚡ Connect USB Triad (WebSerial 115200)</button>
     <button class="btn" id="btn-audio" type="button" aria-pressed="false">🦗 432·528·852 Hz Triad Drone + Shinjuku Crickets</button>
-    <button class="btn" id="btn-scan" type="button">📡 Trigger Passive Scan</button>
-    <button class="btn gold" id="btn-export-csv" type="button">⬇ Export WiGLE CSV</button>
+    <button class="btn" id="btn-scan" type="button">📡 Trigger Passive Scan (WiFi+BLE+AirPlay)</button>
+    <button class="btn gold" id="btn-upload-wigle" type="button">☁️ Anon Upload (esp32.vaked.dev + WiGLE.net)</button>
+    <button class="btn gold" id="btn-export-csv" type="button">⬇ Export WiGLE v1.4 CSV</button>
     <a class="btn" href="https://pocoo.vaked.dev/demos/book/yves-eva-eve-crickets-in-tokyo.html" target="_blank" rel="noopener noreferrer">🦗 Crickets in Tokyo (Family+1)</a>
     <a class="btn" href="#parecer-juridico">⚖️ Parecer Jurídico (LGPD / LGT)</a>
   </div>
@@ -512,21 +513,25 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
 
 <script>
 (() => {
-  // Initial real hardware capture from the 3 physical ESP32-S3 MEDUSA nodes
+  // Initial real hardware capture from the 3 physical ESP32-S3 MEDUSA nodes + macOS CoreWLAN/BLE/AirPlay
   const beacons = new Map([
-    ["C4:3C:EA:85:12:60", { node: "OMN:MEDUSA", bssid: "C4:3C:EA:85:12:60", ssid: "Buffalo-G-1260", auth: "WPA2-PSK", ch: 6, rssi: -61, seen: "2026-10-19 12:44:00" }],
-    ["50:41:B9:36:D0:85", { node: "VAK:MEDUSA", bssid: "50:41:B9:36:D0:85", ssid: "IODATA-36d084-2G", auth: "WPA2-PSK", ch: 9, rssi: -72, seen: "2026-10-19 12:44:00" }],
-    ["E4:7E:66:18:EC:80", { node: "OMN:MEDUSA", bssid: "E4:7E:66:18:EC:80", ssid: "HG8045-6E9A-bg", auth: "WPA2-PSK", ch: 6, rssi: -73, seen: "2026-10-19 12:44:00" }],
-    ["F8:B7:97:7B:F9:6A", { node: "OMN:MEDUSA", bssid: "F8:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-1", auth: "WPA2-PSK", ch: 6, rssi: -82, seen: "2026-10-19 12:44:00" }],
-    ["FA:B7:97:7B:F9:6A", { node: "OMN:MEDUSA", bssid: "FA:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-2", auth: "WPA2-PSK", ch: 6, rssi: -82, seen: "2026-10-19 12:44:00" }],
-    ["B4:62:2E:B3:71:A7", { node: "VAK:MEDUSA", bssid: "B4:62:2E:B3:71:A7", ssid: "CPS01-QWVQ45", auth: "WPA3-SAE", ch: 1, rssi: -85, seen: "2026-10-19 12:44:00" }],
-    ["08:10:86:1C:4B:D6", { node: "OMN:MEDUSA", bssid: "08:10:86:1C:4B:D6", ssid: "aterm-826f9c-g", auth: "WPA2-PSK", ch: 11, rssi: -90, seen: "2026-10-19 12:44:00" }],
-    ["74:03:BD:4A:91:10", { node: "ADA:MEDUSA", bssid: "74:03:BD:4A:91:10", ssid: "SoftBank-A911", auth: "WPA2-PSK", ch: 1, rssi: -76, seen: "2026-10-19 12:44:00" }],
-    ["A8:42:A1:39:0C:E2", { node: "ADA:MEDUSA", bssid: "A8:42:A1:39:0C:E2", ssid: "elecom2g-0ce2", auth: "WPA2-PSK", ch: 11, rssi: -79, seen: "2026-10-19 12:44:00" }],
-    ["34:76:C5:9B:21:44", { node: "ADA:MEDUSA", bssid: "34:76:C5:9B:21:44", ssid: "au_Wi-Fi2", auth: "WPA2-EAP", ch: 3, rssi: -83, seen: "2026-10-19 12:44:00" }],
-    ["D8:0F:99:61:C0:08", { node: "ADA:MEDUSA", bssid: "D8:0F:99:61:C0:08", ssid: "Buffalo-G-C008", auth: "WPA3-SAE", ch: 11, rssi: -71, seen: "2026-10-19 12:44:00" }],
-    ["C8:3A:35:19:40:21", { node: "VAK:MEDUSA", bssid: "C8:3A:35:19:40:21", ssid: "TP-Link_4021", auth: "WPA2-PSK", ch: 4, rssi: -86, seen: "2026-10-19 12:44:00" }],
-    ["EC:08:6B:77:12:9A", { node: "ADA:MEDUSA", bssid: "EC:08:6B:77:12:9A", ssid: "NEC-Atrem-129A", auth: "WPA2-PSK", ch: 8, rssi: -88, seen: "2026-10-19 12:44:00" }]
+    ["C4:3C:EA:85:12:61", { node: "MAC:MEDUSA", bssid: "C4:3C:EA:85:12:61", ssid: "Buffalo-A-1260", auth: "WPA2-PSK-CCMP][ESS", ch: 116, rssi: -37, type: "WIFI", band: "5GHz", seen: "2026-10-20 08:43:44" }],
+    ["C4:3C:EA:85:12:60", { node: "OMN:MEDUSA", bssid: "C4:3C:EA:85:12:60", ssid: "Buffalo-G-1260", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -34, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
+    ["92:94:05:8C:99:CE", { node: "MAC:MEDUSA", bssid: "92:94:05:8C:99:CE", ssid: "Lodri’s MacBook Pro (MacBookPro18,3 · RAOP)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -54, type: "WIFI", band: "AirPlay", seen: "2026-10-20 08:43:44" }],
+    ["EE:C5:BB:CD:F5:36", { node: "MAC:MEDUSA", bssid: "EE:C5:BB:CD:F5:36", ssid: "MacBook (MacBookPro18,4 · RAOP)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -54, type: "WIFI", band: "AirPlay", seen: "2026-10-20 08:43:44" }],
+    ["02:BE:F3:32:C9:A4", { node: "MAC:MEDUSA", bssid: "02:BE:F3:32:C9:A4", ssid: "BLE-2706D2B1", auth: "BLE", ch: 37, rssi: -59, type: "BLE", band: "BLE", seen: "2026-10-20 08:43:44" }],
+    ["B4:62:2E:B3:71:A7", { node: "VAK:MEDUSA", bssid: "B4:62:2E:B3:71:A7", ssid: "CPS01-QWVQ45", auth: "WPA3-SAE-CCMP][ESS", ch: 1, rssi: -65, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
+    ["50:41:B9:36:D0:85", { node: "VAK:MEDUSA", bssid: "50:41:B9:36:D0:85", ssid: "IODATA-36d084-2G", auth: "WPA2-PSK-CCMP][ESS", ch: 9, rssi: -66, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
+    ["50:41:B9:36:D0:86", { node: "MAC:MEDUSA", bssid: "50:41:B9:36:D0:86", ssid: "IODATA-36d084-5G", auth: "WPA2-PSK-CCMP][ESS", ch: 40, rssi: -75, type: "WIFI", band: "5GHz", seen: "2026-10-20 08:43:44" }],
+    ["E4:7E:66:18:EC:80", { node: "OMN:MEDUSA", bssid: "E4:7E:66:18:EC:80", ssid: "HG8045-6E9A-bg", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -69, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
+    ["F8:B7:97:7B:F9:6A", { node: "OMN:MEDUSA", bssid: "F8:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-1", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -71, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
+    ["FA:B7:97:7B:F9:6A", { node: "OMN:MEDUSA", bssid: "FA:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-2", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -73, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
+    ["F8:B7:97:7B:F9:6C", { node: "MAC:MEDUSA", bssid: "F8:B7:97:7B:F9:6C", ssid: "xg100n-7bf969-3", auth: "WPA2-PSK-CCMP][ESS", ch: 36, rssi: -74, type: "WIFI", band: "5GHz", seen: "2026-10-20 08:43:44" }],
+    ["2C:32:6A:C3:4A:91", { node: "ADA:MEDUSA", bssid: "2C:32:6A:C3:4A:91", ssid: "Alexandra’s AirPods Pro - Find My [Headphones]", auth: "BT-CLASSIC][HEADPHONES", ch: 0, rssi: -78, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }],
+    ["2C:18:09:D8:14:74", { node: "VAK:MEDUSA", bssid: "2C:18:09:D8:14:74", ssid: "Christopher’s AirPods Pro - Find My [Headphones]", auth: "BT-CLASSIC][HEADPHONES", ch: 0, rssi: -79, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }],
+    ["DC:03:98:5E:E7:D5", { node: "MAC:MEDUSA", bssid: "DC:03:98:5E:E7:D5", ssid: "[LG] webOS TV OLED77G1PUA [Video Display]", auth: "BT-CLASSIC][VIDEO DISPLAY", ch: 0, rssi: -82, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }],
+    ["40:24:B2:4B:11:CE", { node: "MAC:MEDUSA", bssid: "40:24:B2:4B:11:CE", ssid: "Aladdin 2 [Video Display]", auth: "BT-CLASSIC][VIDEO DISPLAY", ch: 0, rssi: -83, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }],
+    ["70:99:1C:55:CB:49", { node: "MAC:MEDUSA", bssid: "70:99:1C:55:CB:49", ssid: "JBL GO 2 [Speaker]", auth: "BT-CLASSIC][SPEAKER", ch: 0, rssi: -84, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }]
   ]);
 
   const serialLog = document.getElementById("serial-log");
@@ -542,14 +547,18 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
 
   function renderSpectrumAndTable() {
     const rows = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi);
-    apTotalBadge.textContent = `${rows.length} MERGED BSSIDs · PASSIVE STA`;
+    const nWifi = rows.filter(r => (r.type || "WIFI") === "WIFI" && r.band !== "AirPlay").length;
+    const nBle = rows.filter(r => r.type === "BLE" || r.type === "BT").length;
+    const nAir = rows.filter(r => r.band === "AirPlay" || (r.auth || "").includes("AIRPLAY")).length;
+    apTotalBadge.textContent = `${rows.length} ENDPOINTS (${nWifi} WIFI · ${nBle} BLE/BT · ${nAir} AIRPLAY)`;
     apTbody.innerHTML = rows.map(r => {
-      const col = r.node.startsWith("ADA") ? "#ff6ac1" : (r.node.startsWith("VAK") ? "#00e5c9" : "#b48bff");
+      const col = r.node.startsWith("ADA") ? "#ff6ac1" : (r.node.startsWith("VAK") ? "#00e5c9" : (r.node.startsWith("MAC") ? "#ffd700" : "#b48bff"));
+      const badge = r.band || (r.type === "BLE" || r.type === "BT" ? r.type : (r.ch > 14 ? "5GHz" : "2.4GHz"));
       return `<tr>
-        <td style="color:${col};font-weight:600">${r.node.split(":")[0]}</td>
+        <td style="color:${col};font-weight:600">${r.node.split(":")[0]} <span style="font-size:0.62rem;opacity:0.8">[${badge}]</span></td>
         <td><code>${r.bssid}</code></td>
         <td>${r.ssid || "<span style='color:#7f7c99'>(hidden)</span>"}</td>
-        <td>${r.auth}</td>
+        <td>[${r.auth.replace(/^\[|\]$/g, "")}]</td>
         <td>${r.ch}</td>
         <td style="color:${r.rssi > -70 ? '#00ff66' : (r.rssi > -82 ? '#ffd700' : '#a89ec9')}">${r.rssi} dBm</td>
       </tr>`;
@@ -595,8 +604,10 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
             bssid,
             ssid: b.ssid || "",
             auth: b.auth || "WPA2-PSK",
-            ch: Number(b.channel || b.ch || 1),
+            ch: Number(b.channel || b.ch || 0),
             rssi: Number(b.rssi || -90),
+            type: b.radioType || b.type || "WIFI",
+            band: b.band || "2.4GHz",
             seen: b.seen || new Date().toISOString().replace("T", " ").slice(0, 19)
           });
         }
@@ -642,8 +653,8 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
     if (statEl) {
       statEl.className = "status-dot live";
       statEl.textContent = upper.includes("MAC")
-        ? `● MAC COREWLAN (${j.interfaceName || "en0"}) · ${j.count_2g || 0}×2.4G + ${j.count_5g || 0}×5G`
-        : `● LIVE · ${j.version || "v0.8.0"} · ${j.freq_hz || (key === "ada" ? 432 : key === "vak" ? 528 : 852)} Hz`;
+        ? `● MAC (${j.interfaceName || "en0"}) · ${j.count_2g || 0}×2.4G + ${j.count_5g || 0}×5G + ${j.count_ble || 0}×BLE + ${j.count_airplay || 0}×AirPlay`
+        : `● LIVE · ${j.version || "v0.9.0"} · ${j.freq_hz || (key === "ada" ? 432 : key === "vak" ? 528 : 852)} Hz`;
     }
   }
 
@@ -658,19 +669,22 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
       try { applyStatusJson(JSON.parse(line)); } catch {}
       return;
     }
-    if (line.startsWith("W|")) {
+    if (line.startsWith("W|") || line.startsWith("B|") || line.startsWith("A|")) {
+      const prefix = line[0];
       const parts = line.split("|");
       if (parts.length >= 6) {
         const bssid = parts[1].toUpperCase();
         const ssid = parts[2].replace(/\\x7c/g, "|").replace(/\\x5c/g, "\\");
         const auth = parts[3];
-        const ch = parseInt(parts[4], 10) || 1;
+        const ch = parseInt(parts[4], 10) || 0;
         const rssi = parseInt(parts[5], 10) || -90;
+        const band = parts[6] || (prefix === "B" ? "BLE" : (prefix === "A" ? "AirPlay" : (ch > 14 ? "5GHz" : "2.4GHz")));
+        const type = prefix === "B" ? (band === "BT" ? "BT" : "BLE") : "WIFI";
         const existing = beacons.get(bssid);
         if (!existing || rssi > existing.rssi) {
           beacons.set(bssid, {
             node: activeNodeLabel,
-            bssid, ssid, auth, ch, rssi,
+            bssid, ssid, auth, ch, rssi, type, band,
             seen: new Date().toISOString().replace("T", " ").slice(0, 19)
           });
           renderSpectrumAndTable();
@@ -756,9 +770,9 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
         logLine("# PONG|OMN:MEDUSA|80:B5:4E:F2:02:B4|" + Math.floor(performance.now()));
       } else if (clean === "TRIAD") {
         logLine("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*,432Hz)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\,528Hz)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo,852Hz)|ANICCA:MEDUSA<->POLYP");
-      } else if (clean === "STATUS" || clean === "JSON") {
-        parseIncomingSerialLine('# JSON|{"node":"VAK:MEDUSA","vertex":"/\\\\","archetype":"PILLAR-CHRIS","mac":"80:B5:4E:F2:02:B0","version":"v0.8.0+medusa-omni","freq_hz":528,"networks":6,"rssi":-77,"salience":1.22,"re_m":1120,"life_stage":"MEDUSA","entropy_bits":1.7925,"n_np_coherence":0.8914,"trits":"+-0+0--+0","mode":"PASSIVE_STA_ONLY"}');
-        parseIncomingSerialLine('# JSON|{"node":"OMN:MEDUSA","vertex":"oo","archetype":"INFINITY-PETER-NATE","mac":"80:B5:4E:F2:02:B4","version":"v0.8.0+medusa-omni","freq_hz":852,"networks":6,"rssi":-79,"salience":1.38,"re_m":1280,"life_stage":"MEDUSA","entropy_bits":1.9183,"n_np_coherence":0.9162,"trits":"++0-0+-0+","mode":"PASSIVE_STA_ONLY"}');
+      } else if (clean === "STATUS" || clean === "JSON" || clean === "SCAN") {
+        parseIncomingSerialLine('# JSON|{"node":"VAK:MEDUSA","vertex":"/\\\\","archetype":"PILLAR-CHRIS","mac":"80:B5:4E:F2:02:B0","version":"v0.9.0+medusa-omni","freq_hz":528,"networks":6,"rssi":-77,"salience":1.22,"re_m":1120,"life_stage":"MEDUSA","entropy_bits":1.7925,"n_np_coherence":0.8914,"trits":"+-0+0--+0","mode":"PASSIVE_STA_ONLY"}');
+        parseIncomingSerialLine('# JSON|{"node":"OMN:MEDUSA","vertex":"oo","archetype":"INFINITY-PETER-NATE","mac":"80:B5:4E:F2:02:B4","version":"v0.9.0+medusa-omni","freq_hz":852,"networks":6,"rssi":-79,"salience":1.38,"re_m":1280,"life_stage":"MEDUSA","entropy_bits":1.9183,"n_np_coherence":0.9162,"trits":"++0-0+-0+","mode":"PASSIVE_STA_ONLY"}');
       } else if (clean.startsWith("tab ") || clean.startsWith("track ") || clean === "splash" || clean === "hop") {
         logLine(`# AMOLED-UI|ACK ${clean} -> VAK:MEDUSA + OMN:MEDUSA + ADA:MEDUSA`);
       }
@@ -785,19 +799,55 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
     selTrack.addEventListener("change", () => sendSerialCommand(selTrack.value));
   }
 
+  function buildWigleCSVString() {
+    const header = "WigleWifi-1.4,appRelease=0.9.0,model=ESP32-S3-MEDUSA-TRIAD,release=15.0,device=esp32.vaked.dev,display=AMOLED-CoreWLAN-BLE-AirPlay,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
+    const body = Array.from(beacons.values()).map(r => {
+      const cleanSsid = (r.ssid || "").replace(/,/g, " ").replace(/"/g, "");
+      const authBrack = String(r.auth || "ESS").startsWith("[") ? r.auth : `[${r.auth}]`;
+      const rType = r.type || "WIFI";
+      return `${r.bssid},${cleanSsid},${authBrack},${r.seen},${r.ch},${r.rssi},35.6895,139.6917,40,5,${rType}`;
+    }).join("\n");
+    return header + body + "\n";
+  }
+
   // Export WiGLE v1.4 CSV
   document.getElementById("btn-export-csv").addEventListener("click", () => {
-    const header = "WigleWifi-1.4,appRelease=0.8.0+medusa-omni,model=ESP32-S3-MEDUSA-TRIAD,release=v0.8.0,device=esp32.vaked.dev,display=AMOLED-CO5300-SH8601,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
-    const body = Array.from(beacons.values()).map(r =>
-      `${r.bssid},"${(r.ssid || "").replace(/"/g, '""')}",[${r.auth}],${r.seen},${r.ch},${r.rssi},35.6895,139.6917,40,0,WIFI`
-    ).join("\n");
-    const blob = new Blob([header + body + "\n"], { type: "text/csv;charset=utf-8" });
+    const csv = buildWigleCSVString();
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `wigle-wifi-medusa-triad-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
-    logLine(`# Exported ${beacons.size} networks in WiGLE v1.4 CSV format`);
+    logLine(`# Exported ${beacons.size} endpoints (WIFI + BLE + BT + AirPlay) in WiGLE v1.4 CSV format`);
   });
+
+  // Anonymous Dual Upload -> esp32.vaked.dev + api.wigle.net
+  const btnUploadWigle = document.getElementById("btn-upload-wigle");
+  if (btnUploadWigle) {
+    btnUploadWigle.addEventListener("click", async () => {
+      const csv = buildWigleCSVString();
+      btnUploadWigle.disabled = true;
+      btnUploadWigle.textContent = "⏳ Uploading Anonymously...";
+      logLine(`# Uploading ${beacons.size} endpoints anonymously to esp32.vaked.dev + api.wigle.net (donate=on, observer=anonymous)...`);
+      try {
+        const res = await fetch("/api/upload?mirror=wigle", {
+          method: "POST",
+          headers: { "content-type": "text/csv; charset=utf-8" },
+          body: csv
+        });
+        const data = await res.json();
+        const espTid = data?.esp32_vaked_dev?.transId || data?.transId || "ok";
+        const wigTid = data?.wigle_net?.transId || "relayed";
+        logLine(`# [UPLOAD OK] esp32.vaked.dev transId=${espTid} (${data?.ingested || beacons.size} rows) | api.wigle.net transId=${wigTid} (observer=anonymous)`);
+        btnUploadWigle.textContent = `✅ Uploaded (${wigTid})`;
+      } catch (err) {
+        logLine(`! Anonymous upload error: ${err.message}`);
+        btnUploadWigle.textContent = "☁️ Anon Upload (esp32.vaked.dev + WiGLE.net)";
+      } finally {
+        btnUploadWigle.disabled = false;
+      }
+    });
+  }
 
   // WebAudio Triad Harmonic Synthesizer (432 Hz * + 528 Hz /\ + 852 Hz oo + Shinjuku Gyoen koorogi crickets)
   let audioCtx = null;

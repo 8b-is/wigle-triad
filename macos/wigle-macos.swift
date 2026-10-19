@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import CoreWLAN
+import CoreBluetooth
 import CoreLocation
 import CryptoKit
 import AppKit
@@ -9,17 +10,27 @@ import SwiftUI
 // MARK: - Data Models
 
 struct ScannedAP: Identifiable, Codable {
-    var id: String { "\(bssid)-\(channel)" }
+    var id: String { "\(bssid)-\(channel)-\(radioType)" }
     let node: String
     let bssid: String
     let ssid: String
     let auth: String
     let channel: Int
     let band: String
+    let radioType: String // "WIFI", "BLE", "BT"
     let rssi: Int
     let noise: Int
     let snr: Int
     let seen: String
+}
+
+struct UploadReceipt: Codable {
+    let target: String
+    let ok: Bool
+    let status: Int
+    let observer: String
+    let transId: String
+    let raw: String
 }
 
 struct MacTriadTelemetry: Codable {
@@ -33,6 +44,8 @@ struct MacTriadTelemetry: Codable {
     let networks: Int
     let count_2g: Int
     let count_5g: Int
+    let count_ble: Int
+    let count_airplay: Int
     let rssi: Int
     let noise: Int
     let snr: Int
@@ -85,6 +98,11 @@ func extractEmbeddedMac(from ssid: String) -> String? {
     return nil
 }
 
+func deterministicLAAMac(seed: String, prefixByte: UInt8 = 0x8B) -> String {
+    let digest = Array(SHA256.hash(data: Data(seed.utf8)))
+    return String(format: "02:%02X:%02X:%02X:%02X:%02X", prefixByte, digest[0], digest[1], digest[2], digest[3])
+}
+
 func resolveBSSID(rawBSSID: String?, ssid: String, channel: Int, band: Int, index: Int) -> String {
     if let b = rawBSSID, !b.isEmpty, b != "<redacted>", b != "00:00:00:00:00:00" {
         return b.uppercased()
@@ -96,33 +114,206 @@ func resolveBSSID(rawBSSID: String?, ssid: String, channel: Int, band: Int, inde
         return embedded
     }
     let seed = ssid.isEmpty ? "hidden-ch\(channel)-b\(band)-\(index)" : "\(ssid)-ch\(channel)-b\(band)"
-    let digest = Array(SHA256.hash(data: Data(seed.utf8)))
-    return String(format: "02:8B:%02X:%02X:%02X:%02X", digest[0], digest[1], digest[2], digest[3])
+    return deterministicLAAMac(seed: seed, prefixByte: 0x8B)
 }
 
 func securityLabel(for net: CWNetwork) -> String {
     if net.supportsSecurity(.wpa3Personal) || net.supportsSecurity(.wpa3Enterprise) {
-        return "WPA3-SAE"
+        return "WPA3-SAE-CCMP][ESS"
     } else if net.supportsSecurity(.wpa2Enterprise) {
-        return "WPA2-EAP"
+        return "WPA2-EAP-CCMP][ESS"
     } else if net.supportsSecurity(.wpa2Personal) {
-        return "WPA2-PSK"
+        return "WPA2-PSK-CCMP][ESS"
     } else if net.supportsSecurity(.wpaPersonal) {
-        return "WPA-PSK"
+        return "WPA-PSK-TKIP][ESS"
     } else if net.supportsSecurity(.none) {
-        return "OPEN"
+        return "ESS"
     }
-    return "WPA2-PSK"
+    return "WPA2-PSK-CCMP][ESS"
 }
 
-// MARK: - CoreWLAN Passive Scanner Engine
+// MARK: - CoreBluetooth + SPBluetoothDataType + AirPlay mDNS Probe
+
+final class MultiRadioCollector: NSObject, CBCentralManagerDelegate, NetServiceBrowserDelegate, NetServiceDelegate {
+    private var cbManager: CBCentralManager?
+    private var browsers: [NetServiceBrowser] = []
+    private var services: [NetService] = []
+    var bleDevices: [String: ScannedAP] = [:]
+    var airplayDevices: [String: ScannedAP] = [:]
+    var seenStr: String = ""
+
+    func collect(duration: TimeInterval, seen: String) {
+        self.seenStr = seen
+        self.bleDevices.removeAll()
+        self.airplayDevices.removeAll()
+
+        // 1. SPBluetoothDataType JSON (paired/discovered Classic BT & BLE with real IEEE MACs)
+        collectSPBluetooth(seen: seen)
+
+        // 2. CoreBluetooth live BLE advertisement scan
+        cbManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey: false])
+
+        // 3. AirPlay / RAOP / Companion-Link / Cast mDNS discovery
+        let mDNSTypes = ["_airplay._tcp.", "_raop._tcp.", "_companion-link._tcp.", "_spotify-connect._tcp.", "_googlecast._tcp."]
+        browsers.removeAll()
+        services.removeAll()
+        for t in mDNSTypes {
+            let b = NetServiceBrowser()
+            b.delegate = self
+            b.searchForServices(ofType: t, inDomain: "local.")
+            browsers.append(b)
+        }
+
+        RunLoop.current.run(until: Date().addingTimeInterval(duration))
+        cbManager?.stopScan()
+        for b in browsers { b.stop() }
+    }
+
+    private func collectSPBluetooth(seen: String) {
+        let proc = Process()
+        proc.executableURL = URL(fileURLWithPath: "/usr/sbin/system_profiler")
+        proc.arguments = ["SPBluetoothDataType", "-json"]
+        let pipe = Pipe()
+        proc.standardOutput = pipe
+        proc.standardError = FileHandle.nullDevice
+        do {
+            try proc.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            proc.waitUntilExit()
+            guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let arr = root["SPBluetoothDataType"] as? [[String: Any]] else { return }
+            for entry in arr {
+                for key in ["device_connected", "device_not_connected"] {
+                    guard let devList = entry[key] as? [[String: Any]] else { continue }
+                    for devDict in devList {
+                        for (devName, rawInfo) in devDict {
+                            guard let info = rawInfo as? [String: Any] else { continue }
+                            let rawAddr = (info["device_address"] as? String)?.uppercased().replacingOccurrences(of: "-", with: ":") ?? ""
+                            let bssid = (!rawAddr.isEmpty && rawAddr.contains(":")) ? rawAddr : deterministicLAAMac(seed: "bt-\(devName)", prefixByte: 0xB7)
+                            let minor = (info["device_minorType"] as? String) ?? "BT"
+                            let rssiInt = Int((info["device_rssi"] as? String) ?? "") ?? (key == "device_connected" ? -58 : -84)
+                            let noise = -95
+                            let ap = ScannedAP(
+                                node: "MAC:MEDUSA",
+                                bssid: bssid,
+                                ssid: "\(devName) [\(minor)]",
+                                auth: "BT-CLASSIC][\(minor.uppercased())",
+                                channel: 0,
+                                band: "BT",
+                                radioType: "BT",
+                                rssi: rssiInt,
+                                noise: noise,
+                                snr: rssiInt - noise,
+                                seen: seen
+                            )
+                            bleDevices[bssid] = ap
+                        }
+                    }
+                }
+            }
+        } catch {}
+    }
+
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        if central.state == .poweredOn {
+            central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+        }
+    }
+
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        let rssiVal = RSSI.intValue
+        guard rssiVal < 0 && rssiVal > -115 else { return }
+        let uuidStr = peripheral.identifier.uuidString
+        let advName = (advertisementData[CBAdvertisementDataLocalNameKey] as? String) ?? peripheral.name ?? ""
+        var srvTag = "BLE"
+        if let uuids = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID], !uuids.isEmpty {
+            srvTag = "BLE:\(uuids.first!.uuidString.prefix(8))"
+        }
+        let bssid = deterministicLAAMac(seed: "ble-\(uuidStr)", prefixByte: 0xBE)
+        let label = advName.isEmpty ? "BLE-\(uuidStr.prefix(8))" : advName
+        let noise = -96
+        let ap = ScannedAP(
+            node: "MAC:MEDUSA",
+            bssid: bssid,
+            ssid: label,
+            auth: srvTag,
+            channel: 37,
+            band: "BLE",
+            radioType: "BLE",
+            rssi: rssiVal,
+            noise: noise,
+            snr: rssiVal - noise,
+            seen: seenStr
+        )
+        if let prev = bleDevices[bssid] {
+            if rssiVal > prev.rssi { bleDevices[bssid] = ap }
+        } else {
+            bleDevices[bssid] = ap
+        }
+    }
+
+    func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
+        services.append(service)
+        service.delegate = self
+        service.resolve(withTimeout: 1.4)
+    }
+
+    func netServiceDidResolveAddress(_ sender: NetService) {
+        var txt: [String: String] = [:]
+        if let data = sender.txtRecordData() {
+            let raw = NetService.dictionary(fromTXTRecord: data)
+            for (k, v) in raw {
+                txt[k] = String(data: v, encoding: .utf8) ?? ""
+            }
+        }
+        var mac = (txt["deviceid"] ?? txt["rpBA"] ?? "").uppercased()
+        if mac.isEmpty, let atIdx = sender.name.firstIndex(of: "@") {
+            let prefix = String(sender.name[..<atIdx])
+            if let emb = extractEmbeddedMac(from: prefix) {
+                mac = emb
+            }
+        }
+        if mac.isEmpty {
+            mac = deterministicLAAMac(seed: "airplay-\(sender.type)-\(sender.name)", prefixByte: 0xA1)
+        }
+        let model = txt["model"] ?? txt["am"] ?? txt["rpVr"] ?? "AirPlay"
+        let cleanName: String
+        if let atIdx = sender.name.firstIndex(of: "@") {
+            cleanName = String(sender.name[sender.name.index(after: atIdx)...])
+        } else {
+            cleanName = sender.name
+        }
+        let svcShort = sender.type.replacingOccurrences(of: "._tcp.", with: "").replacingOccurrences(of: "_", with: "").uppercased()
+        let ssid = "\(cleanName) (\(model) · \(svcShort))"
+        let rssi = -54
+        let noise = -92
+        let ap = ScannedAP(
+            node: "MAC:MEDUSA",
+            bssid: mac,
+            ssid: ssid,
+            auth: "AIRPLAY-\(svcShort)][ESS",
+            channel: 6,
+            band: "AirPlay",
+            radioType: "WIFI",
+            rssi: rssi,
+            noise: noise,
+            snr: rssi - noise,
+            seen: seenStr
+        )
+        airplayDevices[mac] = ap
+    }
+}
+
+// MARK: - CoreWLAN + BLE + AirPlay Unified Passive Scanner Engine
 
 final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var telemetry: MacTriadTelemetry?
     @Published var locationAuthorized: Bool = false
-    @Published var autoScan: Bool = true
-    @Published var statusText: String = "Ready · CoreWLAN en0 Passive STA"
+    @Published var autoScan: Bool = false
+    @Published var statusText: String = "Ready · CoreWLAN + BLE + AirPlay Passive STA"
+    @Published var lastUploadStatus: String = ""
     private let locManager = CLLocationManager()
+    private let radioCollector = MultiRadioCollector()
     private var seq: Int = 0
     private var prevMeanRssi: Double = -75.0
 
@@ -142,7 +333,7 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     @discardableResult
-    func performScan() -> MacTriadTelemetry {
+    func performScan(bleDuration: TimeInterval = 1.6) -> MacTriadTelemetry {
         seq += 1
         let nowFmt = DateFormatter()
         nowFmt.dateFormat = "yyyy-MM-dd HH:mm:ss"
@@ -174,6 +365,7 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
                 auth: auth,
                 channel: ch,
                 band: bandStr,
+                radioType: "WIFI",
                 rssi: rssi,
                 noise: noise,
                 snr: snr,
@@ -188,16 +380,27 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             }
         }
 
+        // Collect BLE, Classic BT, and AirPlay/RAOP/Companion mDNS
+        radioCollector.collect(duration: bleDuration, seen: seenStr)
+        for (k, ap) in radioCollector.airplayDevices {
+            dedup["airplay-\(k)"] = ap
+        }
+        for (k, ap) in radioCollector.bleDevices {
+            dedup["ble-\(k)"] = ap
+        }
+
         let sorted = dedup.values.sorted { $0.rssi > $1.rssi }
         let total = max(1, sorted.count)
-        let count2g = sorted.filter { $0.channel <= 14 }.count
-        let count5g = sorted.filter { $0.channel > 14 }.count
+        let count2g = sorted.filter { $0.band == "2.4GHz" }.count
+        let count5g = sorted.filter { $0.band == "5GHz" }.count
+        let countBle = sorted.filter { $0.band == "BLE" || $0.band == "BT" }.count
+        let countAirplay = sorted.filter { $0.band == "AirPlay" }.count
 
         let meanRssi = sorted.isEmpty ? -80 : (sorted.map(\.rssi).reduce(0, +) / total)
         let meanNoise = sorted.isEmpty ? -93 : (sorted.map(\.noise).reduce(0, +) / total)
         let meanSnr = meanRssi - meanNoise
 
-        // Shannon channel entropy H(X)
+        // Shannon channel/band entropy H(X)
         var chCounts: [Int: Int] = [:]
         for ap in sorted {
             chCounts[ap.channel, default: 0] += 1
@@ -210,7 +413,7 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             }
         }
 
-        // Balanced-ternary 9-trit vector from channel & SNR distribution
+        // Balanced-ternary 9-trit vector from SNR distribution
         var tritChars: [Character] = []
         for i in 0..<9 {
             if i < sorted.count {
@@ -235,14 +438,16 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
         let snap = MacTriadTelemetry(
             node: "MAC:MEDUSA",
             vertex: "*+/\\+oo",
-            archetype: "DARWIN-COREWLAN-APEX",
+            archetype: "DARWIN-QUAD-SPECTRUM-APEX",
             mac: hwMac,
             interfaceName: ifName,
-            version: "v0.8.0+medusa-omni",
+            version: "v0.9.0+medusa-omni",
             freq_hz: 432,
             networks: sorted.count,
             count_2g: count2g,
             count_5g: count5g,
+            count_ble: countBle,
+            count_airplay: countAirplay,
             rssi: meanRssi,
             noise: meanNoise,
             snr: meanSnr,
@@ -252,22 +457,28 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             entropy_bits: (entropy * 10000).rounded() / 10000,
             n_np_coherence: (coherence * 10000).rounded() / 10000,
             trits: trits,
-            mode: "COREWLAN_PASSIVE_STA",
+            mode: "COREWLAN_BLE_AIRPLAY_PASSIVE",
             beacons: sorted
         )
         DispatchQueue.main.async {
             self.telemetry = snap
-            self.statusText = "Scanned \(sorted.count) APs (\(count2g) 2.4G · \(count5g) 5G) on \(ifName) · H=\(String(format: "%.3f", entropy))b"
+            self.statusText = "Scanned \(sorted.count) endpoints (\(count2g) 2.4G · \(count5g) 5G · \(countBle) BLE/BT · \(countAirplay) AirPlay)"
         }
         return snap
     }
 
     func emitWireLines(from snap: MacTriadTelemetry) -> [String] {
         var lines: [String] = []
-        lines.append("# MAC:MEDUSA [*+/\\+oo] · CoreWLAN \(snap.interfaceName) · \(snap.version) · 2.4G=\(snap.count_2g) 5G=\(snap.count_5g)")
+        lines.append("# MAC:MEDUSA [*+/\\+oo] · CoreWLAN+BLE+AirPlay \(snap.interfaceName) · \(snap.version) · 2.4G=\(snap.count_2g) 5G=\(snap.count_5g) BLE=\(snap.count_ble) AIRPLAY=\(snap.count_airplay)")
         for ap in snap.beacons {
             let safeSsid = ap.ssid.replacingOccurrences(of: "|", with: "\\x7c")
-            lines.append("W|\(ap.bssid)|\(safeSsid)|\(ap.auth)|\(ap.channel)|\(ap.rssi)")
+            if ap.band == "BLE" || ap.band == "BT" {
+                lines.append("B|\(ap.bssid)|\(safeSsid)|\(ap.auth)|\(ap.channel)|\(ap.rssi)|\(ap.band)")
+            } else if ap.band == "AirPlay" {
+                lines.append("A|\(ap.bssid)|\(safeSsid)|\(ap.auth)|\(ap.channel)|\(ap.rssi)|AirPlay")
+            } else {
+                lines.append("W|\(ap.bssid)|\(safeSsid)|\(ap.auth)|\(ap.channel)|\(ap.rssi)")
+            }
         }
         lines.append(String(
             format: "Q|VAK:MEDUSA|/\\|%@|%d|%d|%d|%.4f|%@|%.4f|327680|%d",
@@ -281,13 +492,85 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     func buildWigleCSV(from snap: MacTriadTelemetry, lat: Double = 35.6895, lon: Double = 139.6917) -> String {
-        var out = "WigleWifi-1.4,appRelease=0.8.0+medusa-omni,model=MacBookPro-AppleSilicon,release=v0.8.0,device=wigle-macos,display=CoreWLAN-Retina,board=arm64-apple-darwin,brand=8b-is\n"
+        var out = "WigleWifi-1.4,appRelease=0.9.0,model=MacBookPro-AppleSilicon,release=15.0,device=wigle-macos,display=CoreWLAN-BLE-AirPlay,board=arm64-apple-darwin,brand=8b-is\n"
         out += "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n"
         for ap in snap.beacons {
-            let esc = ap.ssid.replacingOccurrences(of: "\"", with: "\"\"")
-            out += "\(ap.bssid),\"\(esc)\",[\(ap.auth)],\(ap.seen),\(ap.channel),\(ap.rssi),\(lat),\(lon),40,0,WIFI\n"
+            let esc = ap.ssid
+                .replacingOccurrences(of: ",", with: " ")
+                .replacingOccurrences(of: "\"", with: "")
+            let authBrack = ap.auth.hasPrefix("[") ? ap.auth : "[\(ap.auth)]"
+            out += "\(ap.bssid),\(esc),\(authBrack),\(ap.seen),\(ap.channel),\(ap.rssi),\(lat),\(lon),40,5,\(ap.radioType)\n"
         }
         return out
+    }
+
+    func uploadAnonymously(snap: MacTriadTelemetry) -> [UploadReceipt] {
+        let csvData = buildWigleCSV(from: snap)
+        let boundary = "----WigleMedusaTriad8bIs\(Int(Date().timeIntervalSince1970))"
+        var bodyStr = ""
+        bodyStr += "--\(boundary)\r\n"
+        bodyStr += "Content-Disposition: form-data; name=\"donate\"\r\n\r\non\r\n"
+        bodyStr += "--\(boundary)\r\n"
+        bodyStr += "Content-Disposition: form-data; name=\"file\"; filename=\"wigle-macos-\(Int(Date().timeIntervalSince1970)).csv\"\r\n"
+        bodyStr += "Content-Type: text/csv\r\n\r\n"
+        bodyStr += csvData + "\r\n"
+        bodyStr += "--\(boundary)--\r\n"
+        let bodyBytes = Data(bodyStr.utf8)
+
+        let targets: [(name: String, url: String)] = [
+            ("esp32.vaked.dev", "https://esp32.vaked.dev/api/upload"),
+            ("api.wigle.net", "https://api.wigle.net/api/v2/file/upload")
+        ]
+
+        var receipts: [UploadReceipt] = []
+        let sem = DispatchSemaphore(value: 0)
+
+        for t in targets {
+            guard let u = URL(string: t.url) else { continue }
+            var req = URLRequest(url: u, timeoutInterval: 20)
+            req.httpMethod = "POST"
+            req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            req.setValue("application/json", forHTTPHeaderField: "Accept")
+            req.setValue("WigleWifi-0.9.0 (macOS arm64; 8b-is; anonymous)", forHTTPHeaderField: "User-Agent")
+            req.httpBody = bodyBytes
+
+            let task = URLSession.shared.dataTask(with: req) { data, resp, err in
+                let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
+                let raw = data.flatMap { String(data: $0, encoding: .utf8) } ?? (err?.localizedDescription ?? "")
+                var transId = "anon-\(Int(Date().timeIntervalSince1970))"
+                var observer = "anonymous"
+                var ok = (code >= 200 && code < 300)
+                if let d = data,
+                   let obj = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
+                    if let s = obj["success"] as? Bool { ok = s }
+                    if let o = obj["observer"] as? String { observer = o }
+                    if let tid = obj["transId"] as? String { transId = tid }
+                    if let res = obj["results"] as? [String: Any],
+                       let tids = res["transids"] as? [[String: Any]],
+                       let firstTid = tids.first?["transId"] as? String {
+                        transId = firstTid
+                    }
+                }
+                receipts.append(UploadReceipt(
+                    target: t.name,
+                    ok: ok,
+                    status: code,
+                    observer: observer,
+                    transId: transId,
+                    raw: raw
+                ))
+                sem.signal()
+            }
+            task.resume()
+            _ = sem.wait(timeout: .now() + 22)
+        }
+
+        let summary = receipts.map { "\($0.target): \($0.ok ? "OK" : "ERR") (\($0.transId))" }.joined(separator: " | ")
+        DispatchQueue.main.async {
+            self.lastUploadStatus = "Uploaded anonymously -> \(summary)"
+            self.statusText = self.lastUploadStatus
+        }
+        return receipts
     }
 }
 
@@ -300,28 +583,28 @@ struct WigleMacView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("WIGLE FOR MACOS · MEDUSA TRIAD")
-                        .font(.system(size: 18, weight: .heavy, design: .monospaced))
+                    Text("WIGLE FOR MACOS · WIFI + BLE + AIRPLAY TRIAD")
+                        .font(.system(size: 17, weight: .heavy, design: .monospaced))
                         .foregroundColor(Color(red: 0.0, green: 0.9, blue: 0.79))
                     Text(scanner.statusText)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.system(size: 11, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-                Button("📡 Scan Now") {
+                Button("📡 Scan All Radios") {
                     _ = scanner.performScan()
                 }
                 .buttonStyle(.borderedProminent)
-                Toggle("Auto (6s)", isOn: $scanner.autoScan)
-                    .toggleStyle(.switch)
-                    .font(.system(size: 12, design: .monospaced))
-                Button("📍 Unlock BSSID") {
-                    scanner.requestLocationPermission()
+                Button("☁️ Anon Upload (esp32 + WiGLE)") {
+                    let snap = scanner.telemetry ?? scanner.performScan()
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        _ = scanner.uploadAnonymously(snap: snap)
+                    }
                 }
                 Button("⬇ Export WiGLE CSV") {
                     if let snap = scanner.telemetry {
                         let panel = NSSavePanel()
-                        panel.nameFieldStringValue = "wigle-macos-\( Int(Date().timeIntervalSince1970) ).csv"
+                        panel.nameFieldStringValue = "wigle-macos-\(Int(Date().timeIntervalSince1970)).csv"
                         if panel.runModal() == .OK, let url = panel.url {
                             try? scanner.buildWigleCSV(from: snap).write(to: url, atomically: true, encoding: .utf8)
                         }
@@ -331,31 +614,31 @@ struct WigleMacView: View {
 
             if let snap = scanner.telemetry {
                 HStack(spacing: 12) {
-                    metricCard(title: "INTERFACE", value: "\(snap.interfaceName) (\(snap.networks) APs)", sub: "2.4G: \(snap.count_2g) · 5G: \(snap.count_5g)")
+                    metricCard(title: "RADIOS (\(snap.networks) TOTAL)", value: "2.4G:\(snap.count_2g) · 5G:\(snap.count_5g)", sub: "BLE/BT:\(snap.count_ble) · AirPlay:\(snap.count_airplay)")
                     metricCard(title: "MEAN RF / SNR", value: "\(snap.rssi) dBm", sub: "Noise \(snap.noise) dBm · SNR +\(snap.snr) dB")
                     metricCard(title: "MARINESENSE O(1)", value: String(format: "S = %.2fx", snap.salience), sub: "Re_M = \(snap.re_m) · \(snap.life_stage)")
                     metricCard(title: "N=NP 9-TRIT", value: snap.trits, sub: String(format: "H=%.3fb · R=%.4f", snap.entropy_bits, snap.n_np_coherence))
                 }
 
                 Table(snap.beacons) {
-                    TableColumn("Band") { ap in Text(ap.band).font(.system(size: 11, design: .monospaced)) }.width(55)
-                    TableColumn("Ch") { ap in Text("\(ap.channel)").font(.system(size: 11, design: .monospaced)) }.width(38)
-                    TableColumn("BSSID") { ap in Text(ap.bssid).font(.system(size: 11, design: .monospaced)) }.width(138)
-                    TableColumn("SSID") { ap in Text(ap.ssid.isEmpty ? "(hidden)" : ap.ssid).font(.system(size: 11, weight: .semibold, design: .monospaced)) }
-                    TableColumn("Auth") { ap in Text(ap.auth).font(.system(size: 11, design: .monospaced)) }.width(80)
+                    TableColumn("Type") { ap in Text(ap.band).font(.system(size: 11, weight: .bold, design: .monospaced)) }.width(62)
+                    TableColumn("Ch") { ap in Text("\(ap.channel)").font(.system(size: 11, design: .monospaced)) }.width(36)
+                    TableColumn("MAC / BSSID") { ap in Text(ap.bssid).font(.system(size: 11, design: .monospaced)) }.width(138)
+                    TableColumn("SSID / Device Name") { ap in Text(ap.ssid.isEmpty ? "(hidden)" : ap.ssid).font(.system(size: 11, weight: .semibold, design: .monospaced)) }
+                    TableColumn("Auth / Service") { ap in Text("[\(ap.auth)]").font(.system(size: 10, design: .monospaced)) }.width(150)
                     TableColumn("RSSI") { ap in Text("\(ap.rssi) dBm").font(.system(size: 11, design: .monospaced)) }.width(68)
-                    TableColumn("SNR") { ap in Text("+\(ap.snr) dB").font(.system(size: 11, design: .monospaced)) }.width(58)
+                    TableColumn("SNR") { ap in Text("+\(ap.snr) dB").font(.system(size: 11, design: .monospaced)) }.width(54)
                 }
                 .font(.system(.body, design: .monospaced))
             } else {
                 Spacer()
-                Text("Scanning CoreWLAN en0...")
+                Text("Scanning CoreWLAN + CoreBluetooth + AirPlay mDNS...")
                     .font(.system(.body, design: .monospaced))
                 Spacer()
             }
         }
         .padding(16)
-        .frame(minWidth: 820, minHeight: 500)
+        .frame(minWidth: 900, minHeight: 540)
         .preferredColorScheme(.dark)
         .onAppear {
             _ = scanner.performScan()
@@ -389,13 +672,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let contentView = WigleMacView(scanner: scanner)
         window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 880, height: 540),
+            contentRect: NSRect(x: 0, y: 0, width: 940, height: 560),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
         )
         window.center()
-        window.title = "WigleMac — 8b-is ESP32-S3 × macOS CoreWLAN Triad (v0.8.0+medusa-omni)"
+        window.title = "WigleMac — 8b-is CoreWLAN + BLE + AirPlay Triad (v0.9.0+medusa-omni)"
         window.contentView = NSHostingView(rootView: contentView)
         window.makeKeyAndOrderFront(nil)
 
@@ -408,13 +691,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func toggleWindow() {
-        if window.isVisible {
-            window.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-        } else {
-            window.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
 
@@ -423,7 +701,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 let args = CommandLine.arguments
 let scanner = MacWigleScanner()
 
-if args.contains("--json") {
+if args.contains("--upload") {
+    let snap = scanner.performScan()
+    let receipts = scanner.uploadAnonymously(snap: snap)
+    let enc = JSONEncoder()
+    enc.outputFormatting = [.prettyPrinted, .sortedKeys]
+    if let data = try? enc.encode(receipts), let s = String(data: data, encoding: .utf8) {
+        print(s)
+    }
+    exit(0)
+} else if args.contains("--json") {
     let snap = scanner.performScan()
     let enc = JSONEncoder()
     enc.outputFormatting = [.prettyPrinted, .sortedKeys]
