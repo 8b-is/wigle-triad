@@ -124,7 +124,7 @@ def ingest_line(port: str, line: str) -> None:
             except ValueError:
                 return
             band = parts[6].strip() if len(parts) >= 7 else ("BLE" if prefix == "B" else ("AirPlay" if prefix == "A" else ("5GHz" if ch > 14 else "2.4GHz")))
-            rtype = ("BT" if band == "BT" else "BLE") if prefix == "B" else "WIFI"
+            rtype = ("BT" if band == "BT" else "BLE") if prefix == "B" else ("AIRPLAY" if (prefix == "A" or band == "AirPlay") else "WIFI")
             prev = BEACONS.get(bssid)
             if prev is None or rssi > prev["rssi"]:
                 BEACONS[bssid] = {
@@ -142,7 +142,7 @@ def ingest_line(port: str, line: str) -> None:
 
 def build_wigle_csv() -> str:
     header = (
-        "WigleWifi-1.4,appRelease=0.9.0,model=ESP32-S3-MEDUSA-TRIAD,"
+        "WigleWifi-1.4,appRelease=1.0.0,model=ESP32-S3-MEDUSA-TRIAD,"
         "release=15.0,device=wiglewww,display=AMOLED-CoreWLAN-BLE-AirPlay,"
         "board=esp32-s3-touch-amoled,brand=8b-is\n"
         "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n"
@@ -153,10 +153,13 @@ def build_wigle_csv() -> str:
     for bssid in sorted(BEACONS):
         r = BEACONS[bssid]
         auth_val = str(r["auth"])
-        auth_brack = auth_val if auth_val.startswith("[") else f"[{auth_val}]"
+        raw_type = str(r.get("type", "WIFI")).upper()
+        is_airplay = raw_type == "AIRPLAY" or r.get("band") == "AirPlay" or "AIRPLAY" in auth_val.upper()
+        auth_brack = "[AIRPLAY-RAOP][ESS]" if is_airplay else (auth_val if auth_val.startswith("[") else f"[{auth_val}]")
+        rtype = "WIFI" if is_airplay else raw_type
         # This bridge has no measured location; never fabricate coordinates.
         writer.writerow([r["bssid"], r["ssid"], auth_brack, r["seen"],
-                         r["ch"], r["rssi"], "", "", "", "", r.get("type", "WIFI")])
+                         r["ch"], r["rssi"], "", "", "", "", rtype])
     return output.getvalue()
 
 
@@ -209,10 +212,11 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             payload = {
                 "surface": "http://127.0.0.1:8088",
                 "mirror": "https://esp32.vaked.dev",
-                "version": "0.9.0+medusa-omni",
+                "version": "1.0.0+medusa-omni",
                 "ports": ports,
                 "nodes": list(NODES_CACHE.values()),
                 "beacons_count": len(BEACONS),
+                "beacons": list(BEACONS.values()),
                 "raw_lines": lines,
             }
             self._send(200, json.dumps(payload, indent=2).encode("utf-8"), "application/json; charset=utf-8")
@@ -257,7 +261,14 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             ports = discover_ports()
             wait_s = 1.6 if cmd.upper() == "SCAN" else 0.4
             lines = send_and_collect(ports, cmd, wait_s=wait_s)
-            resp = {"ok": True, "cmd": cmd, "ports": ports, "lines": lines, "nodes": list(NODES_CACHE.values())}
+            resp = {
+                "ok": True,
+                "cmd": cmd,
+                "ports": ports,
+                "lines": lines,
+                "nodes": list(NODES_CACHE.values()),
+                "beacons": list(BEACONS.values()),
+            }
             self._send(200, json.dumps(resp).encode("utf-8"), "application/json; charset=utf-8")
             return
         self._send(404, b"Not Found", "text/plain; charset=utf-8")
@@ -286,9 +297,10 @@ def main() -> int:
                 {
                     "surface": f"http://{args.host}:{args.port}",
                     "mirror": "https://esp32.vaked.dev",
-                    "version": "0.9.0+medusa-omni",
+                    "version": "1.0.0+medusa-omni",
                     "ports": ports,
                     "beacons_count": len(BEACONS),
+                    "beacons": list(BEACONS.values()),
                     "nodes": list(NODES_CACHE.values()),
                     "lines": lines,
                 },

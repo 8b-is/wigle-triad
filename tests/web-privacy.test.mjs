@@ -3,16 +3,31 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const html = readFileSync(new URL('../www/index.html', import.meta.url), 'utf8');
-test('session starts empty and radio text renders as text', () => {
-  const init = html.slice(html.indexOf('  const beacons ='), html.indexOf('  const serialLog'));
-  const render = html.slice(html.indexOf('  function renderSpectrumAndTable'), html.indexOf('  renderSpectrumAndTable();'));
-  const context = {apTbody: {}, apTotalBadge: {}, chBars: {appendChild() {}}, document: {createElement() {return {};}}};
+function modelContext() {
+  const nodes = new Map();
+  const context = {document: {
+    getElementById(id) {
+      if (!nodes.has(id)) nodes.set(id, {style: {}, addEventListener() {}, querySelectorAll() {return [];}});
+      return nodes.get(id);
+    },
+    querySelectorAll() {return [];}
+  }};
   vm.createContext(context);
-  vm.runInContext(init + '\n' + render + '\nrenderSpectrumAndTable();', context);
-  assert.match(context.apTotalBadge.textContent, /^0 ENDPOINTS/);
-  vm.runInContext(`beacons.set('test', {node:'<img>', band:'<svg>', bssid:'<script>', ssid:'<img src=x onerror=alert(1)>', auth:'<iframe>', ch:1, rssi:-50}); renderSpectrumAndTable();`, context);
-  assert.doesNotMatch(context.apTbody.innerHTML, /<(?:img|svg|script|iframe)/);
-  assert.match(context.apTbody.innerHTML, /&lt;img/);
+  const start = html.indexOf('  const BASE_LAT');
+  const end = html.indexOf('  // Interactive Dark Vector Radar Canvas');
+  assert.ok(start >= 0 && end > start);
+  vm.runInContext(html.slice(start, end), context);
+  return {context, nodes};
+}
+test('session starts empty and radio text renders as text across all views', () => {
+  const {context, nodes} = modelContext();
+  vm.runInContext('renderAll()', context);
+  assert.match(nodes.get('ap-total-badge').textContent, /^0 ENDPOINTS/);
+  vm.runInContext(`const b = enrichBeacon({node:'<img>', band:'<svg>', type:'<iframe>', bssid:'<script>', ssid:'<img src=x onerror=alert(1)>', auth:'<iframe>', ch:1, rssi:-50}); beacons.set(b.bssid,b); renderAll();`, context);
+  for (const id of ['ap-tbody', 'map-feed-list', 'waterfall-list']) {
+    assert.doesNotMatch(nodes.get(id).innerHTML, /<(?:img|svg|script|iframe)/i);
+    assert.match(nodes.get(id).innerHTML, /&lt;img/);
+  }
 });
 test('unavailable bridge does not invent telemetry or success', async () => {
   const command = html.slice(html.indexOf('  async function sendSerialCommand'), html.indexOf('  document.querySelectorAll("[data-cmd]")'));
@@ -25,12 +40,11 @@ test('unavailable bridge does not invent telemetry or success', async () => {
   assert.match(logs[0], /not confirmed/);
   assert.doesNotMatch(html, /(?:[0-9a-f]{2}:){5}[0-9a-f]{2}/i);
 });
-test('CSV quotes radio text and leaves unknown coordinates empty', () => {
-  const exporter = html.slice(html.indexOf('  function buildWigleCSVString'), html.indexOf('  // Export WiGLE'));
-  const beacons = new Map([['test', {bssid:'02:00:00:00:00:01', ssid:'a,"b"\nc', auth:'OPEN', seen:'2026-01-01', ch:1, rssi:-50}]]);
-  const context = {beacons};
-  vm.createContext(context);
-  const csv = vm.runInContext(exporter + '\nbuildWigleCSVString()', context);
+test('CSV preserves quoted radio text, omits illustrative coordinates and normalizes AirPlay', () => {
+  const {context} = modelContext();
+  context.sample = {bssid:'02:00:00:00:00:01', ssid:'a,"b"\nc', auth:'OPEN', seen:'2026-01-01', ch:1, rssi:-50, type:'AIRPLAY'};
+  const csv = vm.runInContext('const row = enrichBeacon(sample); beacons.set(row.bssid,row); buildWigleCSVString()', context);
   assert.match(csv, /"a,""b""\nc"/);
   assert.match(csv, /"-50","","","","","WIFI"/);
+  assert.match(csv, /"\[AIRPLAY-RAOP\]\[ESS\]"/);
 });

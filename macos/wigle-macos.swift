@@ -18,13 +18,38 @@ struct ScannedAP: Identifiable, Codable, Hashable {
     let auth: String
     let channel: Int
     let band: String
-    let radioType: String // "WIFI", "BLE", "BT"
+    let radioType: String // "WIFI", "BLE", "BT", "AIRPLAY"
     let rssi: Int
     let noise: Int
     let snr: Int
     let lat: Double
     let lon: Double
     let seen: String
+
+    var uiType: String {
+        (band == "AirPlay" || radioType == "AIRPLAY" || auth.contains("AIRPLAY")) ? "AIRPLAY" : radioType
+    }
+
+    var csvType: String {
+        (band == "AirPlay" || radioType == "AIRPLAY" || auth.contains("AIRPLAY")) ? "WIFI" : radioType
+    }
+
+    var distanceMeters: Double {
+        let raw = max(8.0, min(420.0, pow(10.0, Double(-42 - rssi) / 22.0) * 18.0))
+        return (raw * 10.0).rounded() / 10.0
+    }
+
+    var trit: Int {
+        snr >= 20 ? 1 : (snr >= 10 ? 0 : -1)
+    }
+
+    var tritLabel: String {
+        snr >= 20 ? "+1" : (snr >= 10 ? "0" : "-1")
+    }
+
+    var snrLabel: String {
+        snr >= 0 ? "+\(snr) dB" : "\(snr) dB"
+    }
 }
 
 struct UploadReceipt: Identifiable, Codable {
@@ -34,6 +59,7 @@ struct UploadReceipt: Identifiable, Codable {
     let status: Int
     let observer: String
     let transId: String
+    let rows: Int
     let timestamp: String
     let raw: String
 }
@@ -51,14 +77,22 @@ struct MacTriadTelemetry: Codable {
     let count_5g: Int
     let count_ble: Int
     let count_airplay: Int
+    let peak_rssi: Int
     let rssi: Int
     let noise: Int
     let snr: Int
     let salience: Double
     let re_m: Int
+    let depth_m: Double
+    let multipath_mm: Double
+    let sound_speed_mps: Double
     let life_stage: String
     let entropy_bits: Double
     let n_np_coherence: Double
+    let ternary_speedup: String
+    let trit_pos: Int
+    let trit_zero: Int
+    let trit_neg: Int
     let trits: String
     let mode: String
     let beacons: [ScannedAP]
@@ -313,10 +347,10 @@ final class MultiRadioCollector: NSObject, CBCentralManagerDelegate, NetServiceB
             node: "MAC:MEDUSA",
             bssid: mac,
             ssid: ssid,
-            auth: "AIRPLAY-\(svcShort)][ESS",
+            auth: "AIRPLAY-RAOP][ESS",
             channel: 6,
             band: "AirPlay",
-            radioType: "WIFI",
+            radioType: "AIRPLAY",
             rssi: rssi,
             noise: noise,
             snr: rssi - noise,
@@ -361,7 +395,7 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             case "2.4G": matchesBand = (ap.band == "2.4GHz")
             case "5G": matchesBand = (ap.band == "5GHz")
             case "BLE/BT": matchesBand = (ap.band == "BLE" || ap.band == "BT")
-            case "AIRPLAY": matchesBand = (ap.band == "AirPlay")
+            case "AIRPLAY": matchesBand = (ap.band == "AirPlay" || ap.radioType == "AIRPLAY")
             default: matchesBand = true
             }
             if !matchesBand { return false }
@@ -371,6 +405,8 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
                 || ap.bssid.lowercased().contains(q)
                 || ap.auth.lowercased().contains(q)
                 || ap.band.lowercased().contains(q)
+                || ap.uiType.lowercased().contains(q)
+                || ap.tritLabel.lowercased().contains(q)
         }
     }
 
@@ -455,8 +491,9 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
         let count2g = sorted.filter { $0.band == "2.4GHz" }.count
         let count5g = sorted.filter { $0.band == "5GHz" }.count
         let countBle = sorted.filter { $0.band == "BLE" || $0.band == "BT" }.count
-        let countAirplay = sorted.filter { $0.band == "AirPlay" }.count
+        let countAirplay = sorted.filter { $0.band == "AirPlay" || $0.radioType == "AIRPLAY" }.count
 
+        let peakRssi = sorted.first?.rssi ?? -65
         let meanRssi = sorted.isEmpty ? -80 : (sorted.map(\.rssi).reduce(0, +) / total)
         let meanNoise = sorted.isEmpty ? -93 : (sorted.map(\.noise).reduce(0, +) / total)
         let meanSnr = meanRssi - meanNoise
@@ -486,10 +523,16 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
         }
         let trits = String(tritChars)
 
+        let tritPos = sorted.filter { $0.trit == 1 }.count
+        let tritZero = sorted.filter { $0.trit == 0 }.count
+        let tritNeg = sorted.filter { $0.trit == -1 }.count
+
         let deltaRssi = abs(Double(meanRssi) - prevMeanRssi)
         prevMeanRssi = Double(meanRssi)
         let salience = min(4.99, max(0.85, 1.0 + (Double(meanSnr) / 28.0) + (deltaRssi / 15.0)))
         let reM = Int((Double(sorted.count) * 78.0) + Double(meanSnr) * 14.0)
+        let depthM = ((12.0 + Double(sorted.count) * 0.14) * 10.0).rounded() / 10.0
+        let multipathMm = ((max(1.2, 6.8 - Double(meanSnr) * 0.14 + deltaRssi * 0.25)) * 10.0).rounded() / 10.0
         let lifeStage = salience > 2.6 ? "POLYP" : "MEDUSA"
         let coherence = min(0.9999, max(0.6500, 0.78 + (entropy / 12.0)))
 
@@ -506,14 +549,22 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             count_5g: count5g,
             count_ble: countBle,
             count_airplay: countAirplay,
+            peak_rssi: peakRssi,
             rssi: meanRssi,
             noise: meanNoise,
             snr: meanSnr,
             salience: (salience * 100).rounded() / 100,
             re_m: reM,
+            depth_m: depthM,
+            multipath_mm: multipathMm,
+            sound_speed_mps: 1503.4,
             life_stage: lifeStage,
             entropy_bits: (entropy * 10000).rounded() / 10000,
             n_np_coherence: (coherence * 10000).rounded() / 10000,
+            ternary_speedup: "8x",
+            trit_pos: tritPos,
+            trit_zero: tritZero,
+            trit_neg: tritNeg,
             trits: trits,
             mode: "COREWLAN_BLE_AIRPLAY_PASSIVE",
             beacons: sorted
@@ -530,10 +581,14 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
         var lines: [String] = []
         lines.append("# MAC:MEDUSA [*+/\\+oo] · CoreWLAN+BLE+AirPlay \(snap.interfaceName) · \(snap.version) · 2.4G=\(snap.count_2g) 5G=\(snap.count_5g) BLE=\(snap.count_ble) AIRPLAY=\(snap.count_airplay)")
         for ap in snap.beacons {
-            let safeSsid = ap.ssid.replacingOccurrences(of: "|", with: "\\x7c")
+            let safeSsid = ap.ssid
+                .replacingOccurrences(of: "\\", with: "\\x5c")
+                .replacingOccurrences(of: "\r", with: " ")
+                .replacingOccurrences(of: "\n", with: " ")
+                .replacingOccurrences(of: "|", with: "\\x7c")
             if ap.band == "BLE" || ap.band == "BT" {
                 lines.append("B|\(ap.bssid)|\(safeSsid)|\(ap.auth)|\(ap.channel)|\(ap.rssi)|\(ap.band)")
-            } else if ap.band == "AirPlay" {
+            } else if ap.band == "AirPlay" || ap.radioType == "AIRPLAY" {
                 lines.append("A|\(ap.bssid)|\(safeSsid)|\(ap.auth)|\(ap.channel)|\(ap.rssi)|AirPlay")
             } else {
                 lines.append("W|\(ap.bssid)|\(safeSsid)|\(ap.auth)|\(ap.channel)|\(ap.rssi)")
@@ -554,9 +609,11 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
         var out = "WigleWifi-1.4,appRelease=1.0.0,model=MacBookPro-AppleSilicon,release=15.0,device=wigle-macos,display=CoreWLAN-BLE-AirPlay,board=arm64-apple-darwin,brand=8b-is\n"
         out += "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n"
         for ap in snap.beacons {
-            let authBrack = ap.auth.hasPrefix("[") ? ap.auth : "[\(ap.auth)]"
+            let isAirplay = (ap.radioType == "AIRPLAY" || ap.band == "AirPlay" || ap.auth.contains("AIRPLAY"))
+            let authBrack = isAirplay ? "[AIRPLAY-RAOP][ESS]" : (ap.auth.hasPrefix("[") ? ap.auth : "[\(ap.auth)]")
+            let csvType = isAirplay ? "WIFI" : ap.radioType
             let fields = [ap.bssid, ap.ssid, authBrack, ap.seen,
-                          String(ap.channel), String(ap.rssi), "", "", "", "", ap.radioType]
+                          String(ap.channel), String(ap.rssi), "", "", "", "", csvType]
             out += fields.map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
                 .joined(separator: ",") + "\n"
         }
@@ -583,7 +640,7 @@ final class APAnnotation: NSObject, MKAnnotation {
         ap.ssid.isEmpty ? "(hidden) · \(ap.bssid)" : ap.ssid
     }
     var subtitle: String? {
-        "\(ap.band) · Ch \(ap.channel) · \(ap.rssi) dBm (SNR +\(ap.snr) dB) · [\(ap.auth)]"
+        String(format: "%@ · Ch %d · %d dBm (SNR %@) · %.1fm · [%@]", ap.band, ap.channel, ap.rssi, ap.snrLabel, ap.distanceMeters, ap.auth)
     }
     init(ap: ScannedAP) {
         self.ap = ap
@@ -592,11 +649,13 @@ final class APAnnotation: NSObject, MKAnnotation {
 
 struct WigleRadarMapView: NSViewRepresentable {
     let beacons: [ScannedAP]
+    let selectedAP: ScannedAP?
     let centerLat: Double
     let centerLon: Double
+    var onSelectAP: ((ScannedAP) -> Void)? = nil
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(onSelectAP: onSelectAP)
     }
 
     func makeNSView(context: Context) -> MKMapView {
@@ -615,12 +674,43 @@ struct WigleRadarMapView: NSViewRepresentable {
     }
 
     func updateNSView(_ map: MKMapView, context: Context) {
-        map.removeAnnotations(map.annotations)
-        let anns = beacons.map { APAnnotation(ap: $0) }
-        map.addAnnotations(anns)
+        context.coordinator.onSelectAP = onSelectAP
+        let existingAnns = map.annotations.compactMap { $0 as? APAnnotation }
+        let existingById = Dictionary(uniqueKeysWithValues: existingAnns.map { ($0.ap.id, $0) })
+        let incomingById = Dictionary(uniqueKeysWithValues: beacons.map { ($0.id, $0) })
+
+        let toRemove = existingAnns.filter { ann in
+            guard let inc = incomingById[ann.ap.id] else { return true }
+            return inc.rssi != ann.ap.rssi || inc.lat != ann.ap.lat || inc.lon != ann.ap.lon
+        }
+        if !toRemove.isEmpty {
+            map.removeAnnotations(toRemove)
+        }
+
+        let remainingIds = Set(map.annotations.compactMap { ($0 as? APAnnotation)?.ap.id })
+        let toAdd = beacons.filter { !remainingIds.contains($0.id) }.map { APAnnotation(ap: $0) }
+        if !toAdd.isEmpty {
+            map.addAnnotations(toAdd)
+        }
+
+        if let sel = selectedAP {
+            let currentSelectedId = (map.selectedAnnotations.first as? APAnnotation)?.ap.id
+            if currentSelectedId != sel.id,
+               let matchingAnn = map.annotations.compactMap({ $0 as? APAnnotation }).first(where: { $0.ap.id == sel.id }) ?? existingById[sel.id] {
+                context.coordinator.isProgrammaticSelection = true
+                map.selectAnnotation(matchingAnn, animated: true)
+                context.coordinator.isProgrammaticSelection = false
+            }
+        }
     }
 
     final class Coordinator: NSObject, MKMapViewDelegate {
+        var onSelectAP: ((ScannedAP) -> Void)?
+        var isProgrammaticSelection = false
+        init(onSelectAP: ((ScannedAP) -> Void)?) {
+            self.onSelectAP = onSelectAP
+        }
+
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             guard let ann = annotation as? APAnnotation else { return nil }
             let id = "wigle-pin"
@@ -628,52 +718,64 @@ struct WigleRadarMapView: NSViewRepresentable {
                 ?? MKMarkerAnnotationView(annotation: ann, reuseIdentifier: id)
             v.annotation = ann
             v.canShowCallout = true
+            v.clusteringIdentifier = "wigle-\(ann.ap.band)"
+            v.displayPriority = ann.ap.rssi > -65 ? .required : .defaultHigh
             switch ann.ap.band {
             case "5GHz":
-                v.markerTintColor = NSColor(calibratedRed: 0.0, green: 0.90, blue: 0.79, alpha: 1.0)
+                v.markerTintColor = NSColor(calibratedRed: 0.0, green: 229.0 / 255.0, blue: 201.0 / 255.0, alpha: 1.0)
                 v.glyphText = "5G"
             case "AirPlay":
-                v.markerTintColor = NSColor(calibratedRed: 1.0, green: 0.84, blue: 0.0, alpha: 1.0)
+                v.markerTintColor = NSColor(calibratedRed: 1.0, green: 215.0 / 255.0, blue: 0.0, alpha: 1.0)
                 v.glyphText = "AP"
             case "BLE", "BT":
-                v.markerTintColor = NSColor(calibratedRed: 1.0, green: 0.42, blue: 0.76, alpha: 1.0)
+                v.markerTintColor = NSColor(calibratedRed: 1.0, green: 106.0 / 255.0, blue: 193.0 / 255.0, alpha: 1.0)
                 v.glyphText = "BT"
             default:
-                v.markerTintColor = NSColor(calibratedRed: 0.0, green: 1.0, blue: 0.40, alpha: 1.0)
+                v.markerTintColor = NSColor(calibratedRed: 0.0, green: 1.0, blue: 102.0 / 255.0, alpha: 1.0)
                 v.glyphText = "\(ann.ap.channel)"
             }
             return v
         }
+
+        func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+            guard !isProgrammaticSelection else { return }
+            if let ann = view.annotation as? APAnnotation {
+                onSelectAP?(ann.ap)
+            }
+        }
     }
 }
 
-// MARK: - WiGLE.net + 8b-is Ultralovegod Native macOS UI
+// MARK: - WiGLE.net × 8b-is Ultralovegod Sovereign Spectrum Radar Native macOS UI
 
 struct WigleMacView: View {
     @ObservedObject var scanner: MacWigleScanner
 
-    private let bgVoid = Color(red: 0.043, green: 0.035, blue: 0.078)     // #0B0914
-    private let bgPanel = Color(red: 0.075, green: 0.058, blue: 0.135)
-    private let cPink = Color(red: 1.0, green: 0.416, blue: 0.757)        // #FF6AC1 (ADA *)
-    private let cCyan = Color(red: 0.0, green: 0.898, blue: 0.788)        // #00E5C9 (VAK /\)
-    private let cGold = Color(red: 1.0, green: 0.843, blue: 0.0)          // #FFD700 (Reconcile)
-    private let cGreen = Color(red: 0.0, green: 1.0, blue: 0.40)          // #00FF66 (Witness +1)
-    private let cPurple = Color(red: 0.706, green: 0.545, blue: 1.0)      // #B48BFF (OMN oo)
+    // Canonical Token Matrix: WiGLE Dark Radar × Ultralovegod Ternary Matrix
+    private let bgVoid = Color(red: 11.0 / 255.0, green: 9.0 / 255.0, blue: 20.0 / 255.0)       // --bg-void: #0B0914
+    private let bgPanel = Color(red: 19.0 / 255.0, green: 15.0 / 255.0, blue: 36.0 / 255.0)     // --bg-panel: #130F24
+    private let bgElevated = Color(red: 28.0 / 255.0, green: 22.0 / 255.0, blue: 53.0 / 255.0)  // --bg-elevated: #1C1635
+    private let cGreen = Color(red: 0.0, green: 1.0, blue: 102.0 / 255.0)                       // --wigle-wifi-24: #00FF66
+    private let cCyan = Color(red: 0.0, green: 229.0 / 255.0, blue: 201.0 / 255.0)              // --wigle-wifi-5: #00E5C9
+    private let cGold = Color(red: 1.0, green: 215.0 / 255.0, blue: 0.0)                        // --wigle-airplay: #FFD700
+    private let cPink = Color(red: 1.0, green: 106.0 / 255.0, blue: 193.0 / 255.0)              // --wigle-ble: #FF6AC1
+    private let cTritNeg = Color(red: 1.0, green: 82.0 / 255.0, blue: 82.0 / 255.0)             // --trit-neg: #FF5252
+    private let cPurple = Color(red: 180.0 / 255.0, green: 139.0 / 255.0, blue: 1.0)            // #B48BFF (OMN oo)
 
     var body: some View {
         VStack(spacing: 0) {
             topWigleHeader
-            Divider().background(cPurple.opacity(0.3))
+            Divider().background(cPink.opacity(0.22))
             HStack(spacing: 0) {
                 leftSidebar
-                Divider().background(cPurple.opacity(0.3))
+                Divider().background(cPink.opacity(0.22))
                 mainContentArea
             }
-            Divider().background(cPurple.opacity(0.3))
+            Divider().background(cPink.opacity(0.22))
             bottomStatusBar
         }
         .background(bgVoid)
-        .frame(minWidth: 1080, minHeight: 680)
+        .frame(minWidth: 1120, minHeight: 700)
         .preferredColorScheme(.dark)
         .onAppear {
             if scanner.telemetry == nil {
@@ -688,18 +790,19 @@ struct WigleMacView: View {
             HStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(LinearGradient(colors: [cPink.opacity(0.3), cCyan.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .fill(LinearGradient(colors: [cPink.opacity(0.32), cCyan.opacity(0.32)], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: 38, height: 38)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(cPink.opacity(0.35), lineWidth: 1))
                     Text("📡")
                         .font(.system(size: 20))
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
-                        Text("WIGLE.MAC")
-                            .font(.system(size: 16, weight: .black, design: .monospaced))
+                        Text("WIGLE.MAC × 8B-IS")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundColor(cCyan)
-                        Text("v1.0.0 · MEDUSA TRIAD [* · /\\ · oo]")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        Text("v1.0.0 · MEDUSA-OMNI [* · /\\ · oo]")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced).monospacedDigit())
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(cGold.opacity(0.15))
@@ -707,7 +810,7 @@ struct WigleMacView: View {
                             .cornerRadius(4)
                     }
                     Text(scanner.statusText)
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(.system(size: 11, design: .monospaced).monospacedDigit())
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
@@ -735,7 +838,7 @@ struct WigleMacView: View {
             Button("External sharing disabled") {}
                 .disabled(true)
 
-            Button(action: saveCSVDialog) {
+            Button(action: exportCSVToDesktop) {
                 Text("⬇ Export CSV")
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
             }
@@ -745,54 +848,75 @@ struct WigleMacView: View {
         .background(bgPanel)
     }
 
-    // 2. Left WiGLE Navigation & Triad Status Sidebar
+    // 2. Left WiGLE Navigation & Sacred Family Geometry / MEDUSA-OMNI Triad Sidebar
     private var leftSidebar: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("NAVIGATION")
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+        VStack(alignment: .leading, spacing: 9) {
+            Text("WIGLE.NET ARCHITECTURE")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundColor(cGold)
                 .padding(.horizontal, 8)
 
-            navButton(id: "map", icon: "🗺️", title: "Live Radar Map", sub: "MapKit + Pin Overlay")
-            navButton(id: "dashboard", icon: "📊", title: "Dashboard & Spectrum", sub: "Ch 1–140 + N=NP Triad")
-            navButton(id: "list", icon: "🛰️", title: "Networks Table", sub: "WiFi · BLE · BT · AirPlay")
+            navButton(id: "map", icon: "🗺️", title: "Live Radar Map", sub: "MKMapView + Pin Callouts")
+            navButton(id: "dashboard", icon: "📊", title: "Dashboard & Spectrum", sub: "15-Ch + Top-10 Waterfall")
+            navButton(id: "list", icon: "🛰️", title: "Networks Table", sub: "Type · BSSID · Trit Explorer")
             navButton(id: "uploads", icon: "☁️", title: "Local CSV Export", sub: "Local observations only")
 
-            Divider().padding(.vertical, 4)
+            Divider().background(cPink.opacity(0.22)).padding(.vertical, 3)
 
-            Text("MEDUSA TRIAD NODES")
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+            Text("MEDUSA-OMNI TRIAD NODES")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundColor(cGold)
                 .padding(.horizontal, 8)
 
-            triadMiniCard(glyph: "*", name: "ADA:MEDUSA", sub: "Mom · 432 Hz · SH8601 1.8\"", color: cPink)
-            triadMiniCard(glyph: "/\\", name: "VAK:MEDUSA", sub: "Dad · 528 Hz · CO5300 2.06\"", color: cCyan)
-            triadMiniCard(glyph: "oo", name: "OMN:MEDUSA", sub: "Son · 852 Hz · CO5300 2.06\"", color: cPurple)
-            triadMiniCard(glyph: "", name: "MAC:MEDUSA", sub: "en0 + BLE + AirPlay mDNS", color: cGold)
+            triadMiniCard(
+                glyph: "*",
+                name: "ADA:MEDUSA (trit -1 · 432 Hz)",
+                sub: "ROOT-ALEXANDRA · H(X) + Crickets",
+                color: cPink
+            )
+            triadMiniCard(
+                glyph: "/\\",
+                name: "VAK:MEDUSA (trit 0 · 528 Hz)",
+                sub: "PILLAR-CHRIS · Hydro c=1503.4m/s",
+                color: cCyan
+            )
+            triadMiniCard(
+                glyph: "oo",
+                name: "OMN:MEDUSA (trit +1 · 852 Hz)",
+                sub: "INFINITY-PETER-NATE · N=NP 8x",
+                color: cPurple
+            )
+            triadMiniCard(
+                glyph: "*+/\\+oo",
+                name: "MAC:MEDUSA (en0 Quad-Spec)",
+                sub: "CoreWLAN + CoreBT + mDNS",
+                color: cGold
+            )
 
             Spacer()
 
             if let snap = scanner.telemetry {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("N=NP COHERENCE")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                    Text("N=NP TERNARY COHERENCE")
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
                         .foregroundColor(cGold)
                     Text("TRITS: \(snap.trits)")
-                        .font(.system(size: 12, weight: .heavy, design: .monospaced))
+                        .font(.system(size: 12, weight: .heavy, design: .monospaced).monospacedDigit())
                         .foregroundColor(cGreen)
-                    Text(String(format: "H=%.3f bits · S=%.2fx · Re_M=%d", snap.entropy_bits, snap.salience, snap.re_m))
-                        .font(.system(size: 9, design: .monospaced))
+                    Text(String(format: "H=%.3f bits · c=%.1f m/s · 8x", snap.entropy_bits, snap.sound_speed_mps))
+                        .font(.system(size: 9, design: .monospaced).monospacedDigit())
                         .foregroundColor(.secondary)
                 }
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.black.opacity(0.35))
+                .background(bgElevated)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(cPink.opacity(0.22), lineWidth: 1))
                 .cornerRadius(8)
             }
         }
         .padding(12)
-        .frame(width: 235)
-        .background(bgPanel.opacity(0.85))
+        .frame(width: 248)
+        .background(bgPanel)
     }
 
     // 3. Main Content Area
@@ -810,71 +934,152 @@ struct WigleMacView: View {
         }
     }
 
-    // TAB 1: Live Map + Right-Hand WiGLE Feed
+    // TAB 1: Live Radar Map + Pin Callout Popover + Right-Hand Split-View Live Feed
     private var mapTabView: some View {
         HStack(spacing: 0) {
             ZStack(alignment: .bottomLeading) {
                 WigleRadarMapView(
                     beacons: scanner.filteredBeacons,
+                    selectedAP: scanner.selectedAP,
                     centerLat: scanner.baseLat,
-                    centerLon: scanner.baseLon
-                )
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 10) {
-                        legendDot(color: cGreen, text: "2.4 GHz WiFi")
-                        legendDot(color: cCyan, text: "5 GHz WiFi")
-                        legendDot(color: cGold, text: "AirPlay / RAOP")
-                        legendDot(color: cPink, text: "Bluetooth BLE/BT")
+                    centerLon: scanner.baseLon,
+                    onSelectAP: { ap in
+                        scanner.selectedAP = ap
                     }
-                    Text(String(format: "Illustrative map center: %.4f°, %.4f° · Pins are not measured locations", scanner.baseLat, scanner.baseLon))
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.85))
+                )
+                VStack(alignment: .leading, spacing: 8) {
+                    if let sel = scanner.selectedAP ?? scanner.filteredBeacons.first {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 8) {
+                                Text(sel.uiType)
+                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 2)
+                                    .background(colorForBand(sel.band).opacity(0.22))
+                                    .foregroundColor(colorForBand(sel.band))
+                                    .cornerRadius(4)
+                                Text(sel.ssid.isEmpty ? "(hidden)" : sel.ssid)
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                Spacer()
+                                Text("Trit \(sel.tritLabel)")
+                                    .font(.system(size: 10, weight: .bold, design: .monospaced).monospacedDigit())
+                                    .foregroundColor(colorForTrit(sel.trit))
+                            }
+                            Text(String(
+                                format: "BSSID: %@ · [%@] · Ch %d (%@)",
+                                sel.bssid, sel.auth, sel.channel, sel.band
+                            ))
+                            .font(.system(size: 10, design: .monospaced).monospacedDigit())
+                            .foregroundColor(cCyan)
+                            Text(String(
+                                format: "RSSI: %d dBm · SNR: %@ · Estimated distance: %.1f m · Illustrative coords: %.5f°N, %.5f°E",
+                                sel.rssi, sel.snrLabel, sel.distanceMeters, sel.lat, sel.lon
+                            ))
+                            .font(.system(size: 10, design: .monospaced).monospacedDigit())
+                            .foregroundColor(.white.opacity(0.9))
+                        }
+                        .padding(10)
+                        .background(bgPanel.opacity(0.94))
+                        .overlay(RoundedRectangle(cornerRadius: 9).stroke(cPink.opacity(0.32), lineWidth: 1))
+                        .cornerRadius(9)
+                    }
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        HStack(spacing: 10) {
+                            legendDot(color: cGreen, text: "2.4 GHz (#00FF66)")
+                            legendDot(color: cCyan, text: "5 GHz (#00E5C9)")
+                            legendDot(color: cGold, text: "AirPlay (#FFD700)")
+                            legendDot(color: cPink, text: "BLE/BT (#FF6AC1)")
+                        }
+                        Text(String(format: "Illustrative map center: %.4f°, %.4f° · Pins are not measured locations", scanner.baseLat, scanner.baseLon))
+                            .font(.system(size: 10, design: .monospaced).monospacedDigit())
+                            .foregroundColor(.white.opacity(0.85))
+                    }
+                    .padding(10)
+                    .background(bgPanel.opacity(0.90))
+                    .overlay(RoundedRectangle(cornerRadius: 9).stroke(cPink.opacity(0.22), lineWidth: 1))
+                    .cornerRadius(9)
                 }
-                .padding(10)
-                .background(Color.black.opacity(0.75))
-                .cornerRadius(10)
                 .padding(14)
             }
 
-            Divider().background(cPurple.opacity(0.3))
+            Divider().background(cPink.opacity(0.22))
 
             VStack(alignment: .leading, spacing: 8) {
                 filterBar
                 ScrollView {
                     LazyVStack(spacing: 6) {
                         ForEach(scanner.filteredBeacons) { ap in
-                            beaconRowCard(ap: ap)
+                            Button(action: { scanner.selectedAP = ap }) {
+                                beaconRowCard(ap: ap, isSelected: scanner.selectedAP?.id == ap.id)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, 10)
                     .padding(.bottom, 10)
                 }
             }
-            .frame(width: 340)
-            .background(bgPanel.opacity(0.55))
+            .frame(width: 350)
+            .background(bgPanel.opacity(0.75))
         }
     }
 
-    // TAB 2: Dashboard & Spectrum
+    // TAB 2: Dashboard & Spectrum Waterfall
     private var dashboardTabView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 if let snap = scanner.telemetry {
+                    let avgSnrStr = snap.snr >= 0 ? "+\(snap.snr) dB" : "\(snap.snr) dB"
                     HStack(spacing: 12) {
-                        dashCard(title: "PASSIVE RF ENVIRONMENT", main: "\(snap.networks) Endpoints", sub: "Mean \(snap.rssi) dBm · Noise \(snap.noise) dBm · SNR +\(snap.snr) dB", accent: cCyan)
-                        dashCard(title: "MARINESENSE O(1) HYDRO", main: String(format: "Salience %.2fx", snap.salience), sub: "Re_M = \(snap.re_m) · Stage: \(snap.life_stage)", accent: cPink)
-                        dashCard(title: "SHANNON ENTROPY & N=NP", main: String(format: "H(X) = %.4f bits", snap.entropy_bits), sub: "R_N=NP = \(String(format: "%.4f", snap.n_np_coherence)) · \(snap.trits)", accent: cGold)
-                        dashCard(title: "ANONYMOUS UPLOADS", main: "\(scanner.receipts.count) Receipts", sub: "donate=on · observer=anonymous", accent: cGreen)
+                        dashCard(
+                            title: "1 · PASSIVE RF SPECTRUM",
+                            main: "Peak \(snap.peak_rssi) dBm · Mean \(snap.rssi) dBm",
+                            sub: "Noise Floor \(snap.noise) dBm · Avg SNR \(avgSnrStr) (\(snap.networks) APs)",
+                            accent: cGreen
+                        )
+                        dashCard(
+                            title: "2 · MARINESENSE O(1) HYDRO",
+                            main: String(format: "d=%.1fm · mp=%.1fmm", snap.depth_m, snap.multipath_mm),
+                            sub: String(format: "c=%.1f m/s · Salience %.2fx · Re_M=%d", snap.sound_speed_mps, snap.salience, snap.re_m),
+                            accent: cCyan
+                        )
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("3 · SHANNON ENTROPY & N=NP")
+                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .foregroundColor(cPurple)
+                            Text(String(format: "H(X) = %.4f bits · %@ Dot-Prod", snap.entropy_bits, snap.ternary_speedup))
+                                .font(.system(size: 14, weight: .bold, design: .monospaced).monospacedDigit())
+                                .foregroundColor(.white)
+                            ternaryDistributionBar(pos: snap.trit_pos, zero: snap.trit_zero, neg: snap.trit_neg)
+                            Text("R_N=NP=\(String(format: "%.4f", snap.n_np_coherence)) · +1:\(snap.trit_pos) 0:\(snap.trit_zero) -1:\(snap.trit_neg) · \(snap.trits)")
+                                .font(.system(size: 9, design: .monospaced).monospacedDigit())
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(bgPanel)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(cPink.opacity(0.22), lineWidth: 1))
+                        .cornerRadius(10)
+
+                        dashCard(
+                            title: "4 · ANON DUAL-UPLOAD LEDGER",
+                            main: "\(scanner.receipts.count) Receipts · donate=on",
+                            sub: scanner.receipts.first.map { "\($0.target): \($0.transId)" } ?? "observer=anonymous · esp32 + WiGLE",
+                            accent: cGold
+                        )
                     }
 
-                    // 2.4 GHz + 5 GHz Channel Spectrum Bars
+                    // 15-Channel Occupancy Bar Chart
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text("📻 2.4 GHz + 5 GHz + BLE CHANNEL OCCUPANCY SPECTRUM")
-                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            Text("📻 15-CHANNEL OCCUPANCY BAR CHART (2.4 GHz · 5 GHz · BLE CH 37)")
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
                                 .foregroundColor(cGold)
                             Spacer()
-                            Text("WiFi.mode(WIFI_STA) · CoreWLAN en0 + CBCentralManager + mDNS")
+                            Text("CoreWLAN en0 + CBCentralManager + NetServiceBrowser mDNS")
                                 .font(.system(size: 10, design: .monospaced))
                                 .foregroundColor(.secondary)
                         }
@@ -882,41 +1087,51 @@ struct WigleMacView: View {
                     }
                     .padding(14)
                     .background(bgPanel)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(cPink.opacity(0.22), lineWidth: 1))
                     .cornerRadius(12)
 
-                    // Top Strongest Signals across all 4 radios
+                    // Top 10 Strongest Signals Horizontal SNR Waterfall
+                    let topBySnr = snap.beacons.sorted { a, b in
+                        a.snr != b.snr ? (a.snr > b.snr) : (a.rssi > b.rssi)
+                    }
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("🔥 TOP HIGHEST-SNR SIGNALS (WIFI 2.4G/5G · AIRPLAY · BLE/BT)")
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        Text("🔥 TOP 10 STRONGEST SIGNALS — HORIZONTAL SNR WATERFALL")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
                             .foregroundColor(cGold)
-                        ForEach(Array(snap.beacons.prefix(10))) { ap in
+                        ForEach(Array(topBySnr.prefix(10))) { ap in
                             HStack(spacing: 10) {
-                                Text(ap.band)
+                                Text(ap.uiType)
                                     .font(.system(size: 10, weight: .bold, design: .monospaced))
                                     .frame(width: 58, alignment: .leading)
                                     .foregroundColor(colorForBand(ap.band))
                                 Text(ap.bssid)
-                                    .font(.system(size: 11, design: .monospaced))
-                                    .frame(width: 135, alignment: .leading)
+                                    .font(.system(size: 11, design: .monospaced).monospacedDigit())
+                                    .frame(width: 138, alignment: .leading)
                                 Text(ap.ssid.isEmpty ? "(hidden)" : ap.ssid)
                                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .lineLimit(1)
                                 GeometryReader { geo in
                                     let pct = max(0.08, min(1.0, Double(ap.snr) / 60.0))
                                     RoundedRectangle(cornerRadius: 4)
                                         .fill(LinearGradient(colors: [cPink, cCyan, cGreen], startPoint: .leading, endPoint: .trailing))
                                         .frame(width: geo.size.width * pct, height: 10)
                                 }
-                                .frame(width: 160, height: 10)
-                                Text("\(ap.rssi) dBm (+\(ap.snr) dB)")
-                                    .font(.system(size: 11, design: .monospaced))
-                                    .frame(width: 120, alignment: .trailing)
+                                .frame(width: 165, height: 10)
+                                Text("\(ap.rssi) dBm (\(ap.snrLabel))")
+                                    .font(.system(size: 11, design: .monospaced).monospacedDigit())
+                                    .frame(width: 125, alignment: .trailing)
+                                Text(ap.tritLabel)
+                                    .font(.system(size: 10, weight: .bold, design: .monospaced).monospacedDigit())
+                                    .foregroundColor(colorForTrit(ap.trit))
+                                    .frame(width: 28, alignment: .trailing)
                             }
                             .padding(.vertical, 3)
                         }
                     }
                     .padding(14)
                     .background(bgPanel)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(cPink.opacity(0.22), lineWidth: 1))
                     .cornerRadius(12)
                 }
             }
@@ -924,41 +1139,59 @@ struct WigleMacView: View {
         }
     }
 
-    // TAB 3: Full Filterable WiGLE Networks Table
+    // TAB 3: Networks Table (Full WiGLE.net Explorer)
     private var networksTableView: some View {
         VStack(alignment: .leading, spacing: 10) {
             filterBar
             Table(scanner.filteredBeacons) {
-                TableColumn("Band") { ap in
-                    Text(ap.band)
+                TableColumn("Type") { ap in
+                    Text(ap.uiType)
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
                         .foregroundColor(colorForBand(ap.band))
-                }.width(64)
-                TableColumn("Ch") { ap in Text("\(ap.channel)").font(.system(size: 11, design: .monospaced)) }.width(36)
-                TableColumn("MAC / BSSID") { ap in Text(ap.bssid).font(.system(size: 11, design: .monospaced)) }.width(138)
+                }.width(68)
+                TableColumn("BSSID / UUID") { ap in
+                    Text(ap.bssid)
+                        .font(.system(size: 11, design: .monospaced).monospacedDigit())
+                }.width(138)
                 TableColumn("SSID / Device Name") { ap in
                     Text(ap.ssid.isEmpty ? "(hidden)" : ap.ssid)
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 }
-                TableColumn("Auth / Capability") { ap in
+                TableColumn("Capabilities") { ap in
                     Text("[\(ap.auth)]")
                         .font(.system(size: 10, design: .monospaced))
                         .foregroundColor(.secondary)
-                }.width(170)
+                }.width(175)
+                TableColumn("Band") { ap in
+                    Text(ap.band)
+                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                        .foregroundColor(colorForBand(ap.band))
+                }.width(64)
+                TableColumn("Ch") { ap in
+                    Text("\(ap.channel)")
+                        .font(.system(size: 11, design: .monospaced).monospacedDigit())
+                }.width(36)
                 TableColumn("RSSI") { ap in
                     Text("\(ap.rssi) dBm")
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
-                        .foregroundColor(ap.rssi > -68 ? cGreen : (ap.rssi > -82 ? cGold : .secondary))
+                        .font(.system(size: 11, weight: .bold, design: .monospaced).monospacedDigit())
+                        .foregroundColor(ap.rssi > -68 ? cGreen : (ap.rssi > -82 ? cGold : cTritNeg))
                 }.width(72)
-                TableColumn("SNR") { ap in Text("+\(ap.snr) dB").font(.system(size: 11, design: .monospaced)) }.width(58)
-                TableColumn("Seen") { ap in Text(String(ap.seen.suffix(8))).font(.system(size: 10, design: .monospaced)) }.width(68)
+                TableColumn("SNR") { ap in
+                    Text(ap.snrLabel)
+                        .font(.system(size: 11, design: .monospaced).monospacedDigit())
+                }.width(58)
+                TableColumn("Trit") { ap in
+                    Text(ap.tritLabel)
+                        .font(.system(size: 11, weight: .bold, design: .monospaced).monospacedDigit())
+                        .foregroundColor(colorForTrit(ap.trit))
+                }.width(44)
             }
             .font(.system(.body, design: .monospaced))
         }
         .padding(12)
     }
 
-    // TAB 4: Anonymous Dual Upload Queue & WiGLE v1.4 CSV Preview
+    // TAB 4: Anon Uploads & WigleWifi-1.4 CSV Studio
     private var uploadsTabView: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -971,6 +1204,14 @@ struct WigleMacView: View {
                         .foregroundColor(.secondary)
                 }
                 Spacer()
+                Button("⬇ Export to ~/Desktop") {
+                    exportCSVToDesktop()
+                }
+                .buttonStyle(.bordered)
+                Button("💾 Save CSV As...") {
+                    saveCSVDialog()
+                }
+                .buttonStyle(.bordered)
                 Button("External sharing disabled") {}
                     .disabled(true)
             }
@@ -982,46 +1223,52 @@ struct WigleMacView: View {
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(bgPanel)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(cPink.opacity(0.22), lineWidth: 1))
                     .cornerRadius(10)
             } else {
                 ForEach(scanner.receipts) { r in
                     HStack(spacing: 12) {
                         Text(r.ok ? "● HTTP \(r.status) OK" : "● ERR \(r.status)")
-                            .font(.system(size: 11, weight: .bold, design: .monospaced))
-                            .foregroundColor(r.ok ? cGreen : .red)
+                            .font(.system(size: 11, weight: .bold, design: .monospaced).monospacedDigit())
+                            .foregroundColor(r.ok ? cGreen : cTritNeg)
                         Text(r.target)
                             .font(.system(size: 12, weight: .heavy, design: .monospaced))
                             .foregroundColor(cCyan)
                         Text("transId: \(r.transId)")
-                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                            .font(.system(size: 11, weight: .semibold, design: .monospaced).monospacedDigit())
                             .foregroundColor(cGold)
+                        Text("rows: \(r.rows)")
+                            .font(.system(size: 11, design: .monospaced).monospacedDigit())
+                            .foregroundColor(.white)
                         Text("observer: \(r.observer)")
                             .font(.system(size: 11, design: .monospaced))
                             .foregroundColor(.secondary)
                         Spacer()
                         Text(r.timestamp)
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.system(size: 10, design: .monospaced).monospacedDigit())
                             .foregroundColor(.secondary)
                     }
                     .padding(10)
                     .background(bgPanel)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(cPink.opacity(0.22), lineWidth: 1))
                     .cornerRadius(8)
                 }
             }
 
-            Text("LIVE WIGLE v1.4 CSV PAYLOAD PREVIEW")
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
+            Text("LIVE WIGLEWIFI-1.4 CSV PAYLOAD PREVIEW (AIRPLAY -> WIFI [AIRPLAY-RAOP][ESS] SANITIZED)")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundColor(cGold)
 
             ScrollView {
                 Text(scanner.telemetry.map { scanner.buildWigleCSV(from: $0) } ?? "")
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(.system(size: 11, design: .monospaced).monospacedDigit())
                     .foregroundColor(cGreen)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
                     .padding(12)
             }
             .background(Color.black.opacity(0.65))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(cPink.opacity(0.22), lineWidth: 1))
             .cornerRadius(10)
         }
         .padding(16)
@@ -1036,17 +1283,17 @@ struct WigleMacView: View {
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(scanner.bandFilter == f ? cCyan.opacity(0.25) : Color.white.opacity(0.06))
+                        .background(scanner.bandFilter == f ? cCyan.opacity(0.25) : bgElevated)
                         .foregroundColor(scanner.bandFilter == f ? cCyan : .white)
                         .cornerRadius(6)
                 }
                 .buttonStyle(.plain)
             }
             Spacer()
-            TextField("Filter SSID / BSSID / Auth...", text: $scanner.searchQuery)
+            TextField("Filter SSID / BSSID / Auth / Trit...", text: $scanner.searchQuery)
                 .textFieldStyle(.roundedBorder)
                 .font(.system(size: 11, design: .monospaced))
-                .frame(width: 210)
+                .frame(width: 220)
         }
         .padding(.horizontal, 10)
         .padding(.top, 8)
@@ -1075,15 +1322,16 @@ struct WigleMacView: View {
     private func statPill(label: String, val: String, color: Color) -> some View {
         VStack(spacing: 1) {
             Text(label)
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 8, weight: .bold, design: .rounded))
                 .foregroundColor(.secondary)
             Text(val)
-                .font(.system(size: 13, weight: .heavy, design: .monospaced))
+                .font(.system(size: 13, weight: .heavy, design: .monospaced).monospacedDigit())
                 .foregroundColor(color)
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 4)
-        .background(Color.black.opacity(0.35))
+        .background(bgElevated)
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(cPink.opacity(0.22), lineWidth: 1))
         .cornerRadius(7)
     }
 
@@ -1094,7 +1342,7 @@ struct WigleMacView: View {
                 Text(icon).font(.system(size: 15))
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
                         .foregroundColor(active ? cCyan : .white)
                     Text(sub)
                         .font(.system(size: 9, design: .monospaced))
@@ -1103,7 +1351,8 @@ struct WigleMacView: View {
                 Spacer()
             }
             .padding(8)
-            .background(active ? cCyan.opacity(0.16) : Color.clear)
+            .background(active ? bgElevated : Color.clear)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(active ? cCyan.opacity(0.45) : Color.clear, lineWidth: 1))
             .cornerRadius(8)
         }
         .buttonStyle(.plain)
@@ -1112,29 +1361,32 @@ struct WigleMacView: View {
     private func triadMiniCard(glyph: String, name: String, sub: String, color: Color) -> some View {
         HStack(spacing: 8) {
             Text(glyph)
-                .font(.system(size: 12, weight: .black, design: .monospaced))
-                .frame(width: 24, height: 24)
-                .background(color.opacity(0.2))
+                .font(.system(size: 9, weight: .black, design: .monospaced))
+                .frame(width: 44, height: 24)
+                .background(color.opacity(0.18))
                 .foregroundColor(color)
                 .cornerRadius(6)
             VStack(alignment: .leading, spacing: 1) {
                 Text(name)
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
+                    .lineLimit(1)
                 Text(sub)
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
             Spacer()
         }
         .padding(6)
-        .background(Color.white.opacity(0.03))
+        .background(bgElevated.opacity(0.65))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(color.opacity(0.28), lineWidth: 1))
         .cornerRadius(7)
     }
 
-    private func beaconRowCard(ap: ScannedAP) -> some View {
+    private func beaconRowCard(ap: ScannedAP, isSelected: Bool = false) -> some View {
         HStack(spacing: 8) {
-            Text(ap.band)
+            Text(ap.uiType)
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .padding(.horizontal, 5)
                 .padding(.vertical, 2)
@@ -1146,36 +1398,58 @@ struct WigleMacView: View {
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
                     .foregroundColor(.white)
                     .lineLimit(1)
-                Text("\(ap.bssid) · Ch \(ap.channel)")
-                    .font(.system(size: 9, design: .monospaced))
+                Text(String(format: "%@ · Ch %d · %.0fm · Trit %@", ap.bssid, ap.channel, ap.distanceMeters, ap.tritLabel))
+                    .font(.system(size: 9, design: .monospaced).monospacedDigit())
                     .foregroundColor(.secondary)
             }
             Spacer()
             Text("\(ap.rssi) dBm")
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                .foregroundColor(ap.rssi > -68 ? cGreen : (ap.rssi > -82 ? cGold : .secondary))
+                .font(.system(size: 11, weight: .bold, design: .monospaced).monospacedDigit())
+                .foregroundColor(ap.rssi > -68 ? cGreen : (ap.rssi > -82 ? cGold : cTritNeg))
         }
         .padding(8)
-        .background(Color.white.opacity(0.04))
+        .background(isSelected ? bgElevated : Color.white.opacity(0.04))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(isSelected ? cCyan.opacity(0.55) : cPink.opacity(0.14), lineWidth: 1))
         .cornerRadius(7)
     }
 
     private func dashCard(title: String, main: String, sub: String, accent: Color) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .font(.system(size: 9, weight: .bold, design: .rounded))
                 .foregroundColor(accent)
             Text(main)
-                .font(.system(size: 16, weight: .black, design: .monospaced))
+                .font(.system(size: 14, weight: .bold, design: .monospaced).monospacedDigit())
                 .foregroundColor(.white)
+                .lineLimit(1)
             Text(sub)
-                .font(.system(size: 10, design: .monospaced))
+                .font(.system(size: 10, design: .monospaced).monospacedDigit())
                 .foregroundColor(.secondary)
+                .lineLimit(1)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(bgPanel)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(cPink.opacity(0.22), lineWidth: 1))
         .cornerRadius(10)
+    }
+
+    private func ternaryDistributionBar(pos: Int, zero: Int, neg: Int) -> some View {
+        let tot = max(1, pos + zero + neg)
+        return GeometryReader { geo in
+            HStack(spacing: 2) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(cGreen)
+                    .frame(width: max(4, geo.size.width * CGFloat(pos) / CGFloat(tot)))
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(cGold)
+                    .frame(width: max(4, geo.size.width * CGFloat(zero) / CGFloat(tot)))
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(cTritNeg)
+                    .frame(width: max(4, geo.size.width * CGFloat(neg) / CGFloat(tot)))
+            }
+        }
+        .frame(height: 6)
     }
 
     private func channelSpectrumView(beacons: [ScannedAP]) -> some View {
@@ -1187,12 +1461,13 @@ struct WigleMacView: View {
             ForEach(channels, id: \.self) { ch in
                 let c = counts[ch, default: 0]
                 let h = CGFloat(max(6.0, (Double(c) / Double(maxC)) * 88.0))
+                let barColor = (c >= 4) ? cTritNeg : (ch == 37 ? cPink : (ch > 14 ? cCyan : cGreen))
                 VStack(spacing: 4) {
                     Text("\(c)")
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.system(size: 9, design: .monospaced).monospacedDigit())
                         .foregroundColor(.secondary)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(ch == 37 ? cPink : (ch > 14 ? cCyan : cGreen))
+                        .fill(barColor)
                         .frame(maxWidth: .infinity)
                         .frame(height: h)
                     Text(ch == 37 ? "BLE" : "C\(ch)")
@@ -1220,12 +1495,34 @@ struct WigleMacView: View {
         }
     }
 
+    private func colorForTrit(_ trit: Int) -> Color {
+        switch trit {
+        case 1: return cGreen
+        case 0: return cGold
+        default: return cTritNeg
+        }
+    }
+
+    private func exportCSVToDesktop() {
+        let snap = scanner.telemetry ?? scanner.performScan()
+        let ts = Int(Date().timeIntervalSince1970)
+        let desktop = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop")
+        let targetURL = desktop.appendingPathComponent("wigle-macos-\(ts).csv")
+        do {
+            try scanner.buildWigleCSV(from: snap).write(to: targetURL, atomically: true, encoding: .utf8)
+            scanner.statusText = "Exported WigleWifi-1.4 CSV -> ~/Desktop/wigle-macos-\(ts).csv"
+        } catch {
+            saveCSVDialog()
+        }
+    }
+
     private func saveCSVDialog() {
         if let snap = scanner.telemetry {
             let panel = NSSavePanel()
             panel.nameFieldStringValue = "wigle-macos-\(Int(Date().timeIntervalSince1970)).csv"
             if panel.runModal() == .OK, let url = panel.url {
                 try? scanner.buildWigleCSV(from: snap).write(to: url, atomically: true, encoding: .utf8)
+                scanner.statusText = "Saved WigleWifi-1.4 CSV -> \(url.lastPathComponent)"
             }
         }
     }
