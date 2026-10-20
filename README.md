@@ -12,6 +12,7 @@
 **AlexAI GAIA-MLX-QUANT API:** [https://esp32.vaked.dev/api/alexai](https://esp32.vaked.dev/api/alexai)  
 **Kompress-Ultra v16.2.0 API:** [https://esp32.vaked.dev/api/kompress](https://esp32.vaked.dev/api/kompress)  
 **GitHub Repository (`HYPER-CHARM-KARMA`):** `HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter`  
+**Sovereign Library Ontology (`ONTOLOGY.md`):** [https://github.com/8b-is/sovereign-library/blob/main/ONTOLOGY.md](https://github.com/8b-is/sovereign-library/blob/main/ONTOLOGY.md) · [Pocoo OMNI Book (`dragon-ball-sovereign-ontology-omni`)](https://pocoo.vaked.dev/demos/book/dragon-ball-sovereign-ontology-omni.html) · [`8b-is/fandom-mcp`](https://github.com/8b-is/fandom-mcp)  
 **Local Web + USB Bridge (`wiglewww`):** `www/index.html` + `host/wiglewww.py` (`http://127.0.0.1:8088`)
 
 Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. Each node listens exclusively to passive 2.4 GHz WiFi beacon frames (`WIFI_STA` + `WiFi.scanNetworks(false, true, true, 180)`, zero association, zero frame injection, zero payload capture) and streams real-time `W|` beacon lines, `Q|` balanced-ternary Kuramoto coherence frames, `# ALEXAI|`, `# KOMPRESS|`, `# QMOM|`, `# BOLDOG|`, `# LACRIMOSA|`, and `# JSON|` status frames over USB CDC serial (115200 baud).
