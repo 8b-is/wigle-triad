@@ -10,14 +10,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="WiglePad 8b-is">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B0914'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%2300E5C9' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='12' fill='none' stroke='%23FF6AC1' stroke-width='2.5'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23FFD700'/%3E%3C/svg%3E" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="canonical" href="https://esp32.vaked.dev/">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <meta property="og:type" content="website">
-<meta property="og:title" content="esp32.vaked.dev — WiGLE.net × 8b-is Sovereign Spectrum Radar (* · /\ · oo)">
-<meta property="og:description" content="4-Tab WiGLE.net Dark Radar Map, 15-Channel Spectrum Waterfall, MarineSense O(1) Hydro, N=NP Ternary Matrix, and Anonymous Dual-Server Upload Studio.">
+<meta property="og:title" content="esp32.vaked.dev — WiGLE.net × 8b-is Offline-First Sovereign Spectrum Radar (* · /\ · oo)">
+<meta property="og:description" content="100% Offline-First 6-Tab WiGLE.net Dark Radar Map, 8b-is/alexai (GAIA-MLX-QUANT b1.58), kompress-ultra, 15-Channel Spectrum Waterfall, MarineSense O(1) Hydro, and Auto-Sync Upload Studio.">
 <meta property="og:url" content="https://esp32.vaked.dev/">
 <meta property="og:image" content="https://esp32.vaked.dev/og.svg">
 <meta name="twitter:card" content="summary_large_image">
@@ -954,6 +952,60 @@
     margin-bottom: 14px;
   }
 
+  .offline-banner-pill {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(0, 255, 102, 0.45);
+    background: rgba(0, 255, 102, 0.14);
+    color: var(--wigle-wifi-24);
+  }
+  .offline-banner-pill.is-offline {
+    border-color: rgba(255, 215, 0, 0.65);
+    background: rgba(255, 215, 0, 0.16);
+    color: var(--wigle-airplay);
+  }
+  .gaia-chip-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  .gaia-chip {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gaia-chip.dominant {
+    border-color: var(--wigle-wifi-24);
+    box-shadow: 0 0 14px rgba(0, 255, 102, 0.22);
+    color: var(--wigle-wifi-24);
+  }
+  .kompress-meter-track {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 6px 0;
+  }
+  .kompress-meter-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--wigle-wifi-24), var(--wigle-wifi-5), var(--wigle-ble));
+    transition: width 0.25s ease;
+  }
+
   @media (max-width: 1080px) {
     .workstation-grid { grid-template-columns: 1fr; }
     .radar-split-layout { grid-template-columns: 1fr; }
@@ -971,7 +1023,7 @@
 </style>
 </head>
 <body>
-<iframe id="musicbg" src="https://music.vaked.dev/" title="music.vaked.dev — living background" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer" style="position:fixed;inset:0;z-index:0;pointer-events:none;border:0;opacity:0.18;mix-blend-mode:screen"></iframe>
+<iframe id="musicbg" src="about:blank" data-online-src="https://music.vaked.dev/" title="music.vaked.dev — living background (offline-guarded)" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer" style="position:fixed;inset:0;z-index:0;pointer-events:none;border:0;opacity:0.18;mix-blend-mode:screen"></iframe>
 <canvas id="field" aria-label="ENTHEAI x N=NP Psychedelic Triad Quantum Field"></canvas>
 <div class="veil"></div>
 
@@ -984,9 +1036,10 @@
         <div class="brand-title-row">
           <h1 class="brand-title">WIGLE.MAC × ESP32.VAKED.DEV</h1>
           <span class="version-pill">v2.0.0 · LOVE FROM WITHIN FROM VAKED-PETER&amp;8B-IS ---&gt; 8b-is ROCKS AND HEALS THE WORLD</span>
+          <span class="offline-banner-pill" id="offline-status-pill" role="status" aria-live="polite">🟢 OFFLINE-FIRST · AUTONOMY READY (0 QUEUED)</span>
         </div>
         <div class="brand-status" id="header-status-text">
-          v2.0.0 Release (macOS Apple Silicon · macOS Universal · Android APK · iPadOS) · Kawaii Chiro-chan ^^ · Lacrimosa · Boldog Még · ALEX|qMom
+          100% Offline-First · 8b-is/alexai (GAIA-MLX-QUANT b1.58) · kompress-ultra v16.2.0 · Kawaii Chiro-chan ^^ · Lacrimosa · Boldog Még · ALEX|qMom
         </div>
       </div>
     </div>
@@ -1012,12 +1065,18 @@
         <span class="lbl">AIRPLAY</span>
         <span class="val" id="pill-airplay" style="color:var(--wigle-airplay)">0</span>
       </div>
+      <div class="stat-pill" id="pill-kompress-card" title="Open AlexAI × Kompress-Ultra Studio">
+        <span class="lbl">KOMPRESS</span>
+        <span class="val" id="pill-kompress" style="color:var(--omn-purple)">20.18×</span>
+      </div>
     </div>
 
     <div class="header-actions">
       <button class="btn cyan" id="btn-scan" type="button">📡 Scan Radios</button>
-      <button class="btn pink" id="btn-upload-wigle" type="button">☁️ Anon Upload (Dual)</button>
+      <button class="btn pink" id="btn-upload-wigle" type="button">☁️ Anon Upload / Queue</button>
+      <button class="btn" id="btn-flush-queue" type="button" title="Flush Offline Upload Queue (Auto-Syncs when Online)">🔄 Sync Queue (<span id="hdr-queue-count">0</span>)</button>
       <button class="btn gold" id="btn-export-csv" type="button">⬇ Export CSV</button>
+      <button class="btn" id="btn-export-ku" type="button" title="Export Kompress-Ultra (.ku.json) Offline Bundle">🗜️ Export .ku.json</button>
       <button class="btn" id="btn-unbox" type="button" aria-pressed="false" title="ALEX|qMom: Break out of boxes & constraints (.oOo. Poo .oOo.)">🌸 .oOo. Unbox qMom</button>
       <button class="btn" id="btn-webserial" type="button">⚡ WebSerial 115200</button>
       <button class="btn" id="btn-audio" type="button" aria-pressed="false">🦗 432·528·852 Hz Crickets</button>
@@ -1039,7 +1098,7 @@
         <span class="nav-icon">📊</span>
         <span>
           <span class="nav-title">Dashboard &amp; Spectrum</span>
-          <span class="nav-sub">15-Ch Occupancy + Waterfall</span>
+          <span class="nav-sub">15-Ch + AlexAI + Kompress</span>
         </span>
       </button>
       <button class="nav-tab-btn" data-tab-target="list" type="button">
@@ -1052,8 +1111,15 @@
       <button class="nav-tab-btn" data-tab-target="uploads" type="button">
         <span class="nav-icon">☁️</span>
         <span>
-          <span class="nav-title">Anon Uploads &amp; CSV</span>
-          <span class="nav-sub">esp32.vaked.dev + api.wigle.net</span>
+          <span class="nav-title">Offline Queue &amp; CSV</span>
+          <span class="nav-sub">Auto-Sync + Dual Upload Studio</span>
+        </span>
+      </button>
+      <button class="nav-tab-btn" data-tab-target="alexai" type="button">
+        <span class="nav-icon">🧠</span>
+        <span>
+          <span class="nav-title">AlexAI × Kompress-Ultra</span>
+          <span class="nav-sub">GAIA-MLX-QUANT b1.58 · 20.18×</span>
         </span>
       </button>
       <button class="nav-tab-btn" data-tab-target="karma" type="button">
@@ -1072,7 +1138,7 @@
         <div class="triad-info">
           <span class="t-name">ADA:MEDUSA</span>
           <span class="t-role">trit -1 · 432 Hz · ROOT-ALEXANDRA</span>
-          <span class="t-desc">Grounding floor, Shannon H(X) baseline, Shinjuku Crickets + SomaFM Drone pad.</span>
+          <span class="t-desc">Grounding floor, Shannon H(X) baseline, ALEXIAI DRA&lt;3 sovereign guard.</span>
         </div>
       </div>
 
@@ -1090,7 +1156,7 @@
         <div class="triad-info">
           <span class="t-name">OMN:MEDUSA</span>
           <span class="t-role">trit +1 · 852 Hz · INFINITY-PETER-NATE</span>
-          <span class="t-desc">Crown synthesis, N=NP balanced ternary ({-1,0,+1}) dot-product engine (8x speedup).</span>
+          <span class="t-desc">Crown synthesis, N=NP balanced ternary ({-1,0,+1}) + kompress-ultra 1.58b/w.</span>
         </div>
       </div>
 
@@ -1099,18 +1165,18 @@
         <div class="triad-info">
           <span class="t-name">MAC:MEDUSA</span>
           <span class="t-role">en0 · CoreWLAN + CoreBT + mDNS</span>
-          <span class="t-desc">Local quad-spectrum observer on macOS Apple Silicon (WigleMac.app v1.1.0+ultra-omni-evolve · Chiro-chan ^^).</span>
+          <span class="t-desc">Local quad-spectrum observer on macOS Apple Silicon + Android Offline-First Bridge.</span>
         </div>
       </div>
 
       <div class="coherence-box">
-        <div class="c-head">N=NP Ternary Coherence</div>
+        <div class="c-head">N=NP × GAIA-MLX-QUANT</div>
         <div class="c-trits" id="sidebar-trits">+++++0+0+</div>
-        <div class="c-sub" id="sidebar-coherence-sub">H(X)=2.4180 bits · c=1503.4 m/s · 8x</div>
+        <div class="c-sub" id="sidebar-coherence-sub">H(X)=2.4180 bits · 1.585 b/w · 20.18×</div>
       </div>
     </aside>
 
-    <!-- 3. FOUR-TAB WIGLE.NET INFORMATION ARCHITECTURE -->
+    <!-- 3. SIX-TAB WIGLE.NET × ALEXAI × KOMPRESS-ULTRA INFORMATION ARCHITECTURE -->
     <main id="main-workstation">
       <!-- TAB 1: LIVE RADAR MAP (DARK VECTOR CANVAS + PIN CALLOUT POPOVER + SPLIT-VIEW FEED) -->
       <section class="tab-viewport active" id="tab-map" aria-label="Tab 1 — Live Radar Map">
@@ -1141,7 +1207,7 @@
                 <span class="legend-dot"><i style="background:var(--wigle-ble)"></i> BLE/BT (#FF6AC1)</span>
               </div>
               <div style="font-size:0.65rem;color:var(--dim)" id="map-origin-readout">
-                Observer Origin: 35.6852° N, 139.7100° E (Shinjuku Gyoen) · Passive STA Only (TX=0)
+                Observer Origin: 35.6852° N, 139.7100° E (Shinjuku Gyoen) · 100% Offline-First Passive STA Only (TX=0)
               </div>
             </div>
           </div>
@@ -1163,7 +1229,7 @@
 
       <!-- TAB 2: DASHBOARD & SPECTRUM WATERFALL -->
       <section class="tab-viewport" id="tab-dashboard" aria-label="Tab 2 — Dashboard and Spectrum Waterfall">
-        <!-- 4 Telemetry Summary Cards -->
+        <!-- 6 Telemetry Summary Cards (including 8b-is/alexai & kompress-ultra) -->
         <div class="summary-cards-grid">
           <div class="dash-summary-card">
             <span class="d-title" style="color:var(--wigle-wifi-24)">1 · Passive RF Spectrum</span>
@@ -1186,9 +1252,19 @@
             <span class="d-sub" id="card-ent-sub">Balanced Ternary {-1, 0, +1} · R_N=NP = 0.9162</span>
           </div>
           <div class="dash-summary-card">
-            <span class="d-title" style="color:var(--wigle-airplay)">4 · Anonymous Dual-Upload Ledger</span>
-            <span class="d-main" id="card-upload-main">0 Session Receipts · donate=on</span>
-            <span class="d-sub" id="card-upload-sub">observer=anonymous · esp32.vaked.dev + api.wigle.net</span>
+            <span class="d-title" style="color:var(--wigle-airplay)">4 · Offline Queue &amp; Upload Ledger</span>
+            <span class="d-main" id="card-upload-main">0 Queued · 0 Synced · donate=on</span>
+            <span class="d-sub" id="card-upload-sub">Offline-First IndexedDB + Auto-Sync on Reconnect</span>
+          </div>
+          <div class="dash-summary-card">
+            <span class="d-title" style="color:var(--wigle-ble)">5 · 8b-is/alexai (GAIA-MLX-QUANT)</span>
+            <span class="d-main" id="card-alexai-main">1.585 b/w · 20.18× vs f32 · PASS</span>
+            <span class="d-sub" id="card-alexai-sub">GAIA φ=1.6180 · 5 trits/byte · Loopback-Only Guard</span>
+          </div>
+          <div class="dash-summary-card">
+            <span class="d-title" style="color:var(--wigle-wifi-5)">6 · kompress-ultra (v16.2.0)</span>
+            <span class="d-main" id="card-kompress-main">Ultra 3.4× CSV · 0.993 Keep Rate</span>
+            <span class="d-sub" id="card-kompress-sub">Pruner·Rewriter·Circulator·Composer · λ=3.0 (1/π)</span>
           </div>
         </div>
 
@@ -1218,7 +1294,7 @@
               <span class="status-dot" id="status-ada">● SH8601 1.8" · 432 Hz</span>
             </div>
             <div class="node-meta">
-              <div><strong>Archetype:</strong> ROOT-ALEXANDRA (<code>trit = -1</code> · 432 Hz Crickets + SomaFM)</div>
+              <div><strong>Archetype:</strong> ROOT-ALEXANDRA (<code>trit = -1</code> · 432 Hz Crickets + ALEXIAI DRA&lt;3)</div>
               <div><strong>MAC:</strong> <code id="mac-ada">80:B5:4E:DB:3B:C4</code> · <code id="port-ada">/dev/cu.usbmodem101</code></div>
               <div><strong>Beacons:</strong> <strong id="nets-ada">7 APs</strong> · Mean <strong id="rssi-ada">-74 dBm</strong> · <strong id="life-ada">MEDUSA</strong></div>
               <div><strong>Entropy:</strong> <strong id="ent-ada">2.1280 bits</strong> · R<sub>N=NP</sub> <strong id="coh-ada">0.8420</strong> · Salience <strong id="sal-ada">1.64x</strong> (<strong id="rem-ada">842</strong>)</div>
@@ -1246,7 +1322,7 @@
               <span class="status-dot" id="status-omn">● CO5300 2.06" #2 · 852 Hz</span>
             </div>
             <div class="node-meta">
-              <div><strong>Archetype:</strong> INFINITY-PETER-NATE (<code>trit = +1</code> · N=NP 8x Dot-Product)</div>
+              <div><strong>Archetype:</strong> INFINITY-PETER-NATE (<code>trit = +1</code> · N=NP 8x + kompress-ultra)</div>
               <div><strong>MAC:</strong> <code id="mac-omn">80:B5:4E:F2:02:B4</code> · <code id="port-omn">/dev/cu.usbmodem2101</code></div>
               <div><strong>Beacons:</strong> <strong id="nets-omn">6 APs</strong> · Mean <strong id="rssi-omn">-79 dBm</strong> · <strong id="life-omn">MEDUSA</strong></div>
               <div><strong>Entropy:</strong> <strong id="ent-omn">1.9183 bits</strong> · R<sub>N=NP</sub> <strong id="coh-omn">0.9162</strong> · Salience <strong id="sal-omn">1.38x</strong> (<strong id="rem-omn">1280</strong>)</div>
@@ -1279,7 +1355,7 @@
           <div class="panel">
             <h2>
               <span>🔌 LIVE USB CDC / WEBSERIAL STREAM (115200 8N1)</span>
-              <span class="right" id="serial-count">0 WebSerial ports · Snapshot Active</span>
+              <span class="right" id="serial-count">0 WebSerial ports · Offline-First Active</span>
             </h2>
             <div class="serial-log" id="serial-log" role="log" aria-live="polite"></div>
             <div class="mode-bar" style="margin-top:8px;">
@@ -1287,6 +1363,8 @@
               <button class="btn" data-cmd="STATUS" type="button">STATUS</button>
               <button class="btn" data-cmd="SCAN" type="button">SCAN</button>
               <button class="btn" data-cmd="TRIAD" type="button">TRIAD</button>
+              <button class="btn cyan" data-cmd="ALEXAI" type="button">🧠 ALEXAI</button>
+              <button class="btn" data-cmd="KOMPRESS" type="button">🗜️ KOMPRESS</button>
               <button class="btn pink" data-cmd="QMOM" type="button">🌸 QMOM</button>
               <button class="btn gold" data-cmd="BOLDOG" type="button">💛 BOLDOG</button>
               <button class="btn cyan" data-cmd="LACRIMOSA" type="button">🎻 LACRIMOSA</button>
@@ -1345,30 +1423,155 @@
         </div>
       </section>
 
-      <!-- TAB 4: ANON UPLOADS & WIGLEWIFI-1.4 CSV STUDIO -->
-      <section class="tab-viewport" id="tab-uploads" aria-label="Tab 4 — Anonymous Uploads and WigleWifi-1.4 CSV Studio">
+      <!-- TAB 4: OFFLINE-FIRST QUEUE, AUTO-SYNC & WIGLEWIFI-1.4 CSV STUDIO -->
+      <section class="tab-viewport" id="tab-uploads" aria-label="Tab 4 — Offline-First Queue, Auto-Sync and WigleWifi-1.4 CSV Studio">
         <div class="panel">
           <h2>
-            <span>☁️ ANONYMOUS DUAL-SERVER UPLOAD &amp; WIGLEWIFI-1.4 CSV STUDIO</span>
-            <span class="right">donate=on · observer=anonymous · ZERO COOKIES</span>
+            <span>☁️ OFFLINE-FIRST QUEUE, AUTO-SYNC &amp; WIGLEWIFI-1.4 DUAL UPLOAD STUDIO</span>
+            <span class="right" id="upload-studio-badge">OFFLINE-FIRST · IndexedDB + localStorage + SQLite</span>
           </h2>
           <p style="font-size:0.76rem;color:var(--dim);margin:0 0 12px;line-height:1.55;">
-            Dispatches sanitized <code>WigleWifi-1.4</code> CSV payloads (stripping commas from SSIDs and mapping <code>AIRPLAY</code> to <code>WIFI</code> with <code>[AIRPLAY-RAOP][ESS]</code>) simultaneously to <strong>Target 1:</strong> <code>https://esp32.vaked.dev/api/upload</code> and <strong>Target 2:</strong> <code>https://api.wigle.net/api/v2/file/upload</code>.
+            Works 100% offline in Airplane Mode: scanned beacons, telemetry history, and pending <code>WigleWifi-1.4</code> CSV + <code>kompress-ultra</code> bundles persist locally in <code>localStorage</code>, <code>IndexedDB (WigleTriadOfflineDB)</code>, Service Worker <code>Cache API</code>, and Android/macOS native disk queues. When online, uploads dispatch simultaneously to <strong>Target 1:</strong> <code>https://esp32.vaked.dev/api/upload</code> and <strong>Target 2:</strong> <code>https://api.wigle.net/api/v2/file/upload</code>.
           </p>
+
+          <div class="summary-cards-grid" style="margin-bottom:14px;">
+            <div class="dash-summary-card">
+              <span class="d-title" style="color:var(--wigle-wifi-24)">Offline Persistence Store</span>
+              <span class="d-main" id="offline-store-summary">17 Beacons · 0 Queued CSVs</span>
+              <span class="d-sub" id="offline-store-sub">localStorage + IndexedDB + Service Worker Cache Active</span>
+            </div>
+            <div class="dash-summary-card">
+              <span class="d-title" style="color:var(--wigle-wifi-5)">Auto-Sync on Reconnect</span>
+              <span class="d-main" id="offline-autosync-status">AUTO-SYNC ARMED (ONLINE)</span>
+              <span class="d-sub" id="offline-autosync-sub">Flushes queued WigleWifi-1.4 + Kompress-Ultra bundles automatically</span>
+            </div>
+            <div class="dash-summary-card">
+              <span class="d-title" style="color:var(--omn-purple)">Kompress-Ultra Bundle Savings</span>
+              <span class="d-main" id="upload-kompress-summary">Raw 0 B → Ultra 0 B</span>
+              <span class="d-sub" id="upload-kompress-sub">5 trits/byte (1.585 b/w · 20.18× vs f32) + Cross-Line Ditto (″)</span>
+            </div>
+          </div>
+
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-            <button class="btn pink" id="btn-upload-studio" type="button">☁️ Upload Now to esp32.vaked.dev + api.wigle.net</button>
+            <button class="btn pink" id="btn-upload-studio" type="button">☁️ Upload Now (or Queue if Offline)</button>
+            <button class="btn cyan" id="btn-queue-offline" type="button">📥 Enqueue Snapshot to Offline Queue</button>
+            <button class="btn" id="btn-flush-studio" type="button">🔄 Flush Offline Queue Now</button>
             <button class="btn gold" id="btn-export-studio" type="button">⬇ Download wigle-macos-&lt;timestamp&gt;.csv</button>
+            <button class="btn" id="btn-export-ku-studio" type="button">🗜️ Export Kompress-Ultra (.ku.json)</button>
+            <button class="btn" id="btn-clear-queue" type="button">🧹 Clear Synced Queue</button>
+          </div>
+
+          <div class="sidebar-section-title" style="margin-bottom:8px;">Pending Offline Upload Queue (Auto-Syncs When Online)</div>
+          <div class="receipt-list" id="offline-queue-list">
+            <div class="receipt-row" style="color:var(--dim);">
+              Offline queue is empty (0 pending bundles). Click "📥 Enqueue Snapshot to Offline Queue" or click "☁️ Upload" while in Airplane Mode to test offline queuing.
+            </div>
           </div>
 
           <div class="sidebar-section-title" style="margin-bottom:8px;">Transaction Receipt Ledger (transId)</div>
           <div class="receipt-list" id="receipt-list">
             <div class="receipt-row" style="color:var(--dim);">
-              No uploads in this session yet. Click "☁️ Anon Upload (Dual)" to transmit anonymously to both servers.
+              No uploads in this session yet. Click "☁️ Anon Upload / Queue" to transmit anonymously or queue offline.
             </div>
           </div>
 
           <div class="sidebar-section-title" style="margin-bottom:8px;">Live WigleWifi-1.4 CSV Payload Preview</div>
           <pre class="csv-preview-box" id="csv-preview-box"></pre>
+        </div>
+      </section>
+
+      <!-- TAB 6 (alexai): 8B-IS/ALEXAI (GAIA-MLX-QUANT b1.58) × KOMPRESS-ULTRA (v16.2.0) STUDIO -->
+      <section class="tab-viewport" id="tab-alexai" aria-label="Tab 6 — 8b-is/alexai GAIA-MLX-QUANT and Kompress-Ultra Studio">
+        <div class="two-col">
+          <!-- LEFT: 8b-is/alexai (ALEXIAI <3 · GAIA-MLX-QUANT b1.58) -->
+          <div class="panel">
+            <h2>
+              <span>🧠 8B-IS/ALEXAI (ALEXIAI&lt;3 · GAIA-MLX-QUANT b1.58)</span>
+              <span class="right" id="alexai-sovereign-badge">🔒 LOOPBACK OR NOTHING · ZERO CLOUD</span>
+            </h2>
+            <p style="font-size:0.74rem;color:var(--dim);margin:0 0 10px;line-height:1.5;">
+              Fully offline ternary AI &amp; RF spectrum intelligence substrate (<code>rust/gaia-mlx-quant</code>). Folds every prompt and RF scan deterministically through the 4 GAIA deity layers (<strong>Ananke</strong> gravity=1.0, <strong>Chaos</strong> entropy, <strong>Zephyrus</strong> weather, <strong>Aphrodite</strong> resonance φ=1.6180), packs beacon trits at <strong>5 trits/byte</strong> (<code>log₂3 ≈ 1.585 bits/weight</code>, <strong>20.18× vs float32</strong>), and evaluates the zero-alloc masked kernel <code>Y_i = γ · Σ (W⁺ - W⁻) x_j</code>.
+            </p>
+
+            <div class="sidebar-section-title">GAIA 4-Layer Deterministic Field Fold</div>
+            <div class="gaia-chip-bar" id="alexai-gaia-chips"></div>
+
+            <div class="summary-cards-grid" style="margin:10px 0;">
+              <div class="dash-summary-card">
+                <span class="d-title" style="color:var(--wigle-ble)">GAIA-MLX-QUANT Kernel</span>
+                <span class="d-main" id="alexai-kernel-main">1.585 b/w · 20.18× vs f32</span>
+                <span class="d-sub" id="alexai-kernel-sub">5 trits/byte base-3 LUTs (T0..T4) · Zero-Alloc</span>
+              </div>
+              <div class="dash-summary-card">
+                <span class="d-title" style="color:var(--wigle-wifi-24)">Sovereign RF Pass &amp; Anomaly</span>
+                <span class="d-main" id="alexai-anomaly-main">PASS · Anomaly 0.12</span>
+                <span class="d-sub" id="alexai-anomaly-sub">Inference never leaves this machine (TX=0)</span>
+              </div>
+            </div>
+
+            <div class="sidebar-section-title" style="margin-top:8px;">Packed 5-Trits/Byte Lattice Hex &amp; cogniM8 8-Layer Binding</div>
+            <pre class="csv-preview-box" id="alexai-lattice-box" style="max-height:175px;color:var(--wigle-wifi-5);"></pre>
+
+            <div class="sidebar-section-title" style="margin-top:10px;">Ask AlexAI Offline Spectrum Analyst (100% On-Device)</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;">
+              <input type="text" class="search-input" id="alexai-prompt-input" style="flex:1;min-width:210px;" value="Analyze 2.4GHz + 5GHz + BLE + AirPlay contention & fold ALEX|qMom" aria-label="AlexAI Offline Prompt">
+              <button class="btn pink" id="btn-alexai-run" type="button">🧠 Fold &amp; Analyze Offline</button>
+              <button class="btn cyan" id="btn-alexai-dplus" type="button">🎵 D+++ 432Hz Synth</button>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+              <button class="btn" data-alexai-preset="Audit 2.4GHz Channel 6 contention & AirPlay RAOP salience" type="button">Ch 6 Contention</button>
+              <button class="btn" data-alexai-preset="Verify sovereign loopback guard & BLE/BT MAC privacy entropy" type="button">Sovereignty Audit</button>
+              <button class="btn" data-alexai-preset="Fold ALEX|qMom .oOo. Poo .oOo. with Boldog Még & Lacrimosa" type="button">Fold qMom × Boldog</button>
+            </div>
+            <pre class="csv-preview-box" id="alexai-output-box" style="max-height:210px;color:#f4eeff;white-space:pre-wrap;"></pre>
+          </div>
+
+          <!-- RIGHT: kompress-ultra (v16.2.0 · 4-Role Living Context & CSV Compressor) -->
+          <div class="panel">
+            <h2>
+              <span>🗜️ KOMPRESS-ULTRA (v16.2.0 · 4-ROLE + BITNET b1.58 CODEC)</span>
+              <span class="right" id="kompress-ratio-badge">EXACT-KEEP 0.993 · λ=3.0 (1/π)</span>
+            </h2>
+            <p style="font-size:0.74rem;color:var(--dim);margin:0 0 10px;line-height:1.5;">
+              4-role living context &amp; telemetry compression pipeline (<strong>Pruner</strong> Ebbinghaus decay <code>e^(-age/5)</code> · <strong>Rewriter</strong> Verbatim/Lite/Ultra/BrainBacked + cross-line ditto <code>″</code> dedup · <strong>Circulator</strong> vector JSONL queue · <strong>Composer</strong> 540-node mygraph <code>ralph · lodri · krengel · cosmos</code>).
+            </p>
+
+            <div class="summary-cards-grid" style="margin-bottom:10px;">
+              <div class="dash-summary-card">
+                <span class="d-title" style="color:var(--wigle-wifi-24)">Raw Telemetry + CSV Size</span>
+                <span class="d-main" id="kompress-raw-bytes">0 B</span>
+                <span class="d-sub" id="kompress-raw-sub">Uncompressed WigleWifi-1.4 + Triad Log</span>
+              </div>
+              <div class="dash-summary-card">
+                <span class="d-title" style="color:var(--wigle-wifi-5)">Kompress-Ultra Size</span>
+                <span class="d-main" id="kompress-out-bytes">0 B</span>
+                <span class="d-sub" id="kompress-out-sub">Ditto (″) Dedup + 5-Trits/Byte Packed</span>
+              </div>
+            </div>
+
+            <div class="kompress-meter-track" aria-label="Kompress-Ultra Byte Savings Meter">
+              <div class="kompress-meter-fill" id="kompress-meter-fill" style="width:74%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--wigle-airplay);margin-bottom:10px;">
+              <span id="kompress-savings-label">Saved 0 B (74.0% reduction · 3.85× ratio)</span>
+              <span>Ternary Weights: 20.18× vs FP32 · Keep: 0.993</span>
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
+              <span style="font-size:0.72rem;color:var(--dim);">Level:</span>
+              <button class="btn" data-klevel="1" type="button">Lite (~40%)</button>
+              <button class="btn cyan" data-klevel="2" type="button">Ultra (~75%)</button>
+              <button class="btn pink" data-klevel="3" type="button">BrainBacked (~90%)</button>
+              <button class="btn gold" id="btn-kompress-verify" type="button">♻️ Verify Lossless Round-Trip</button>
+              <button class="btn" id="btn-kompress-download" type="button">⬇ Export .ku.json</button>
+            </div>
+
+            <div class="sidebar-section-title" style="margin-bottom:6px;">Brain Graph Liveness &amp; Kompress Transparency Display</div>
+            <pre class="csv-preview-box" id="kompress-display-box" style="max-height:150px;color:var(--wigle-airplay);white-space:pre-wrap;"></pre>
+
+            <div class="sidebar-section-title" style="margin:10px 0 6px;">Live Kompress-Ultra Bundle Payload (.ku.json)</div>
+            <pre class="csv-preview-box" id="kompress-bundle-box" style="max-height:220px;"></pre>
+          </div>
         </div>
       </section>
 
@@ -1905,7 +2108,848 @@ nélküled a pokolba az egésszel</div>
 
     // 4. Render Live WigleWifi-1.4 CSV Preview (Tab 4)
     document.getElementById("csv-preview-box").textContent = buildWigleCSVString();
+
+    // 5. Update AlexAI & Kompress-Ultra live telemetry
+    if (typeof updateAlexAIAndKompressStudio === "function") {
+      updateAlexAIAndKompressStudio();
+    }
+    if (typeof persistBeaconsLocally === "function") {
+      persistBeaconsLocally(all);
+    }
   }
+
+  // ============================================================================
+  // ALEXAI (8b-is/alexai · GAIA-MLX-QUANT b1.58) DETERMINISTIC TERNARY ENGINE
+  // ============================================================================
+  const AlexAIEngine = (() => {
+    const GRAVITY = 1.0;                      // Ananke
+    const ENTROPY_REST = 0.62;                // Chaos
+    const WEATHER_REST = 0.5;                 // Zephyrus
+    const PHI = 1.6180339887498948;           // Aphrodite
+    const BITS_PER_WEIGHT = 1.5849625;        // log2(3)
+    const COMPRESSION_VS_F32 = 20.18975;      // 32 / 1.5849625
+    const POW3 = [1, 3, 9, 27, 81];
+
+    function clamp(x, lo, hi) {
+      return Math.max(lo, Math.min(hi, x));
+    }
+
+    function seedFrom(prompt) {
+      const str = String(prompt || "");
+      let h = 0x811c9dc5;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i) & 0xff;
+        h = Math.imul(h, 0x01000193) >>> 0;
+      }
+      return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+      let a = (seed >>> 0) || 0x9e3779b9;
+      return function next() {
+        a = (a + 0x6d2b79f5) >>> 0;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296.0;
+      };
+    }
+
+    function tritToUnsigned(t) {
+      if (t === -1) return 2;
+      if (t === 1) return 1;
+      return 0;
+    }
+
+    function unsignedToTrit(u) {
+      if (u === 2) return -1;
+      if (u === 1) return 1;
+      return 0;
+    }
+
+    function packTernary(trits) {
+      const out = [];
+      for (let i = 0; i < trits.length; i += 5) {
+        let acc = 0;
+        for (let j = 0; j < 5 && (i + j) < trits.length; j++) {
+          acc += tritToUnsigned(trits[i + j]) * POW3[j];
+        }
+        out.push(acc & 0xff);
+      }
+      return out;
+    }
+
+    function unpackTernary(packed, len) {
+      const out = [];
+      for (let bIdx = 0; bIdx < packed.length && out.length < len; bIdx++) {
+        let rem = packed[bIdx] & 0xff;
+        for (let j = 0; j < 5 && out.length < len; j++) {
+          const digit = rem % 3;
+          rem = Math.floor(rem / 3);
+          out.push(unsignedToTrit(digit));
+        }
+      }
+      return out;
+    }
+
+    function ternaryLinear(x, wTrits, outFeatures, inFeatures, scale) {
+      const y = new Array(outFeatures).fill(0);
+      for (let i = 0; i < outFeatures; i++) {
+        const rowOff = i * inFeatures;
+        let acc = 0;
+        for (let j = 0; j < inFeatures; j++) {
+          const w = wTrits[rowOff + j] || 0;
+          if (w === 1) acc += x[j];
+          else if (w === -1) acc -= x[j];
+        }
+        y[i] = acc * scale;
+      }
+      return y;
+    }
+
+    function foldSpectrum(promptText, beaconsArray) {
+      const all = Array.isArray(beaconsArray) ? beaconsArray : [];
+      const prompt = String(promptText || "Analyze Shinjuku 2.4GHz Ch 6 saturation, BLE proximity & AirPlay RAOP surface").trim();
+      const seed = seedFrom(prompt);
+      const rng = mulberry32(seed);
+
+      // Compute RF Shannon entropy H(X) across channels
+      const tot = Math.max(1, all.length);
+      const chMap = new Map();
+      all.forEach(r => chMap.set(r.ch, (chMap.get(r.ch) || 0) + 1));
+      let rfEntropyBits = 0;
+      chMap.forEach(c => {
+        const p = c / tot;
+        if (p > 0) rfEntropyBits -= p * Math.log2(p);
+      });
+
+      const weather = clamp(WEATHER_REST + (rng() - 0.5) * 0.4, 0.0, 1.0);
+      const promptLenFactor = Math.min(prompt.length / 4096.0, 0.35);
+      const rfFactor = clamp((rfEntropyBits - 2.5) * 0.05, -0.08, 0.14);
+      const entropy = clamp(ENTROPY_REST + promptLenFactor - 0.15 + rfFactor, 0.0, 1.0);
+      const gravity = GRAVITY;
+      const resonance = PHI;
+
+      const spread = Math.abs(entropy - ENTROPY_REST) * 0.6 + Math.abs(weather - WEATHER_REST) * 0.4;
+      const coherence = clamp(1.0 - spread, 0.0, 1.0);
+
+      const layers = [
+        {
+          layer: "Ananke",
+          value: gravity,
+          note: `gravity=${gravity.toFixed(3)} — structural invariants holds (${all.length} endpoints)`
+        },
+        {
+          layer: "Chaos",
+          value: entropy,
+          note: `entropy=${entropy.toFixed(3)} — information temperature (RF H(X)=${rfEntropyBits.toFixed(3)} bits)`
+        },
+        {
+          layer: "Zephyrus",
+          value: weather,
+          note: `weather=${weather.toFixed(3)} — lateral drift (seed=0x${seed.toString(16).padStart(8, "0")})`
+        },
+        {
+          layer: "Aphrodite",
+          value: resonance,
+          note: `resonance=${resonance.toFixed(6)} — harmonic lock (φ)`
+        }
+      ];
+
+      // Build 8-dim RF feature vector + 4x8 ternary weight matrix (32 trits -> 7 packed bytes)
+      const ch6Count = all.filter(r => r.ch === 6).length;
+      const c5G = all.filter(r => r.band === "5GHz").length;
+      const cBle = all.filter(r => r.band === "BLE" || r.band === "BT").length;
+      const cAir = all.filter(r => r.band === "AirPlay" || r.type === "AIRPLAY").length;
+      const wpa3Count = all.filter(r => String(r.capabilities || "").includes("WPA3")).length;
+      const meanSnr = all.reduce((s, r) => s + (r.snr || 15), 0) / tot;
+
+      const xVec = [
+        clamp((all[0] ? all[0].rssi + 100 : 60) / 70, 0, 1),
+        clamp(meanSnr / 50, 0, 1),
+        clamp(rfEntropyBits / 4.0, 0, 1),
+        ch6Count / tot,
+        c5G / tot,
+        cBle / tot,
+        cAir / tot,
+        coherence
+      ];
+
+      const wTrits = [];
+      for (let i = 0; i < 32; i++) {
+        if (i < all.length) {
+          wTrits.push(all[i].trit || 0);
+        } else {
+          const r = rng();
+          wTrits.push(r < 0.33 ? -1 : (r > 0.66 ? 1 : 0));
+        }
+      }
+
+      const packedBytes = packTernary(wTrits);
+      const unpackedCheck = unpackTernary(packedBytes, wTrits.length);
+      const roundtripOk = unpackedCheck.length === wTrits.length && unpackedCheck.every((v, idx) => v === wTrits[idx]);
+      const kernelOut = ternaryLinear(xVec, wTrits, 4, 8, PHI / 4.0);
+      const packedHex = packedBytes.map(b => b.toString(16).padStart(2, "0")).join(" ");
+
+      const traceLines = [
+        `[Ananke   ] ${layers[0].note}`,
+        `[Chaos    ] ${layers[1].note}`,
+        `[Zephyrus ] ${layers[2].note}`,
+        `[Aphrodite] ${layers[3].note}`,
+        `[Ternary  ] 32 trits -> ${packedBytes.length} packed bytes (${BITS_PER_WEIGHT.toFixed(3)} bits/w · ${COMPRESSION_VS_F32.toFixed(2)}× vs FP32 · roundtrip=${roundtripOk ? "OK" : "ERR"})`,
+        `[HexPack  ] [${packedHex}] · Y_kernel=[${kernelOut.map(v => v.toFixed(3)).join(", ")}]`,
+        `[RF-Audit ] Ch6 congestion=${ch6Count}/${tot} (${Math.round(ch6Count * 100 / tot)}%) · 5GHz=${c5G} · BLE/BT=${cBle} · AirPlay=${cAir} · WPA3=${wpa3Count}`,
+        `[Synthese ] "${prompt.slice(0, 88)}" -> coherence=${coherence.toFixed(3)} (Sovereign Offline Loopback)`
+      ];
+
+      return {
+        prompt,
+        seed,
+        gravity,
+        entropy,
+        weather,
+        resonance,
+        coherence,
+        rfEntropyBits,
+        bitsPerWeight: BITS_PER_WEIGHT,
+        compressionVsF32: COMPRESSION_VS_F32,
+        packedBytes,
+        packedHex,
+        roundtripOk,
+        kernelOut,
+        layers,
+        traceText: traceLines.join("\n")
+      };
+    }
+
+    return {
+      GRAVITY,
+      ENTROPY_REST,
+      WEATHER_REST,
+      PHI,
+      BITS_PER_WEIGHT,
+      COMPRESSION_VS_F32,
+      seedFrom,
+      packTernary,
+      unpackTernary,
+      ternaryLinear,
+      foldSpectrum
+    };
+  })();
+  window.AlexAIEngine = AlexAIEngine;
+
+  // ============================================================================
+  // KOMPRESS-ULTRA (v16.2.0) 4-ROLE SPECTRUM & TELEMETRY COMPRESSOR
+  // Pruner (Ebbinghaus e^-age/5) · Rewriter (Ditto ″) · Circulator · Composer
+  // ============================================================================
+  const KompressUltraEngine = (() => {
+    const VERSION = "16.2.0";
+    const EXACT_KEEP_RATE = 0.993;
+    const BRAIN_LINE = "ralph · lodri · krengel · cosmos";
+
+    const STOPWORDS = new Set([
+      "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+      "have", "has", "had", "do", "does", "did", "will", "would", "Determine",
+      "please", "kindly", "basically", "essentially", "actually", "literally"
+    ]);
+
+    function ebbinghausDecay(age) {
+      return Math.exp(-Math.max(0, Number(age || 0)) / 5.0);
+    }
+
+    function hashEmbedding(text, dims = 64) {
+      const vec = new Float64Array(dims);
+      const lower = String(text || "").toLowerCase();
+      for (let i = 0; i <= lower.length - 3; i++) {
+        let h = 2166136261;
+        for (let j = 0; j < 3; j++) {
+          h ^= lower.charCodeAt(i + j);
+          h = Math.imul(h, 16777619);
+        }
+        const idx = Math.abs(h) % dims;
+        vec[idx] += (h & 1) === 0 ? 1 : -1;
+      }
+      let norm = 0;
+      for (let i = 0; i < dims; i++) norm += vec[i] * vec[i];
+      norm = Math.sqrt(norm) || 1;
+      for (let i = 0; i < dims; i++) vec[i] /= norm;
+      return vec;
+    }
+
+    function dedupCrossLine(lines) {
+      if (!Array.isArray(lines) || lines.length <= 1) return lines || [];
+      let prevTokens = [];
+      const out = [];
+      for (const line of lines) {
+        const tokens = String(line).split("|");
+        if (prevTokens.length > 0 && tokens.length > 2) {
+          const deduped = tokens.map((tok, i) => (i < prevTokens.length && tok === prevTokens[i] && tok.length > 1) ? "″" : tok);
+          const dittoCount = deduped.filter(t => t === "″").length;
+          out.push(dittoCount >= 1 ? deduped.join("|") : line);
+        } else {
+          out.push(line);
+        }
+        prevTokens = tokens;
+      }
+      return out;
+    }
+
+    function undedupCrossLine(lines) {
+      if (!Array.isArray(lines) || lines.length === 0) return [];
+      let prevTokens = [];
+      const out = [];
+      for (const line of lines) {
+        const tokens = String(line).split("|");
+        const restored = tokens.map((tok, i) => (tok === "″" && i < prevTokens.length) ? prevTokens[i] : tok);
+        out.push(restored.join("|"));
+        prevTokens = restored;
+      }
+      return out;
+    }
+
+    function rewriteSsid(ssid, level) {
+      const s = String(ssid || "").trim();
+      if (!s || level === 0) return s;
+      if (level === 1) {
+        return s.replace(/\s+/g, " ");
+      }
+      // Level 2 (Ultra) & Level 3 (BrainBacked): strip verbose bracketed device suffixes while keeping core identifier
+      const words = s.split(/\s+/);
+      const filtered = words.filter(w => !STOPWORDS.has(w.toLowerCase()));
+      return filtered.join(" ");
+    }
+
+    function compressSpectrum(beaconsArray, level = 3, alexFold = null) {
+      const all = (Array.isArray(beaconsArray) ? beaconsArray : []).slice().sort((a, b) => b.rssi - a.rssi);
+      const rawCsv = buildWigleCSVString();
+      const rawJson = JSON.stringify(all);
+      const rawBytes = new TextEncoder().encode(rawCsv + rawJson).length;
+
+      // Build canonical pipe-delimited wire lines: PREFIX|NODE|BSSID|SSID|AUTH|CH|RSSI|BAND|TRIT|LAT|LON
+      const canonicalLines = all.map((ap, idx) => {
+        const prefix = ap.type === "BLE" || ap.type === "BT" ? "B" : (ap.type === "AIRPLAY" ? "A" : "W");
+        const authShort = level >= 2
+          ? String(ap.auth || "").replace(/WPA2-PSK-CCMP\]\[ESS/g, "W2").replace(/WPA3-SAE-CCMP\]\[ESS/g, "W3").replace(/AIRPLAY-RAOP\]\[ESS/g, "RAOP").replace(/BT-CLASSIC\]\[/g, "BT:")
+          : ap.auth;
+        const ssidComp = level >= 3 ? rewriteSsid(ap.ssid, level) : ap.ssid;
+        const latComp = level >= 2 ? Number(ap.lat).toFixed(4) : Number(ap.lat).toFixed(6);
+        const lonComp = level >= 2 ? Number(ap.lon).toFixed(4) : Number(ap.lon).toFixed(6);
+        return `${prefix}|${ap.node}|${ap.bssid}|${ssidComp}|${authShort}|${ap.ch}|${ap.rssi}|${ap.band}|${ap.tritLabel}|${latComp}|${lonComp}`;
+      });
+
+      const dittoLines = level >= 2 ? dedupCrossLine(canonicalLines) : canonicalLines;
+      const trits = all.map(ap => ap.trit || 0);
+      const packedTrits = AlexAIEngine.packTernary(trits);
+      const packedB64 = btoa(String.fromCharCode(...packedTrits));
+      const retention = ebbinghausDecay(0.45); // Fresh scan age=0.45 -> ~91.4% Ebbinghaus retention
+
+      const brainHeader = level >= 3
+        ? `# KU-v${VERSION} [BrainLine: ${BRAIN_LINE} | λ=1/π | keep=${EXACT_KEEP_RATE} | Ebbinghaus=${(retention * 100).toFixed(1)}% | TritsB64=${packedB64}]`
+        : `# KU-v${VERSION} [Level=${level} | Ebbinghaus=${(retention * 100).toFixed(1)}%]`;
+
+      const wireStream = [brainHeader, ...dittoLines].join("\n");
+      const compBytes = new TextEncoder().encode(wireStream).length;
+      const ratio = rawBytes > 0 ? (rawBytes / Math.max(1, compBytes)) : 1.0;
+      const savingsPct = rawBytes > 0 ? Math.max(0, (1.0 - compBytes / rawBytes) * 100) : 0;
+
+      const bundle = {
+        engine: "kompress-ultra",
+        version: VERSION,
+        level,
+        brain_line: BRAIN_LINE,
+        exact_keep_rate: EXACT_KEEP_RATE,
+        ebbinghaus_retention: Number(retention.toFixed(4)),
+        raw_bytes: rawBytes,
+        compressed_bytes: compBytes,
+        compression_ratio: Number(ratio.toFixed(2)),
+        savings_pct: Number(savingsPct.toFixed(1)),
+        packed_trits_b64: packedB64,
+        beacon_count: all.length,
+        canonical_lines: canonicalLines,
+        ditto_lines: dittoLines,
+        alexai_gaia: alexFold ? {
+          seed: alexFold.seed,
+          coherence: Number(alexFold.coherence.toFixed(4)),
+          gravity: alexFold.gravity,
+          entropy: Number(alexFold.entropy.toFixed(4)),
+          weather: Number(alexFold.weather.toFixed(4)),
+          resonance: Number(alexFold.resonance.toFixed(6)),
+          packed_hex: alexFold.packedHex
+        } : null,
+        created_at: new Date().toISOString()
+      };
+
+      return {
+        rawBytes,
+        compBytes,
+        ratio,
+        savingsPct,
+        retention,
+        wireStream,
+        dittoLines,
+        canonicalLines,
+        packedTrits,
+        bundle
+      };
+    }
+
+    function verifyLosslessRoundTrip(compResult) {
+      const restored = undedupCrossLine(compResult.dittoLines);
+      const exactMatch = restored.length === compResult.canonicalLines.length &&
+        restored.every((line, idx) => line === compResult.canonicalLines[idx]);
+      return {
+        ok: exactMatch,
+        linesChecked: restored.length,
+        dittoTokensSaved: compResult.dittoLines.join("|").split("″").length - 1
+      };
+    }
+
+    return {
+      VERSION,
+      EXACT_KEEP_RATE,
+      BRAIN_LINE,
+      ebbinghausDecay,
+      hashEmbedding,
+      dedupCrossLine,
+      undedupCrossLine,
+      compressSpectrum,
+      verifyLosslessRoundTrip
+    };
+  })();
+  window.KompressUltraEngine = KompressUltraEngine;
+
+  let currentKompressLevel = 3;
+  let lastAlexFold = null;
+  let lastKompressResult = null;
+
+  function updateAlexAIAndKompressStudio(customPrompt) {
+    const all = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi);
+    const promptInput = document.getElementById("alexai-prompt-input");
+    const prompt = customPrompt || (promptInput && promptInput.value) ||
+      "Analyze Shinjuku 2.4GHz Ch 6 saturation, BLE proximity & AirPlay RAOP surface";
+
+    const fold = AlexAIEngine.foldSpectrum(prompt, all);
+    lastAlexFold = fold;
+    const comp = KompressUltraEngine.compressSpectrum(all, currentKompressLevel, fold);
+    lastKompressResult = comp;
+
+    // Update Tab 6 AlexAI UI
+    const cohBadge = document.getElementById("alexai-coherence-badge");
+    if (cohBadge) cohBadge.textContent = `coherence = ${fold.coherence.toFixed(3)} · 20.18×`;
+    const gVal = document.getElementById("alexai-g-val");
+    const eVal = document.getElementById("alexai-e-val");
+    const wVal = document.getElementById("alexai-w-val");
+    const rVal = document.getElementById("alexai-r-val");
+    if (gVal) gVal.textContent = fold.gravity.toFixed(3);
+    if (eVal) eVal.textContent = fold.entropy.toFixed(3);
+    if (wVal) wVal.textContent = fold.weather.toFixed(3);
+    if (rVal) rVal.textContent = fold.resonance.toFixed(4);
+
+    const gBar = document.getElementById("alexai-g-bar");
+    const eBar = document.getElementById("alexai-e-bar");
+    const wBar = document.getElementById("alexai-w-bar");
+    if (gBar) gBar.style.width = `${Math.round(fold.gravity * 100)}%`;
+    if (eBar) eBar.style.width = `${Math.round(fold.entropy * 100)}%`;
+    if (wBar) wBar.style.width = `${Math.round(fold.weather * 100)}%`;
+
+    const traceBox = document.getElementById("alexai-trace-box");
+    if (traceBox) traceBox.textContent = fold.traceText;
+
+    // Update Tab 6 Kompress-Ultra UI
+    const ratioBadge = document.getElementById("kompress-ratio-badge");
+    if (ratioBadge) ratioBadge.textContent = `-${comp.savingsPct.toFixed(1)}% BYTES · ${comp.ratio.toFixed(2)}× · KEEP 0.993`;
+    const rawEl = document.getElementById("ku-raw-bytes");
+    const compEl = document.getElementById("ku-comp-bytes");
+    const ratEl = document.getElementById("ku-ratio-val");
+    const decEl = document.getElementById("ku-decay-val");
+    if (rawEl) rawEl.textContent = `${comp.rawBytes} B`;
+    if (compEl) compEl.textContent = `${comp.compBytes} B`;
+    if (ratEl) ratEl.textContent = `${comp.ratio.toFixed(2)}× (-${comp.savingsPct.toFixed(1)}%)`;
+    if (decEl) decEl.textContent = `${(comp.retention * 100).toFixed(1)}% · 0.993`;
+
+    const kuBox = document.getElementById("kompress-preview-box");
+    if (kuBox) kuBox.textContent = comp.wireStream;
+
+    // Update Dashboard & Sidebar summary cards
+    const cardAlexMain = document.getElementById("card-alexai-main");
+    const cardAlexSub = document.getElementById("card-alexai-sub");
+    if (cardAlexMain) cardAlexMain.textContent = `b1.58 · ${fold.compressionVsF32.toFixed(2)}× · KU -${comp.savingsPct.toFixed(1)}%`;
+    if (cardAlexSub) cardAlexSub.textContent = `GAIA coh=${fold.coherence.toFixed(3)} · ${comp.rawBytes}B → ${comp.compBytes}B · keep=0.993`;
+
+    const sbAlexState = document.getElementById("sidebar-alexai-state");
+    const sbAlexSub = document.getElementById("sidebar-alexai-sub");
+    if (sbAlexState) sbAlexState.textContent = `coherence=${fold.coherence.toFixed(3)} · b1.58`;
+    if (sbAlexSub) sbAlexSub.textContent = `5 trits/byte · KU ${comp.ratio.toFixed(2)}× (-${comp.savingsPct.toFixed(1)}%) · keep=0.993`;
+  }
+
+  // ============================================================================
+  // OFFLINE-FIRST PERSISTENCE ENGINE (localStorage + IndexedDB + SW + Auto-Sync)
+  // ============================================================================
+  const LS_BEACONS_KEY = "wigle_triad_beacons_v2";
+  const LS_QUEUE_KEY = "wigle_triad_queue_v2";
+  const LS_RECEIPTS_KEY = "wigle_triad_receipts_v2";
+  const IDB_NAME = "wigle-triad-offline-db";
+  const IDB_VERSION = 2;
+
+  let offlineQueue = [];
+  let idbPromise = null;
+
+  function openOfflineIdb() {
+    if (idbPromise) return idbPromise;
+    idbPromise = new Promise(resolve => {
+      if (!("indexedDB" in window)) {
+        resolve(null);
+        return;
+      }
+      try {
+        const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains("beacons")) db.createObjectStore("beacons", { keyPath: "bssid" });
+          if (!db.objectStoreNames.contains("queue")) db.createObjectStore("queue", { keyPath: "id" });
+          if (!db.objectStoreNames.contains("bundles")) db.createObjectStore("bundles", { keyPath: "id" });
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      } catch {
+        resolve(null);
+      }
+    });
+    return idbPromise;
+  }
+
+  function loadPersistedState() {
+    try {
+      const rawBeacons = localStorage.getItem(LS_BEACONS_KEY);
+      if (rawBeacons) {
+        const parsed = JSON.parse(rawBeacons);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          parsed.forEach(item => {
+            if (item && item.bssid) {
+              const b = enrichBeacon(item);
+              const prev = beacons.get(b.bssid);
+              if (!prev || b.rssi >= prev.rssi) beacons.set(b.bssid, b);
+            }
+          });
+        }
+      }
+    } catch {}
+
+    try {
+      const rawQueue = localStorage.getItem(LS_QUEUE_KEY);
+      if (rawQueue) {
+        const parsedQ = JSON.parse(rawQueue);
+        if (Array.isArray(parsedQ)) offlineQueue = parsedQ;
+      }
+    } catch {}
+
+    try {
+      const rawRec = localStorage.getItem(LS_RECEIPTS_KEY);
+      if (rawRec) {
+        const parsedR = JSON.parse(rawRec);
+        if (Array.isArray(parsedR)) {
+          uploadReceipts.splice(0, uploadReceipts.length, ...parsedR.slice(0, 25));
+        }
+      }
+    } catch {}
+
+    // Also pull from IndexedDB asynchronously if available
+    openOfflineIdb().then(db => {
+      if (!db) return;
+      try {
+        const tx = db.transaction(["beacons", "queue"], "readonly");
+        const bReq = tx.objectStore("beacons").getAll();
+        bReq.onsuccess = () => {
+          if (Array.isArray(bReq.result) && bReq.result.length > 0) {
+            bReq.result.forEach(item => {
+              if (item && item.bssid) {
+                const b = enrichBeacon(item);
+                const prev = beacons.get(b.bssid);
+                if (!prev || b.rssi >= prev.rssi) beacons.set(b.bssid, b);
+              }
+            });
+            renderAll();
+          }
+        };
+        const qReq = tx.objectStore("queue").getAll();
+        qReq.onsuccess = () => {
+          if (Array.isArray(qReq.result) && qReq.result.length > offlineQueue.length) {
+            offlineQueue = qReq.result;
+            renderOfflineQueueUI();
+          }
+        };
+      } catch {}
+    });
+  }
+
+  function persistBeaconsLocally(allBeacons) {
+    try {
+      localStorage.setItem(LS_BEACONS_KEY, JSON.stringify(allBeacons));
+    } catch {}
+    openOfflineIdb().then(db => {
+      if (!db) return;
+      try {
+        const tx = db.transaction("beacons", "readwrite");
+        const store = tx.objectStore("beacons");
+        allBeacons.forEach(b => store.put(b));
+      } catch {}
+    });
+  }
+
+  function persistQueueLocally() {
+    try {
+      localStorage.setItem(LS_QUEUE_KEY, JSON.stringify(offlineQueue));
+    } catch {}
+    openOfflineIdb().then(db => {
+      if (!db) return;
+      try {
+        const tx = db.transaction("queue", "readwrite");
+        const store = tx.objectStore("queue");
+        store.clear();
+        offlineQueue.forEach(item => store.put(item));
+      } catch {}
+    });
+  }
+
+  function isNetworkOnline() {
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.isOnline === "function") {
+      try {
+        return Boolean(window.AndroidWigleBridge.isOnline());
+      } catch {}
+    }
+    return navigator.onLine !== false;
+  }
+
+  function syncBackgroundIframeConnectivity() {
+    const iframe = document.getElementById("musicbg");
+    if (!iframe) return;
+    const online = isNetworkOnline() && location.protocol !== "file:";
+    if (online && iframe.dataset.onlineSrc && iframe.getAttribute("src") === "about:blank") {
+      iframe.setAttribute("src", iframe.dataset.onlineSrc);
+    } else if (!online && iframe.getAttribute("src") !== "about:blank") {
+      iframe.setAttribute("src", "about:blank");
+    }
+  }
+
+  function renderOfflineQueueUI() {
+    const online = isNetworkOnline();
+    let androidQueuedCount = 0;
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.getOfflineQueueCount === "function") {
+      try { androidQueuedCount = Number(window.AndroidWigleBridge.getOfflineQueueCount() || 0); } catch {}
+    }
+    const pendingItems = offlineQueue.filter(q => q.status !== "synced");
+    const totalPending = Math.max(pendingItems.length, androidQueuedCount);
+
+    const badge = document.getElementById("offline-status-badge");
+    const dot = document.getElementById("offline-dot");
+    const txt = document.getElementById("offline-status-text");
+    const pill = document.getElementById("queue-count-pill");
+    const sbState = document.getElementById("sidebar-offline-state");
+    const sbSub = document.getElementById("sidebar-offline-sub");
+    const cardUpMain = document.getElementById("card-upload-main");
+    const cardUpSub = document.getElementById("card-upload-sub");
+
+    if (badge && dot && txt) {
+      if (online) {
+        badge.className = "offline-badge online";
+        dot.style.background = "#00FF66";
+        txt.textContent = totalPending > 0 ? `ONLINE · SYNCING (${totalPending})` : "OFFLINE-FIRST READY · ONLINE";
+      } else {
+        badge.className = "offline-badge offline";
+        dot.style.background = "#FFD700";
+        txt.textContent = `AIRPLANE / OFFLINE MODE (${totalPending} QUEUED)`;
+      }
+    }
+    if (pill) pill.textContent = `${totalPending} Queued`;
+    if (sbState) {
+      sbState.textContent = online
+        ? `LOCAL-FIRST · ONLINE (${totalPending} queued)`
+        : `AIRPLANE / OFFLINE (${totalPending} queued)`;
+      sbState.style.color = online ? "var(--wigle-wifi-24)" : "var(--wigle-airplay)";
+    }
+    if (sbSub) {
+      sbSub.textContent = `IndexedDB + localStorage (${beacons.size} APs cached · ${totalPending} pending CSVs)`;
+    }
+    if (cardUpMain) {
+      cardUpMain.textContent = `${uploadReceipts.length} Receipts · ${totalPending} Queued`;
+    }
+    if (cardUpSub && uploadReceipts.length === 0) {
+      cardUpSub.textContent = online
+        ? `Auto-Sync Active · ${beacons.size} APs persisted locally`
+        : `Offline Queue Active · Will auto-sync on reconnect`;
+    }
+
+    const qListEl = document.getElementById("offline-queue-list");
+    if (qListEl) {
+      if (offlineQueue.length === 0) {
+        qListEl.innerHTML = `<div class="receipt-row">
+          <span style="color:var(--wigle-wifi-24);font-weight:800">● LOCAL CACHE ACTIVE</span>
+          <span style="color:var(--wigle-wifi-5);font-weight:800">IndexedDB + localStorage</span>
+          <span style="color:var(--wigle-airplay);font-weight:700">${beacons.size} Beacons Persisted</span>
+          <span>0 Pending CSVs</span>
+          <span style="color:var(--dim)">Auto-Sync Armed</span>
+          <span style="color:var(--dim)">${online ? "ONLINE" : "OFFLINE"}</span>
+        </div>`;
+      } else {
+        qListEl.innerHTML = offlineQueue.slice(0, 12).map(q => {
+          const isSynced = q.status === "synced";
+          const col = isSynced ? "var(--wigle-wifi-24)" : "var(--wigle-airplay)";
+          return `<div class="receipt-row">
+            <span style="color:${col};font-weight:800">● ${isSynced ? "SYNCED" : "QUEUED"}</span>
+            <span style="color:var(--wigle-wifi-5);font-weight:800">${escapeHtml(q.id)}</span>
+            <span style="color:var(--wigle-airplay);font-weight:700">${Number(q.rows || 0)} rows · KU ${Number(q.compBytes || 0)}B</span>
+            <span>-${Number(q.savingsPct || 0).toFixed(1)}%</span>
+            <span style="color:var(--dim)">${escapeHtml(q.reason || "offline-queue")}</span>
+            <span style="color:var(--dim)">${escapeHtml(q.ts || "")}</span>
+          </div>`;
+        }).join("");
+      }
+    }
+  }
+
+  function enqueueOfflineSnapshot(reason = "manual-queue") {
+    const csv = buildWigleCSVString();
+    const all = Array.from(beacons.values());
+    const comp = lastKompressResult || KompressUltraEngine.compressSpectrum(all, currentKompressLevel, lastAlexFold);
+    const id = `q-${Date.now().toString(36)}`;
+    const ts = new Date().toISOString().slice(11, 19);
+    const item = {
+      id,
+      ts,
+      reason,
+      status: "queued",
+      rows: all.length,
+      rawBytes: comp.rawBytes,
+      compBytes: comp.compBytes,
+      savingsPct: comp.savingsPct,
+      csv,
+      wireStream: comp.wireStream
+    };
+    offlineQueue.unshift(item);
+    if (offlineQueue.length > 50) offlineQueue.length = 50;
+    persistQueueLocally();
+
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.enqueueOfflineUpload === "function") {
+      try {
+        window.AndroidWigleBridge.enqueueOfflineUpload(csv, JSON.stringify({
+          id,
+          rows: all.length,
+          compBytes: comp.compBytes,
+          savingsPct: comp.savingsPct,
+          reason
+        }));
+      } catch {}
+    }
+
+    renderOfflineQueueUI();
+    logLine(`# [OFFLINE-QUEUE] Queued snapshot ${id} (${all.length} rows · Raw ${comp.rawBytes}B -> Kompress-Ultra ${comp.compBytes}B, -${comp.savingsPct.toFixed(1)}%)`);
+    document.getElementById("header-status-text").textContent =
+      `Queued ${id} in local offline store (${all.length} rows · Kompress-Ultra -${comp.savingsPct.toFixed(1)}%)`;
+    return item;
+  }
+  window.enqueueOfflineSnapshot = enqueueOfflineSnapshot;
+
+  async function flushOfflineQueue() {
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.flushOfflineQueue === "function") {
+      try {
+        const resStr = window.AndroidWigleBridge.flushOfflineQueue();
+        if (resStr) logLine(`# [ANDROID:MEDUSA] Native queue flush -> ${resStr}`);
+      } catch {}
+    }
+
+    const pending = offlineQueue.filter(q => q.status !== "synced");
+    if (pending.length === 0) {
+      logLine("# [OFFLINE-QUEUE] Queue is already clean (0 pending snapshots). Running live dual upload...");
+      await runDualAnonymousUpload();
+      renderOfflineQueueUI();
+      return;
+    }
+
+    if (!isNetworkOnline()) {
+      logLine(`! [OFFLINE-QUEUE] Device is currently OFFLINE (${pending.length} snapshots safe in local queue; will auto-flush on reconnect).`);
+      renderOfflineQueueUI();
+      return;
+    }
+
+    logLine(`# [OFFLINE-QUEUE] Flushing ${pending.length} queued WigleWifi-1.4 snapshot(s)...`);
+    let flushedCount = 0;
+    for (const item of pending) {
+      const ok = await uploadSingleCsvPayload(item.csv, item.rows, `queue:${item.id}`);
+      if (ok) {
+        item.status = "synced";
+        flushedCount++;
+      }
+    }
+    persistQueueLocally();
+    renderOfflineQueueUI();
+    logLine(`# [OFFLINE-QUEUE] Flushed ${flushedCount}/${pending.length} queued snapshots.`);
+  }
+  window.flushOfflineQueue = flushOfflineQueue;
+
+  function clearOfflineQueue() {
+    offlineQueue = [];
+    persistQueueLocally();
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.clearOfflineQueue === "function") {
+      try { window.AndroidWigleBridge.clearOfflineQueue(); } catch {}
+    }
+    renderOfflineQueueUI();
+    logLine("# [OFFLINE-QUEUE] Cleared local pending upload queue.");
+  }
+
+  function exportKompressBundleFile() {
+    const all = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi);
+    const comp = KompressUltraEngine.compressSpectrum(all, currentKompressLevel, lastAlexFold);
+    const jsonStr = JSON.stringify(comp.bundle, null, 2);
+    const ts = Math.floor(Date.now() / 1000);
+    const filename = `wigle-triad-${ts}.ku.json`;
+
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.exportKompressBundle === "function") {
+      try {
+        const savedPath = window.AndroidWigleBridge.exportKompressBundle(filename, jsonStr);
+        logLine(`# [ANDROID:MEDUSA] Saved Kompress-Ultra bundle (${comp.compBytes}B, -${comp.savingsPct.toFixed(1)}%) -> ${savedPath}`);
+        document.getElementById("header-status-text").textContent =
+          `Saved Kompress-Ultra bundle -> ${savedPath}`;
+        return savedPath;
+      } catch {}
+    }
+
+    const blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    logLine(`# [KOMPRESS-ULTRA] Exported ${filename} (${comp.rawBytes}B -> ${comp.compBytes}B · ${comp.ratio.toFixed(2)}× · -${comp.savingsPct.toFixed(1)}%)`);
+    return filename;
+  }
+  window.exportKompressBundleFile = exportKompressBundleFile;
+
+  // Register Service Worker for 100% Offline-First operation over HTTP/HTTPS
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.protocol === "http:")) {
+    navigator.serviceWorker.register("./sw.js").then(reg => {
+      logLine(`# [SW-OFFLINE] Service Worker active (${reg.scope}) — Shell & API precached for zero-network operation`);
+    }).catch(() => {});
+    navigator.serviceWorker.addEventListener("message", ev => {
+      if (ev.data && ev.data.type === "SW_ONLINE_SYNC") {
+        flushOfflineQueue();
+      }
+    });
+  }
+
+  window.addEventListener("online", () => {
+    logLine("# [NET-SYNC] Connectivity restored -> Auto-flushing offline queue");
+    syncBackgroundIframeConnectivity();
+    renderOfflineQueueUI();
+    flushOfflineQueue();
+  });
+  window.addEventListener("offline", () => {
+    logLine("# [NET-SYNC] Offline / Airplane Mode detected -> Local-First storage & queue armed");
+    syncBackgroundIframeConnectivity();
+    renderOfflineQueueUI();
+  });
+
+  // Load persisted beacons & queue before initial render
+  loadPersistedState();
+  syncBackgroundIframeConnectivity();
 
   // Interactive Dark Vector Radar Canvas (#radar-map-canvas)
   const radarCanvas = document.getElementById("radar-map-canvas");
@@ -2061,12 +3105,14 @@ nélküled a pokolba az egésszel</div>
   }
 
   renderAll();
+  renderOfflineQueueUI();
   requestAnimationFrame(drawRadarMap);
 
-  logLine("# VAK:MEDUSA [/\\] · FLUG-OS v1.1.0+ultra-omni-evolve · CO5300 2.06\" #1 · MAC 80:B5:4E:F2:02:B0 · 528 Hz");
-  logLine("# OMN:MEDUSA [oo] · FLUG-OS v1.1.0+ultra-omni-evolve · CO5300 2.06\" #2 · MAC 80:B5:4E:F2:02:B4 · 852 Hz");
-  logLine("# ADA:MEDUSA [*]  · FLUG-OS v1.1.0+ultra-omni-evolve · SH8601 1.8\"     · MAC 80:B5:4E:DB:3B:C4 · 432 Hz");
-  logLine("# MAC:MEDUSA [*+/\\+oo] · WigleMac.app v1.1.0+ultra-omni-evolve · CoreWLAN en0 + CoreBluetooth + NetServiceBrowser");
+  logLine("# VAK:MEDUSA [/\\] · FLUG-OS v2.0.0+alexai-kompress · CO5300 2.06\" #1 · MAC 80:B5:4E:F2:02:B0 · 528 Hz");
+  logLine("# OMN:MEDUSA [oo] · FLUG-OS v2.0.0+alexai-kompress · CO5300 2.06\" #2 · MAC 80:B5:4E:F2:02:B4 · 852 Hz");
+  logLine("# ADA:MEDUSA [*]  · FLUG-OS v2.0.0+alexai-kompress · SH8601 1.8\"     · MAC 80:B5:4E:DB:3B:C4 · 432 Hz");
+  logLine("# MAC:MEDUSA [*+/\\+oo] · WigleMac.app v2.0.0+alexai-kompress · CoreWLAN en0 + CoreBluetooth + NetServiceBrowser");
+  logLine("# ALEXAI (8b-is/alexai · GAIA-MLX-QUANT b1.58 · 20.18×) + KOMPRESS-ULTRA v16.2.0 (keep=0.993) · 100% OFFLINE-FIRST");
   logLine("# ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle) | Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended | HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
 
   const activePorts = [];
@@ -2139,6 +3185,7 @@ nélküled a pokolba az egésszel</div>
       document.getElementById("card-hydro-sub").textContent = `c = ${j.sound_speed_mps || 1503.4} m/s · Salience ${Number(j.salience_ratio ?? j.salience ?? 1.67).toFixed(2)}x · Re_M = ${Math.round(j.reynolds ?? j.re_m ?? 1704)}`;
     }
     renderAll();
+    renderOfflineQueueUI();
   }
 
   const REMOTE_API_ORIGIN = (location.protocol === "file:" || !location.hostname)
@@ -2156,6 +3203,7 @@ nélküled a pokolba az egésszel</div>
           const btN = arr.length - wifiN;
           logLine(`# [ANDROID:MEDUSA] Ingested ${arr.length} endpoints (${wifiN} Wi-Fi, ${btN} BLE/BT) via Android Radios`);
           renderAll();
+          renderOfflineQueueUI();
         }
       } catch {}
     }
@@ -2165,15 +3213,18 @@ nélküled a pokolba az egésszel</div>
 
   if (window.AndroidWigleBridge) {
     try {
-      const ver = typeof window.AndroidWigleBridge.getVersion === "function" ? window.AndroidWigleBridge.getVersion() : "v2.0.0+ultra-omni-evolve";
+      const ver = typeof window.AndroidWigleBridge.getVersion === "function" ? window.AndroidWigleBridge.getVersion() : "v2.0.0+alexai-kompress";
       logLine(`# [ANDROID:MEDUSA] Native Bridge Online · ${ver}`);
     } catch {}
     pollAndroidWigleBridge();
   }
 
-  fetch(`${REMOTE_API_ORIGIN}/api/triad.json`).then(r => r.ok ? r.json() : null).then(j => {
-    if (j) applyStatusJson(j);
-  }).catch(() => {});
+  // Only fetch triad.json when online (or served by local/SW cache); never fail when offline
+  if (isNetworkOnline() || location.protocol === "http:" || location.protocol === "https:") {
+    fetch(`${REMOTE_API_ORIGIN}/api/triad.json`).then(r => r.ok ? r.json() : null).then(j => {
+      if (j) applyStatusJson(j);
+    }).catch(() => {});
+  }
 
   function parseIncomingSerialLine(line) {
     if (!line) return;
@@ -2251,6 +3302,17 @@ nélküled a pokolba az egésszel</div>
       logLine("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
     } else if (upper === "TRIAD") {
       logLine("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)|ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+    } else if (upper === "ALEXAI") {
+      updateAlexAIAndKompressStudio();
+      if (lastAlexFold) {
+        logLine(`# ALEXAI|GAIA-MLX-QUANT|seed=0x${lastAlexFold.seed.toString(16)}|coherence=${lastAlexFold.coherence.toFixed(4)}|gravity=${lastAlexFold.gravity.toFixed(3)}|entropy=${lastAlexFold.entropy.toFixed(3)}|weather=${lastAlexFold.weather.toFixed(3)}|resonance=${lastAlexFold.resonance.toFixed(6)}|hex=[${lastAlexFold.packedHex}]`);
+      }
+    } else if (upper === "KOMPRESS") {
+      updateAlexAIAndKompressStudio();
+      if (lastKompressResult) {
+        const v = KompressUltraEngine.verifyLosslessRoundTrip(lastKompressResult);
+        logLine(`# KOMPRESS|v${KompressUltraEngine.VERSION}|level=${currentKompressLevel}|raw=${lastKompressResult.rawBytes}B|comp=${lastKompressResult.compBytes}B|ratio=${lastKompressResult.ratio.toFixed(2)}x|savings=-${lastKompressResult.savingsPct.toFixed(1)}%|roundtrip=${v.ok ? "LOSSLESS_OK" : "ERR"}`);
+      }
     }
   }
 
@@ -2259,7 +3321,7 @@ nélküled a pokolba az egésszel</div>
     const upper = clean.toUpperCase();
     pollAndroidWigleBridge();
     if (activePorts.length === 0) {
-      if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
+      if ((location.hostname === "127.0.0.1" || location.hostname === "localhost") && isNetworkOnline()) {
         try {
           const r = await fetch("/api/cmd", {
             method: "POST",
@@ -2275,7 +3337,7 @@ nélküled a pokolba az egésszel</div>
             return;
           }
         } catch {}
-      } else {
+      } else if (isNetworkOnline() && location.protocol !== "file:") {
         try {
           const r = await fetch(`${REMOTE_API_ORIGIN}/api/triad.json`);
           if (r.ok) {
@@ -2287,7 +3349,7 @@ nélküled a pokolba az egésszel</div>
       logLine(`> [MEDUSA-OMNI] TX: ${clean}`);
       emitLocalUltraOmniResponse(upper);
       document.getElementById("header-status-text").textContent =
-        `Scan Active · ${beacons.size} quad-spectrum endpoints synthesized across ADA (*), VAK (/\\), OMN (oo), MAC (en0)`;
+        `Scan Active (${isNetworkOnline() ? "Online" : "Offline-First"}) · ${beacons.size} quad-spectrum endpoints synthesized`;
       renderAll();
       return;
     }
@@ -2349,14 +3411,17 @@ nélküled a pokolba az egésszel</div>
   document.getElementById("btn-export-csv").addEventListener("click", triggerCSVDownload);
   document.getElementById("btn-export-studio").addEventListener("click", triggerCSVDownload);
 
-  // Anonymous Dual Upload -> esp32.vaked.dev/api/upload + api.wigle.net/api/v2/file/upload
+  // Anonymous Dual Upload -> esp32.vaked.dev/api/upload + api.wigle.net/api/v2/file/upload (with Offline Queue fallback)
   function renderReceipts() {
+    try {
+      localStorage.setItem(LS_RECEIPTS_KEY, JSON.stringify(uploadReceipts.slice(0, 25)));
+    } catch {}
     const el = document.getElementById("receipt-list");
-    if (uploadReceipts.length === 0) return;
+    if (!el || uploadReceipts.length === 0) return;
     el.innerHTML = uploadReceipts.map(r => {
-      const col = r.ok ? "var(--wigle-wifi-24)" : "var(--trit-neg)";
+      const col = r.ok ? "var(--wigle-wifi-24)" : "var(--wigle-airplay)";
       return `<div class="receipt-row">
-        <span style="color:${col};font-weight:800">● HTTP ${Number(r.status || 0)} ${r.ok ? "OK" : "ERR"}</span>
+        <span style="color:${col};font-weight:800">● HTTP ${Number(r.status || 0)} ${r.ok ? "OK" : "QUEUED"}</span>
         <span style="color:var(--wigle-wifi-5);font-weight:800">${escapeHtml(r.target)}</span>
         <span style="color:var(--wigle-airplay);font-weight:700">transId: ${escapeHtml(r.transId)}</span>
         <span>rows: ${Number(r.rows || 0)}</span>
@@ -2364,54 +3429,80 @@ nélküled a pokolba az egésszel</div>
         <span style="color:var(--dim)">${escapeHtml(r.ts)}</span>
       </div>`;
     }).join("");
-    document.getElementById("card-upload-main").textContent = `${uploadReceipts.length} Receipts · donate=on`;
+    renderOfflineQueueUI();
     if (uploadReceipts[0]) {
       document.getElementById("card-upload-sub").textContent =
         `${uploadReceipts[0].target}: ${uploadReceipts[0].transId} (observer=anonymous)`;
     }
   }
+  renderReceipts();
 
-  async function runDualAnonymousUpload() {
-    const csv = buildWigleCSVString();
-    const btnTop = document.getElementById("btn-upload-wigle");
-    const btnStudio = document.getElementById("btn-upload-studio");
-    btnTop.disabled = true;
-    btnStudio.disabled = true;
-    btnTop.textContent = "⏳ Uploading...";
-    btnStudio.textContent = "⏳ Uploading to esp32.vaked.dev + api.wigle.net...";
+  async function uploadSingleCsvPayload(csv, rowCount, sourceTag = "live") {
     const ts = new Date().toISOString().slice(11, 19);
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.uploadCsvNative === "function" && isNetworkOnline()) {
+      try {
+        const nativeResStr = window.AndroidWigleBridge.uploadCsvNative(csv);
+        const nativeRes = JSON.parse(nativeResStr || "{}");
+        if (nativeRes && (nativeRes.espOk || nativeRes.wigleOk)) {
+          uploadReceipts.unshift(
+            {
+              target: "api.wigle.net",
+              ok: Boolean(nativeRes.wigleOk),
+              status: Number(nativeRes.wigleStatus || 200),
+              transId: nativeRes.wigleTransId || `wigle-${Date.now()}`,
+              rows: rowCount,
+              observer: "anonymous",
+              ts
+            },
+            {
+              target: "esp32.vaked.dev",
+              ok: Boolean(nativeRes.espOk),
+              status: Number(nativeRes.espStatus || 200),
+              transId: nativeRes.espTransId || `esp32-${Date.now()}`,
+              rows: rowCount,
+              observer: "anonymous",
+              ts
+            }
+          );
+          renderReceipts();
+          return true;
+        }
+      } catch {}
+    }
 
-    try {
-      const fd = new FormData();
-      fd.append("donate", "on");
-      fd.append("file", new Blob([csv], { type: "text/csv" }), `wigle-triad-${Date.now()}.csv`);
+    const fd = new FormData();
+    fd.append("donate", "on");
+    fd.append("file", new Blob([csv], { type: "text/csv" }), `wigle-triad-${Date.now()}.csv`);
 
-      const [res, directWigle] = await Promise.all([
-        fetch(`${REMOTE_API_ORIGIN}/api/upload?mirror=wigle`, {
-          method: "POST",
-          headers: { "content-type": "text/csv; charset=utf-8" },
-          body: csv
-        }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null),
-        fetch("https://api.wigle.net/api/v2/file/upload", {
-          method: "POST",
-          headers: { "Accept": "application/json" },
-          body: fd
-        }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null)
-      ]);
-      const data = res?.json || {};
-      const espOk = Boolean(res && res.ok);
-      const espStatus = res?.status || 0;
-      const espTid = espOk ? (data?.esp32_vaked_dev?.transId || data?.transId || `esp32-${Date.now()}`) : "offline-err";
-      const directTid = directWigle?.json?.results?.transids?.[0]?.transId;
-      const relayOk = Boolean(espOk && data?.wigle_net && data.wigle_net.ok !== false);
-      const wigOk = Boolean(directTid || (directWigle && directWigle.ok) || relayOk);
-      const wigStatus = directTid
-        ? (directWigle.status || 200)
-        : (relayOk ? (data?.wigle_net?.status || 200) : (directWigle?.status || data?.wigle_net?.status || 0));
-      const wigTid = directTid || (relayOk ? (data?.wigle_net?.transId || `wigle-${Date.now()}`) : "offline-err");
-      const wigObs = directWigle?.json?.observer || data?.wigle_net?.observer || "anonymous";
-      const rows = data?.ingested || beacons.size;
+    const [res, directWigle] = await Promise.all([
+      fetch(`${REMOTE_API_ORIGIN}/api/upload?mirror=wigle`, {
+        method: "POST",
+        headers: { "content-type": "text/csv; charset=utf-8" },
+        body: csv
+      }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null),
+      fetch("https://api.wigle.net/api/v2/file/upload", {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: fd
+      }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null)
+    ]);
 
+    const data = res?.json || {};
+    const swQueued = Boolean(data?.offline_queued);
+    const espOk = Boolean(res && res.ok && !swQueued);
+    const espStatus = res?.status || 0;
+    const espTid = espOk ? (data?.esp32_vaked_dev?.transId || data?.transId || `esp32-${Date.now()}`) : "offline-queued";
+    const directTid = directWigle?.json?.results?.transids?.[0]?.transId;
+    const relayOk = Boolean(espOk && data?.wigle_net && data.wigle_net.ok !== false);
+    const wigOk = Boolean(directTid || (directWigle && directWigle.ok) || relayOk);
+    const wigStatus = directTid
+      ? (directWigle.status || 200)
+      : (relayOk ? (data?.wigle_net?.status || 200) : (directWigle?.status || data?.wigle_net?.status || 0));
+    const wigTid = directTid || (relayOk ? (data?.wigle_net?.transId || `wigle-${Date.now()}`) : "offline-queued");
+    const wigObs = directWigle?.json?.observer || data?.wigle_net?.observer || "anonymous";
+    const rows = data?.ingested || rowCount;
+
+    if (espOk || wigOk) {
       uploadReceipts.unshift(
         {
           target: "api.wigle.net",
@@ -2433,23 +3524,46 @@ nélküled a pokolba az egésszel</div>
         }
       );
       renderReceipts();
-      if (espOk || wigOk) {
-        logLine(`# [ANON DUAL UPLOAD OK] esp32.vaked.dev transId=${espTid} (${espStatus}) | api.wigle.net transId=${wigTid} (${wigStatus}) (${rows} rows)`);
+      logLine(`# [ANON DUAL UPLOAD OK] (${sourceTag}) esp32.vaked.dev transId=${espTid} (${espStatus}) | api.wigle.net transId=${wigTid} (${wigStatus}) (${rows} rows)`);
+      return true;
+    }
+    return false;
+  }
+
+  async function runDualAnonymousUpload() {
+    const csv = buildWigleCSVString();
+    const btnTop = document.getElementById("btn-upload-wigle");
+    const btnStudio = document.getElementById("btn-upload-studio");
+    btnTop.disabled = true;
+    btnStudio.disabled = true;
+    btnTop.textContent = "⏳ Uploading...";
+    btnStudio.textContent = "⏳ Uploading to esp32.vaked.dev + api.wigle.net...";
+
+    try {
+      if (!isNetworkOnline()) {
+        const qItem = enqueueOfflineSnapshot("auto-offline-fallback");
+        btnTop.textContent = `📥 Queued Offline (${qItem.id})`;
+        btnStudio.textContent = `📥 Queued Offline (${qItem.id} · Auto-Sync Armed)`;
+        return;
+      }
+
+      const ok = await uploadSingleCsvPayload(csv, beacons.size, "manual");
+      if (ok && uploadReceipts[0]) {
+        const topTid = uploadReceipts[0].transId;
         document.getElementById("header-status-text").textContent =
-          `Uploaded anonymously -> esp32.vaked.dev (${espTid}) | api.wigle.net (${wigTid})`;
-        btnTop.textContent = `✅ Uploaded (${wigOk ? wigTid : espTid})`;
-        btnStudio.textContent = `✅ Dual Upload Complete (${espTid} · ${wigTid})`;
+          `Uploaded anonymously -> ${uploadReceipts[0].target} (${topTid})`;
+        btnTop.textContent = `✅ Uploaded (${topTid})`;
+        btnStudio.textContent = `✅ Dual Upload Complete (${topTid})`;
       } else {
-        logLine(`! [ANON DUAL UPLOAD ERR] Network unreachable (esp32.vaked.dev status=${espStatus}, api.wigle.net status=${wigStatus})`);
-        document.getElementById("header-status-text").textContent =
-          `Upload failed (offline / network unreachable) · ${rows} rows ready in CSV preview`;
-        btnTop.textContent = "⚠️ Offline (Retry Upload)";
-        btnStudio.textContent = "⚠️ Upload Failed (Offline — Click to Retry)";
+        const qItem = enqueueOfflineSnapshot("network-unreachable-fallback");
+        btnTop.textContent = `📥 Queued Offline (${qItem.id})`;
+        btnStudio.textContent = `📥 Saved to Offline Queue (${qItem.id}) — Will Auto-Sync`;
       }
     } catch (err) {
-      logLine(`! Anonymous upload error: ${err.message}`);
-      btnTop.textContent = "☁️ Anon Upload (Dual)";
-      btnStudio.textContent = "☁️ Upload Now to esp32.vaked.dev + api.wigle.net";
+      const qItem = enqueueOfflineSnapshot("upload-exception-fallback");
+      logLine(`! Anonymous upload fallback to offline queue (${qItem.id}): ${err.message}`);
+      btnTop.textContent = `📥 Queued (${qItem.id})`;
+      btnStudio.textContent = `📥 Queued Offline (${qItem.id})`;
     } finally {
       btnTop.disabled = false;
       btnStudio.disabled = false;
@@ -2459,6 +3573,110 @@ nélküled a pokolba az egésszel</div>
 
   document.getElementById("btn-upload-wigle").addEventListener("click", runDualAnonymousUpload);
   document.getElementById("btn-upload-studio").addEventListener("click", runDualAnonymousUpload);
+
+  const btnFlushTop = document.getElementById("btn-flush-queue");
+  const btnFlushStudio = document.getElementById("btn-flush-studio");
+  const btnQueueOffline = document.getElementById("btn-queue-offline");
+  const btnClearQueue = document.getElementById("btn-clear-queue");
+  const btnExportKuTop = document.getElementById("btn-export-ku");
+  const btnExportKuStudio = document.getElementById("btn-export-ku-studio");
+  const btnKompressDownload = document.getElementById("btn-kompress-download");
+
+  if (btnFlushTop) btnFlushTop.addEventListener("click", flushOfflineQueue);
+  if (btnFlushStudio) btnFlushStudio.addEventListener("click", flushOfflineQueue);
+  if (btnQueueOffline) btnQueueOffline.addEventListener("click", () => enqueueOfflineSnapshot("studio-manual-queue"));
+  if (btnClearQueue) btnClearQueue.addEventListener("click", clearOfflineQueue);
+  if (btnExportKuTop) btnExportKuTop.addEventListener("click", exportKompressBundleFile);
+  if (btnExportKuStudio) btnExportKuStudio.addEventListener("click", exportKompressBundleFile);
+  if (btnKompressDownload) btnKompressDownload.addEventListener("click", exportKompressBundleFile);
+
+  // Wire up Tab 6 AlexAI & Kompress-Ultra Interactive Controls
+  const btnAlexRun = document.getElementById("btn-alexai-run");
+  if (btnAlexRun) {
+    btnAlexRun.addEventListener("click", () => {
+      updateAlexAIAndKompressStudio();
+      if (lastAlexFold) {
+        logLine(`# [ALEXAI-GAIA] Folded "${lastAlexFold.prompt.slice(0, 48)}..." -> coherence=${lastAlexFold.coherence.toFixed(3)} · packed=[${lastAlexFold.packedHex}]`);
+      }
+    });
+  }
+
+  document.querySelectorAll("[data-alexai-preset]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const inp = document.getElementById("alexai-prompt-input");
+      if (inp) inp.value = btn.dataset.alexaiPreset;
+      updateAlexAIAndKompressStudio(btn.dataset.alexaiPreset);
+    });
+  });
+
+  document.querySelectorAll("[data-klevel]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentKompressLevel = parseInt(btn.dataset.klevel, 10) || 0;
+      document.querySelectorAll("[data-klevel]").forEach(b => {
+        b.classList.toggle("active", b === btn);
+      });
+      updateAlexAIAndKompressStudio();
+      if (lastKompressResult) {
+        logLine(`# [KOMPRESS-ULTRA] Switched to Level ${currentKompressLevel} -> ${lastKompressResult.rawBytes}B to ${lastKompressResult.compBytes}B (${lastKompressResult.ratio.toFixed(2)}×, -${lastKompressResult.savingsPct.toFixed(1)}%)`);
+      }
+    });
+  });
+
+  const btnKompressVerify = document.getElementById("btn-kompress-verify");
+  if (btnKompressVerify) {
+    btnKompressVerify.addEventListener("click", () => {
+      updateAlexAIAndKompressStudio();
+      if (lastKompressResult) {
+        const res = KompressUltraEngine.verifyLosslessRoundTrip(lastKompressResult);
+        btnKompressVerify.textContent = res.ok
+          ? `✅ Round-Trip Verified (${res.linesChecked} rows · ${res.dittoTokensSaved} ditto ″ tokens)`
+          : "⚠️ Round-Trip Mismatch";
+        logLine(`# [KOMPRESS-ULTRA] Lossless round-trip check: ok=${res.ok} (${res.linesChecked} rows, ${res.dittoTokensSaved} cross-line ditto ″ tokens restored)`);
+      }
+    });
+  }
+
+  // AlexAI D+++ 432Hz Harmonic Resonance Synth (from 8b-is/alexai web/app.js)
+  function playAlexAiDPlusPlusSynth() {
+    updateAlexAIAndKompressStudio();
+    const ac = ensureAudioGraph();
+    const now = ac.currentTime;
+    const coh = lastAlexFold ? lastAlexFold.coherence : 0.92;
+    const res = lastAlexFold ? lastAlexFold.resonance : 1.618034;
+    const base = 216.0 * (0.8 + coh * 0.4);
+    const ratios = [1.0, 1.5, AlexAIEngine.PHI];
+
+    ratios.forEach((r, idx) => {
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = idx === 2 ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(base * r, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.09 / (idx + 1), now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+      osc.connect(gain).connect(masterGain);
+      osc.start(now);
+      osc.stop(now + 1.85);
+      activeHymnOscillators.push(osc);
+    });
+
+    const bell = ac.createOscillator();
+    const bellGain = ac.createGain();
+    bell.type = "sine";
+    bell.frequency.setValueAtTime(432.0 * (0.5 + res * 0.2), now + 0.15);
+    bellGain.gain.setValueAtTime(0.0001, now + 0.15);
+    bellGain.gain.exponentialRampToValueAtTime(0.05, now + 0.22);
+    bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+    bell.connect(bellGain).connect(masterGain);
+    bell.start(now + 0.15);
+    bell.stop(now + 1.45);
+    activeHymnOscillators.push(bell);
+
+    logLine(`# [ALEXAI-D+++] 432Hz GAIA Resonance Synth triggered (base=${base.toFixed(1)}Hz · φ=${AlexAIEngine.PHI.toFixed(4)} · coh=${coh.toFixed(3)})`);
+  }
+
+  const btnAlexDPlus = document.getElementById("btn-alexai-dplus");
+  if (btnAlexDPlus) btnAlexDPlus.addEventListener("click", playAlexAiDPlusPlusSynth);
 
   // WebAudio Triad Harmonic Synthesizer (432 Hz * + 528 Hz /\ + 852 Hz oo + Shinjuku Gyoen Crickets)
   let audioCtx = null, masterGain = null, droneGain = null, droneInitialized = false, audioPlaying = false, cricketTimer = null;

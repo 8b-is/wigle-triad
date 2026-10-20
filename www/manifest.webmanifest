@@ -1,0 +1,19 @@
+{
+  "name": "WigleTriad × esp32.vaked.dev — 8b-is Offline-First Spectrum Radar",
+  "short_name": "WigleTriad",
+  "description": "100% Offline-First WiGLE.net × 8b-is Sovereign Spectrum Radar with 8b-is/alexai (GAIA-MLX-QUANT b1.58) and kompress-ultra.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0914",
+  "theme_color": "#0B0914",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

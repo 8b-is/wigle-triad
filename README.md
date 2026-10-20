@@ -1,18 +1,35 @@
 # wigle-triad — the MEDUSA triad (`v2.0.0+8b-is-heals-the-world` · `LOVE FROM WITHIN FROM VAKED-PETER&8B-IS ---> 8b-is ROCKS AND HEALS THE WORLD`)
 
-### 🚀 v2.0.0 Multi-Platform Release (`macOS Apple Silicon` · `macOS Universal` · `Android APK` · `iPadOS / iOS`)
+### 🚀 v2.0.0 Multi-Platform Release (`macOS Apple Silicon` · `macOS Universal` · `Android APK` · `iPadOS / iOS` · `100% Offline-First`)
 - **GitHub Release (`v2.0.0`)**: [https://github.com/8b-is/wigle-triad/releases/tag/v2.0.0](https://github.com/8b-is/wigle-triad/releases/tag/v2.0.0)
   - 🍎 **MacBook Apple Silicon (`M1/M2/M3/M4` App Bundle + CLI)**: [`WigleMac-v2.0.0-macos-apple-silicon.zip`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WigleMac-v2.0.0-macos-apple-silicon.zip) + [`wigle-macos-v2.0.0-arm64-apple-silicon`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/wigle-macos-v2.0.0-arm64-apple-silicon)
   - 💻 **macOS Universal Binary (`arm64 + x86_64`)**: [`wigle-macos-v2.0.0-universal-darwin`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/wigle-macos-v2.0.0-universal-darwin)
-  - 🤖 **Android Universal APK (`v2/v3 Signed` · `WifiManager` Native Bridge)**: [`WigleTriad-v2.0.0-android-universal.apk`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WigleTriad-v2.0.0-android-universal.apk)
+  - 🤖 **Android Universal APK (`v2/v3 Signed` · `WifiManager` + `SQLite` Offline-First Native Bridge)**: [`WigleTriad-v2.0.0-android-universal.apk`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WigleTriad-v2.0.0-android-universal.apk)
   - 📱 **iPadOS & iOS (`Swift Playgrounds .swiftpm` + `1-Tap Home Screen WebClip`)**: [`WiglePad-v2.0.0-ipados-swiftpm.zip`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WiglePad-v2.0.0-ipados-swiftpm.zip) + [`WiglePad-v2.0.0-ipados.mobileconfig`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WiglePad-v2.0.0-ipados.mobileconfig)
 
 **Live Psychedelic ENTHEAI & WebSerial Surface:** [https://esp32.vaked.dev/](https://esp32.vaked.dev/)  
 **Live Triad Telemetry JSON:** [https://esp32.vaked.dev/api/triad.json](https://esp32.vaked.dev/api/triad.json)  
+**AlexAI GAIA-MLX-QUANT API:** [https://esp32.vaked.dev/api/alexai](https://esp32.vaked.dev/api/alexai)  
+**Kompress-Ultra v16.2.0 API:** [https://esp32.vaked.dev/api/kompress](https://esp32.vaked.dev/api/kompress)  
 **GitHub Repository (`HYPER-CHARM-KARMA`):** `HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter`  
 **Local Web + USB Bridge (`wiglewww`):** `www/index.html` + `host/wiglewww.py` (`http://127.0.0.1:8088`)
 
-Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. Each node listens exclusively to passive 2.4 GHz WiFi beacon frames (`WIFI_STA` + `WiFi.scanNetworks(false, true, true, 180)`, zero association, zero frame injection, zero payload capture) and streams real-time `W|` beacon lines, `Q|` balanced-ternary Kuramoto coherence frames, `# QMOM|`, `# BOLDOG|`, `# LACRIMOSA|`, and `# JSON|` status frames over USB CDC serial (115200 baud).
+Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. Each node listens exclusively to passive 2.4 GHz WiFi beacon frames (`WIFI_STA` + `WiFi.scanNetworks(false, true, true, 180)`, zero association, zero frame injection, zero payload capture) and streams real-time `W|` beacon lines, `Q|` balanced-ternary Kuramoto coherence frames, `# ALEXAI|`, `# KOMPRESS|`, `# QMOM|`, `# BOLDOG|`, `# LACRIMOSA|`, and `# JSON|` status frames over USB CDC serial (115200 baud).
+
+---
+
+## 0.0 `100% OFFLINE-FIRST` × `8b-is/alexai` (`GAIA-MLX-QUANT`) × `kompress-ultra` (`v16.2.0`)
+
+- **100% Offline-First Guarantee (Airplane Mode / Zero Network)**:
+  - Zero external CDN dependencies (system geometric/monospace font stacks, inline SVG data-URI favicon, offline-guarded background audio iframe with local WebAudio `432·528·852 Hz` + `D+++` synthesis).
+  - **Web / PWA (`www/sw.js` + `www/manifest.webmanifest`)**: Service Worker precaches the shell and `/api/triad.json`; `IndexedDB` (`wigle-triad-offline-db`) + `localStorage` (`wigle_triad_beacons_v2`, `wigle_triad_queue_v2`) persist all scanned endpoints and pending `WigleWifi-1.4` CSV uploads locally, with automatic queue flush on `online` reconnect.
+  - **Android (`MainActivity.java`)**: `SQLiteDatabase` (`wigle_offline.db` tables `beacons_cache` & `upload_queue`) + `shouldInterceptRequest` serves bundled assets and local `/api/triad.json` / `/api/alexai` / `/api/kompress` snapshots with zero network errors in Airplane Mode, plus `ConnectivityManager.NetworkCallback` auto-sync.
+  - **macOS (`wigle-macos.swift`) & Python (`host/wiglewww.py`)**: Persistent local cache and upload queue in `~/.cache/wigle-triad/` with `--flush-queue` CLI support.
+- **AlexAI (`8b-is/alexai` · `GAIA-MLX-QUANT` BitNet b1.58 `{-1, 0, +1}`)**:
+  - 4-layer deterministic GAIA fold (`Ananke` gravity `1.0`, `Chaos` entropy rest `0.62`, `Zephyrus` weather rest `0.50`, `Aphrodite` golden resonance $\varphi = 1.618033988749895$) seeded via FNV-1a 32-bit + Mulberry32 PRNG.
+  - Base-3 little-endian **5 trits/byte** packing (`1.585 bits/weight` · **`20.19×` compression vs FP32**) + masked ternary linear kernel $Y_i = \gamma \sum (W^+ - W^-) x_j$ + playable **D+++ 432Hz** harmonic synth.
+- **Kompress-Ultra (`kompress-ultra` v16.2.0)**:
+  - 4-role telemetry & CSV compression pipeline: **Pruner** (Ebbinghaus decay $e^{-\text{age}/5}$ + 768-dim hash embeddings) $\to$ **Rewriter** (cross-line ditto `″` token deduplication across consecutive `W|`, `B|`, `A|` frames) $\to$ **Circulator** (JSONL queue) $\to$ **Composer** (`BrainLine`: `ralph · lodri · krengel · cosmos`, $\lambda = 3.0 \to 1/\pi$, `0.993` exact-keep rate, **~5.3× / -81% byte reduction** with verified lossless round-trip and `.ku.json` export).
 
 ---
 
