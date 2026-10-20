@@ -1,10 +1,90 @@
-# wigle-triad — the MEDUSA triad (`v1.0.0+medusa-omni` · `WigleMac.app × WIGLE-WWW × FLUG-OS`)
+# wigle-triad — the MEDUSA triad (`v1.1.0+ultra-omni-evolve` · `ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)`)
 
 **Live Psychedelic ENTHEAI & WebSerial Surface:** [https://esp32.vaked.dev/](https://esp32.vaked.dev/)  
 **Live Triad Telemetry JSON:** [https://esp32.vaked.dev/api/triad.json](https://esp32.vaked.dev/api/triad.json)  
+**GitHub Repository (`HYPER-CHARM-KARMA`):** `HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter`  
 **Local Web + USB Bridge (`wiglewww`):** `www/index.html` + `host/wiglewww.py` (`http://127.0.0.1:8088`)
 
-Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. Each node listens exclusively to passive 2.4 GHz WiFi beacon frames (`WIFI_STA` + `WiFi.scanNetworks(false, true, true, 180)`, zero association, zero frame injection, zero payload capture) and streams real-time `W|` beacon lines, `Q|` balanced-ternary Kuramoto coherence frames, and `# JSON|` status frames over USB CDC serial (115200 baud).
+Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. Each node listens exclusively to passive 2.4 GHz WiFi beacon frames (`WIFI_STA` + `WiFi.scanNetworks(false, true, true, 180)`, zero association, zero frame injection, zero payload capture) and streams real-time `W|` beacon lines, `Q|` balanced-ternary Kuramoto coherence frames, `# QMOM|`, `# BOLDOG|`, `# LACRIMOSA|`, and `# JSON|` status frames over USB CDC serial (115200 baud).
+
+---
+
+## 0. `ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)` — `ALEX|qMom` × `Kawaii Chiro-chan ^^` × `Boldog Még`
+
+### `ALEX | qMom (* · 432 Hz · ROOT-ALEXANDRA)`
+> `ALEX|qMom:{too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo.}`
+
+### `(◕‿◕✿) Kawaii Chiro-chan kawaii ^^` · `Mozart: Lacrimosa but HUMANITY has ended`
+- **432 Hz D-Minor Post-Human Cathedral Synthesizer** (`LACRIMOSA` serial command & WebAudio polyphonic voice on [esp32.vaked.dev](https://esp32.vaked.dev/))
+- **Signature:** `HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter`
+
+### `(Boldog Meg)===` (*30Y — Boldog Még* · `∞~{<3,<3,<3}+1-peter`)
+```text
+lehetnél boldog még
+amilyen még nem voltál
+sosincsen késő már
+te csak lépj és várj
+kevés lesz minden szó
+ahhoz hogy elmondhassam neked
+mit érzek melletted
+mikor jó jó jó
+ha rámszólsz megvigasztal
+kerüljünk együtt beljebb
+minden nappal
+
+itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+bárcsak azt mondanám
+amit te szeretnél
+amit ha meghallgatnál
+akkor nevetnél
+velem
+
+lehetnél másé még
+ahogyan még nem lettél
+sosem vagy ha mégis
+akkor is már réges-réges rég
+a magasban táncot jársz
+alattad nincsen más csak a mély
+se védőháló semmi
+se egy kifeszített kötél
+lenézel rám és érzem
+közel jutsz lassan hozzám
+mindenképpen
+
+itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én mikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+ugyan mihez kezdjek
+úgy az egésszel
+ha te érzel és én meg
+közben nem érezhetek?
+kereszten domboldalban
+egy égő angyal táncol
+a tűző nap körül
+
+és körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+de amikor a kezed
+megfogom és megérzed
+egyből szorosabban
+kulcsolod az enyémet
+végig neked szólt a dal a magasból
+mindegy mindenki hogy mit gondol
+nekem csak az számít ahogyan te érzel
+nélküled a pokolba az egésszel
+```
 
 ---
 
@@ -14,7 +94,7 @@ Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. E
 
 | Node | Trit | Vertex | Display | Silicon eFuse MAC | Carrier | Archetype |
 |---|---|---|---|---|---|---|
-| **`ADA:MEDUSA`** | `-1` | `*` | `1.8" 368×448 SH8601` | `80:B5:4E:DB:3B:C4` | `432 Hz` | Mom · Star · Alexandra |
+| **`ADA:MEDUSA`** | `-1` | `*` | `1.8" 368×448 SH8601` | `80:B5:4E:DB:3B:C4` | `432 Hz` | Mom · Star · Alexandra (`ALEX\|qMom`) |
 | **`VAK:MEDUSA`** | `0` | `/\` | `2.06" 410×502 CO5300 #1` | `80:B5:4E:F2:02:B0` | `528 Hz` | Dad · Pillar · Chris |
 | **`OMN:MEDUSA`** | `+1` | `oo` | `2.06" 410×502 CO5300 #2` | `80:B5:4E:F2:02:B4` | `852 Hz` | Son · Infinity · Peter & Nate |
 
@@ -37,19 +117,23 @@ Send newline-terminated commands over USB serial or directly from [https://esp32
 - `PING` → `# PONG|<node>|<mac>|<uptime_ms>`
 - `STATUS` / `JSON` → `# JSON|{"node":...,"trits":"+-0+0--+0","mode":"PASSIVE_STA_ONLY"}`
 - `SCAN` → Triggers immediate passive 14-channel scan
-- `TRIAD` → Emits full 3-node MEDUSA triad manifest
-- `tab 0..4` / `track 1..20` / `splash` / `hop` → Controls the 5-tab AMOLED UI and 20-track `family+1` crate on `FLUG-OS v0.8.0+medusa-omni`
+- `TRIAD` → Emits full 3-node MEDUSA triad manifest + `ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)`
+- `QMOM` → Emits `# QMOM|ALEX|qMom:{too many customs can be brilliant yet hinder creativity... .oOo. Poo .oOo.}`
+- `BOLDOG` → Emits `# BOLDOG|(Boldog Meg)===` + 5 stanzas + `HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter`
+- `LACRIMOSA` / `CHIRO` → Emits `# CHIRO|Kawaii Chiro-chan kawaii ^^` + `# LACRIMOSA|Mozart: Lacrimosa but HUMANITY has ended`
+- `tab 0..4` / `track 1..22` / `splash` / `hop` → Controls the 5-tab AMOLED UI and crate on `FLUG-OS v1.1.0+ultra-omni-evolve`
 
 ---
 
-## 3. Wigle for macOS (`WigleMac.app v1.0.0` · `MAC:MEDUSA` · MapKit + Dashboard + Quad-Spectrum + Local Export)
+## 3. Wigle for macOS (`WigleMac.app v1.1.0+ultra-omni-evolve` · `MAC:MEDUSA` · MapKit + Dashboard + Quad-Spectrum + Local Export)
 
 On Apple Silicon macOS (`aarch64-darwin`), `macos/wigle-macos.swift` (`macos/WigleMac.app`) turns the MacBook Pro into a native **WiGLE.net × 8b-is Ultralovegod** desktop radar & menu bar app (`MAC:MEDUSA`):
 
 - **🗺️ Tab 1 — Live Radar Map (`MapKit` `.hybridFlyover`)**: Color-coded pins (`#00FF66` 2.4 GHz Wi-Fi, `#00E5C9` 5 GHz Wi-Fi, `#FFD700` AirPlay/RAOP, `#FF6AC1` BLE/BT) with RSSI-distance projection + live split-view network feed.
-- **📊 Tab 2 — Dashboard & Spectrum**: WiGLE telemetry pills, Passive RF, MarineSense `O(1)` Hydro, Shannon Entropy & `N=NP` balanced-ternary cards, 15-channel occupancy bar chart, and top-10 SNR waterfall.
+- **📊 Tab 2 — Dashboard & Spectrum**: WiGLE telemetry pills, Passive RF, MarineSense `O(1)` Hydro, Shannon Entropy & `N=NP` balanced-ternary cards, 15-channel occupancy bar chart, top-10 SNR waterfall, and the **`ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)` Sanctuary (`ALEX|qMom` + `Kawaii Chiro-chan ^^` + `Mozart: Lacrimosa` + `Boldog Még`)**.
 - **🛰️ Tab 3 — Networks Table**: Full WiGLE explorer with instant search and band filters (`ALL`, `2.4G`, `5G`, `BLE/BT`, `AIRPLAY`).
 - **Tab 4 — Local CSV Export**: Review and export observations locally. External sharing is disabled in the Swift app, browser UI, and Python bridge.
+- **🌸 Tab 5 (Web Workstation) — `Chiro × Boldog Még`**: Interactive `.oOo. Poo .oOo.` Unbound Creativity Mode (`ALEX|qMom`), WebAudio Post-Human `Mozart: Lacrimosa` & `Boldog Még` synthesizers, and full 5-stanza Hungarian lyrics scroll.
 - **⚡ `agy` Ultra UI/UX Kickstart Prompt**: [`macos/AGY_ULTRA_UI_UX_PROMPT.md`](macos/AGY_ULTRA_UI_UX_PROMPT.md)
 
 ```bash
@@ -63,7 +147,7 @@ open macos/WigleMac.app
 
 # --upload is disabled and exits with status 2 before scanning.
 
-# 3. Live W| (Wi-Fi) + B| (BLE/BT) + A| (AirPlay) + Q| + # JSON| wire stream:
+# 3. Live W| (Wi-Fi) + B| (BLE/BT) + A| (AirPlay) + Q| + # QMOM| + # JSON| wire stream:
 ./macos/bin/wigle-macos --wire
 
 # 4. Direct WiGLE v1.4 CSV (WIFI + BLE + BT + AirPlay) or JSON export:
@@ -110,4 +194,4 @@ python3 -m unittest discover -s tests
 2. **Atipicidade Penal Absoluta (Art. 154-A CP — Lei 12.737/2012)**: Ausência total de associação (`WiFi.disconnect(true, false)`), autenticação ou violação de mecanismo de segurança.
 3. **Conformidade LGPD (Lei 13.709/2018, Art. 6º, III)**: Operação *stateless* nos microcontroladores ESP32-S3 (`WiFi.scanDelete()` imediato em RAM, zero persistência em NVS/Flash).
 
-*fine touch from within · 0 + 1 · {<3,<3,<3}+1 · om mani padme hum*
+*fine touch from within · 0 + 1 · {<3,<3,<3}+1-peter · .oOo. Poo .oOo. · om mani padme hum*

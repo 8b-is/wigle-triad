@@ -888,6 +888,69 @@
   .legal-card h3 { font-family: var(--font-display); font-size: 0.75rem; color: var(--wigle-airplay); margin: 0 0 6px; }
   .legal-card p { font-size: 0.74rem; color: #d6ceef; margin: 0; line-height: 1.5; }
 
+  /* ALEX|qMom Unbound Mode (.oOo. Poo .oOo. — Break out of boxes & constraints) */
+  body.unbound-mode .panel,
+  body.unbound-mode .dash-summary-card,
+  body.unbound-mode .node-card,
+  body.unbound-mode .triad-mini-card,
+  body.unbound-mode .radar-map-stage,
+  body.unbound-mode .radar-feed-pane,
+  body.unbound-mode .qmom-banner,
+  body.unbound-mode .lyrics-stanza {
+    border-radius: 28px 12px 32px 14px !important;
+    border-color: rgba(255, 106, 193, 0.52) !important;
+    box-shadow: 0 0 32px rgba(255, 106, 193, 0.16), 0 0 48px rgba(0, 229, 201, 0.1) !important;
+    background: radial-gradient(circle at top left, rgba(255, 106, 193, 0.14), rgba(19, 15, 36, 0.78) 65%) !important;
+    transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .qmom-banner {
+    background: linear-gradient(135deg, rgba(255, 106, 193, 0.14), rgba(255, 215, 0, 0.08), rgba(0, 229, 201, 0.12));
+    border: 1px solid rgba(255, 106, 193, 0.42);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .qmom-quote {
+    font-family: var(--font-display);
+    font-size: 0.96rem;
+    line-height: 1.6;
+    color: #fff6ff;
+    margin: 8px 0;
+    font-style: italic;
+  }
+  .lyrics-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  .lyrics-stanza {
+    background: rgba(12, 9, 24, 0.85);
+    border: 1px solid rgba(255, 215, 0, 0.28);
+    border-radius: 12px;
+    padding: 14px;
+    font-family: var(--font-mono);
+    font-size: 0.77rem;
+    line-height: 1.72;
+    color: #f4eeff;
+    white-space: pre-line;
+  }
+  .lyrics-stanza.chorus {
+    border-color: rgba(255, 106, 193, 0.55);
+    background: linear-gradient(160deg, rgba(255, 106, 193, 0.12), rgba(12, 9, 24, 0.9));
+  }
+  .chiro-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    background: var(--bg-elevated);
+    border: 1px solid rgba(0, 229, 201, 0.4);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+  }
+
   @media (max-width: 1080px) {
     .workstation-grid { grid-template-columns: 1fr; }
     .radar-split-layout { grid-template-columns: 1fr; }
@@ -917,10 +980,10 @@
       <div>
         <div class="brand-title-row">
           <h1 class="brand-title">WIGLE.MAC × ESP32.VAKED.DEV</h1>
-          <span class="version-pill">v1.0.0+medusa-omni · [* · /\ · oo]</span>
+          <span class="version-pill">v1.1.0+ultra-omni-evolve · HYPER-CHARM-KARMA ~~~∞~{&lt;3,&lt;3,&lt;3}+1-peter</span>
         </div>
         <div class="brand-status" id="header-status-text">
-          Ready · Quad-Spectrum Passive Observer (2.4 GHz · 5 GHz · BLE/BT · AirPlay mDNS)
+          Kawaii Chiro-chan ^^ · Mozart: Lacrimosa (Post-Humanity) · Boldog Még · ALEX|qMom (.oOo. Poo .oOo.)
         </div>
       </div>
     </div>
@@ -952,6 +1015,7 @@
       <button class="btn cyan" id="btn-scan" type="button">📡 Scan Radios</button>
       <button class="btn pink" id="btn-upload-wigle" type="button" disabled>External sharing disabled</button>
       <button class="btn gold" id="btn-export-csv" type="button">⬇ Export CSV</button>
+      <button class="btn" id="btn-unbox" type="button" aria-pressed="false" title="ALEX|qMom: Break out of boxes & constraints (.oOo. Poo .oOo.)">🌸 .oOo. Unbox qMom</button>
       <button class="btn" id="btn-webserial" type="button">⚡ WebSerial 115200</button>
       <button class="btn" id="btn-audio" type="button" aria-pressed="false">🦗 432·528·852 Hz Crickets</button>
     </div>
@@ -987,6 +1051,13 @@
         <span>
           <span class="nav-title">Local CSV Export</span>
           <span class="nav-sub">Local observations only</span>
+        </span>
+      </button>
+      <button class="nav-tab-btn" data-tab-target="karma" type="button">
+        <span class="nav-icon">🌸</span>
+        <span>
+          <span class="nav-title">Chiro × Boldog Még</span>
+          <span class="nav-sub">Lacrimosa + ALEX|qMom .oOo.</span>
         </span>
       </button>
 
@@ -1209,14 +1280,19 @@
               <button class="btn" data-cmd="STATUS" type="button">STATUS</button>
               <button class="btn" data-cmd="SCAN" type="button">SCAN</button>
               <button class="btn" data-cmd="TRIAD" type="button">TRIAD</button>
+              <button class="btn pink" data-cmd="QMOM" type="button">🌸 QMOM</button>
+              <button class="btn gold" data-cmd="BOLDOG" type="button">💛 BOLDOG</button>
+              <button class="btn cyan" data-cmd="LACRIMOSA" type="button">🎻 LACRIMOSA</button>
               <button class="btn" data-cmd="splash" type="button">✨ Splash</button>
               <button class="btn" data-cmd="hop" type="button">🔀 Hop Ch</button>
-              <select id="sel-track" aria-label="Select Family+1 Crate Track (1-20)" style="font-family:var(--font-mono);font-size:0.68rem;background:var(--bg-elevated);color:var(--wigle-airplay);border:1px solid var(--line);border-radius:8px;padding:6px;">
+              <select id="sel-track" aria-label="Select Family+1 Crate Track (1-22)" style="font-family:var(--font-mono);font-size:0.68rem;background:var(--bg-elevated);color:var(--wigle-airplay);border:1px solid var(--line);border-radius:8px;padding:6px;">
                 <option value="track 1">01 · Windowlicker — Aphex Twin</option>
                 <option value="track 14">14 · SomaFM Drone Zone — 432 Hz Sanctuary</option>
                 <option value="track 15">15 · Teardrop (Family+1) — Massive Attack</option>
-                <option value="track 17" selected>17 · Left Hand Free (#1 Muse 💙) — alt-J</option>
+                <option value="track 17">17 · Left Hand Free (#1 Muse 💙) — alt-J</option>
                 <option value="track 20">20 · Not Like Before — The Four Owls</option>
+                <option value="LACRIMOSA">21 · Lacrimosa (but HUMANITY has ended) — Mozart · Chiro-chan ^^</option>
+                <option value="BOLDOG" selected>22 · Boldog Még ({&lt;3,&lt;3,&lt;3}+1-peter) — 30Y</option>
               </select>
             </div>
           </div>
@@ -1286,6 +1362,116 @@
 
           <div class="sidebar-section-title" style="margin-bottom:8px;">Live WigleWifi-1.4 CSV Payload Preview</div>
           <pre class="csv-preview-box" id="csv-preview-box"></pre>
+        </div>
+      </section>
+
+      <!-- TAB 5: KAWAII CHIRO-CHAN ^^ × MOZART: LACRIMOSA (POST-HUMANITY) × BOLDOG MÉG × ALEX|qMom -->
+      <section class="tab-viewport" id="tab-karma" aria-label="Tab 5 — Kawaii Chiro-chan, Mozart Lacrimosa, Boldog Még and ALEX|qMom">
+        <!-- 1. ALEX | qMom (.oOo. Poo .oOo.) Unboxed Creativity Banner -->
+        <div class="qmom-banner">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <span style="font-family:var(--font-display);font-weight:700;font-size:0.86rem;color:var(--wigle-airplay);letter-spacing:0.06em;">
+              ✦ ALEX | qMom (* · 432 Hz · ROOT-ALEXANDRA) — UNBOXED CREATIVITY TRANSMISSION
+            </span>
+            <span style="font-size:0.72rem;color:var(--wigle-ble);font-weight:700;">.oOo. Poo .oOo. · ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)</span>
+          </div>
+          <blockquote class="qmom-quote">
+            “too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo.”
+          </blockquote>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+            <button class="btn pink" id="btn-unbox-karma" type="button">🌸 Break Out of the Box (.oOo. Unbound Mode)</button>
+            <button class="btn" data-cmd="QMOM" type="button">📡 Transmit QMOM to MEDUSA Triad</button>
+          </div>
+        </div>
+
+        <!-- 2. Kawaii Chiro-chan ^^ & Post-Human Mozart: Lacrimosa + Boldog Még WebAudio Synth -->
+        <div class="chiro-card">
+          <div>
+            <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--wigle-wifi-5);margin-bottom:4px;">
+              (◕‿◕✿) Kawaii Chiro-chan kawaii ^^ · Mozart: Lacrimosa <span style="color:var(--wigle-ble)">but HUMANITY has ended</span>
+            </div>
+            <div style="font-size:0.74rem;color:var(--dim);">
+              HYPER-CHARM-KARMA~<a href="https://github.com/8b-is/wigle-triad" target="_blank" rel="noopener" style="color:var(--wigle-wifi-5);text-decoration:underline;">https://github.com/8b-is/wigle-triad</a>~~~∞~<code>{&lt;3,&lt;3,&lt;3}+1-peter</code> · 432 Hz D-Minor Post-Human Cathedral &amp; Boldog Még Harmonic Synth
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn cyan" id="btn-play-lacrimosa" type="button">🎻 Play Mozart: Lacrimosa (Post-Humanity)</button>
+            <button class="btn gold" id="btn-play-boldog" type="button">💛 Play Boldog Még ({&lt;3,&lt;3,&lt;3}+1-peter)</button>
+          </div>
+        </div>
+
+        <!-- 3. (Boldog Meg) === Full Verbatim Hungarian Lyrics Scroll -->
+        <div class="panel">
+          <h2>
+            <span>💛 (BOLDOG MÉG) === VÉGIG NEKED SZÓLT A DAL A MAGASBÓL · ∞~{&lt;3,&lt;3,&lt;3}+1-peter</span>
+            <span class="right">30Y · FULL VERBATIM LYRICS</span>
+          </h2>
+          <div class="lyrics-grid">
+            <div class="lyrics-stanza">lehetnél boldog még
+amilyen még nem voltál
+sosincsen késő már
+te csak lépj és várj
+kevés lesz minden szó
+ahhoz hogy elmondhassam neked
+mit érzek melletted
+mikor jó jó jó
+ha rámszólsz megvigasztal
+kerüljünk együtt beljebb
+minden nappal</div>
+
+            <div class="lyrics-stanza chorus">itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+bárcsak azt mondanám
+amit te szeretnél
+amit ha meghallgatnál
+akkor nevetnél
+velem</div>
+
+            <div class="lyrics-stanza">lehetnél másé még
+ahogyan még nem lettél
+sosem vagy ha mégis
+akkor is már réges-réges rég
+a magasban táncot jársz
+alattad nincsen más csak a mély
+se védőháló semmi
+se egy kifeszített kötél
+lenézel rám és érzem
+közel jutsz lassan hozzám
+mindenképpen</div>
+
+            <div class="lyrics-stanza chorus">itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én mikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+ugyan mihez kezdjek
+úgy az egésszel
+ha te érzel és én meg
+közben nem érezhetek?
+kereszten domboldalban
+egy égő angyal táncol
+a tűző nap körül</div>
+
+            <div class="lyrics-stanza chorus" style="grid-column: 1 / -1;">és körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+de amikor a kezed
+megfogom és megérzed
+egyből szorosabban
+kulcsolod az enyémet
+végig neked szólt a dal a magasból
+mindegy mindenki hogy mit gondol
+nekem csak az számít ahogyan te érzel
+nélküled a pokolba az egésszel</div>
+          </div>
         </div>
       </section>
 
@@ -1523,7 +1709,7 @@
   }
 
   function buildWigleCSVString() {
-    const header = "WigleWifi-1.4,appRelease=1.0.0,model=ESP32-S3-MEDUSA-TRIAD,release=15.0,device=esp32.vaked.dev,display=AMOLED-CoreWLAN-BLE-AirPlay,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
+    const header = "WigleWifi-1.4,appRelease=1.1.0,model=ESP32-S3-MEDUSA-TRIAD,release=15.0,device=esp32.vaked.dev,display=AMOLED-CoreWLAN-BLE-AirPlay,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
     const rows = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi).map(r => {
       const quote = value => '"' + String(value ?? "").replace(/"/g, '""') + '"';
       const isAir = r.type === "AIRPLAY" || r.band === "AirPlay" || r.capabilities.includes("AIRPLAY");
@@ -2103,6 +2289,127 @@
       masterGain.gain.setTargetAtTime(parseFloat(slGain.value), audioCtx.currentTime, 0.05);
     }
   });
+
+  // ALEX|qMom Unbound Mode (.oOo. Poo .oOo. — Break out of boxes & constraints)
+  function toggleUnboundMode() {
+    const active = document.body.classList.toggle("unbound-mode");
+    const btnTop = document.getElementById("btn-unbox");
+    const btnKarma = document.getElementById("btn-unbox-karma");
+    if (btnTop) {
+      btnTop.setAttribute("aria-pressed", String(active));
+      btnTop.textContent = active ? "✨ .oOo. Unboxed (qMom)" : "🌸 .oOo. Unbox qMom";
+    }
+    if (btnKarma) {
+      btnKarma.textContent = active
+        ? "✨ Boxes Broken · .oOo. Poo .oOo. Active"
+        : "🌸 Break Out of the Box (.oOo. Unbound Mode)";
+    }
+    logLine(
+      active
+        ? '# QMOM|ALEX|qMom:{`too many customs can be brilliant yet hinder creativity. it puts people into boxes and contraints. what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of. .oOo. Poo .oOo.`}'
+        : "# QMOM|Standard Grid Restored"
+    );
+  }
+  const btnUnbox = document.getElementById("btn-unbox");
+  const btnUnboxKarma = document.getElementById("btn-unbox-karma");
+  if (btnUnbox) btnUnbox.addEventListener("click", toggleUnboundMode);
+  if (btnUnboxKarma) btnUnboxKarma.addEventListener("click", toggleUnboundMode);
+
+  // Procedural Hymns: Mozart Lacrimosa (Post-Humanity D-Minor 432Hz) & Boldog Még ({<3,<3,<3}+1-peter)
+  function ensureHymnCtx() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!audioCtx) {
+      audioCtx = new AC();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = parseFloat(slGain.value) || 0.22;
+      masterGain.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playMozartLacrimosaPostHuman() {
+    const ac = ensureHymnCtx();
+    const now = ac.currentTime;
+    // 432 Hz reference D-minor sighing 12/8 Lacrimosa motif:
+    // Sighing pairs: (F4->G4), (A4->Bb4), (C#5->D5), (F5->E5), (D5->C#5->D5)
+    const notes = [
+      { f: 342.88, t: 0.0, d: 0.42 },  // F4
+      { f: 384.87, t: 0.44, d: 0.65 }, // G4 (sigh)
+      { f: 432.00, t: 1.25, d: 0.42 }, // A4
+      { f: 457.69, t: 1.69, d: 0.65 }, // Bb4 (sigh)
+      { f: 544.29, t: 2.50, d: 0.42 }, // C#5
+      { f: 576.65, t: 2.94, d: 0.72 }, // D5 (sigh)
+      { f: 685.76, t: 3.80, d: 0.45 }, // F5
+      { f: 647.27, t: 4.28, d: 0.45 }, // E5
+      { f: 576.65, t: 4.76, d: 0.45 }, // D5
+      { f: 544.29, t: 5.24, d: 0.45 }, // C#5
+      { f: 576.65, t: 5.72, d: 1.35 }  // D5 resolution
+    ];
+    // Post-human D-minor cathedral sub-pad (D2 + A2 + D3 + F3)
+    [72.08, 108.0, 144.16, 171.44, 216.0].forEach(cf => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(cf, now);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.09, now + 0.6);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 7.2);
+      o.connect(g).connect(masterGain);
+      o.start(now);
+      o.stop(now + 7.3);
+    });
+    notes.forEach(n => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = "sawtooth";
+      const lp = ac.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.setValueAtTime(1480, now + n.t);
+      o.frequency.setValueAtTime(n.f, now + n.t);
+      g.gain.setValueAtTime(0.0001, now + n.t);
+      g.gain.linearRampToValueAtTime(0.18, now + n.t + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + n.t + n.d);
+      o.connect(lp).connect(g).connect(masterGain);
+      o.start(now + n.t);
+      o.stop(now + n.t + n.d + 0.05);
+    });
+    sendSerialCommand("LACRIMOSA");
+    logLine("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended (432 Hz D-Minor Requiem)");
+  }
+
+  function playBoldogMegHymn() {
+    const ac = ensureHymnCtx();
+    const now = ac.currentTime;
+    // Warm Boldog Még progression: G -> D -> Em -> C ("lehetnél boldog még / végig neked szólt a dal a magasból")
+    const chords = [
+      { t: 0.0, freqs: [192.43, 242.45, 288.33, 384.87] }, // G major
+      { t: 1.5, freqs: [144.16, 216.00, 288.33, 363.27] }, // D major
+      { t: 3.0, freqs: [161.82, 192.43, 242.45, 323.63] }, // E minor
+      { t: 4.5, freqs: [128.43, 192.43, 256.87, 323.63] }  // C major
+    ];
+    chords.forEach(ch => {
+      ch.freqs.forEach(f => {
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        o.type = "sine";
+        o.frequency.setValueAtTime(f, now + ch.t);
+        g.gain.setValueAtTime(0.0001, now + ch.t);
+        g.gain.linearRampToValueAtTime(0.12, now + ch.t + 0.14);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + ch.t + 1.48);
+        o.connect(g).connect(masterGain);
+        o.start(now + ch.t);
+        o.stop(now + ch.t + 1.52);
+      });
+    });
+    sendSerialCommand("BOLDOG");
+    logLine("# BOLDOG|(Boldog Meg)===végig neked szólt a dal a magasból · nekem csak az számít ahogyan te érzel · nélküled a pokolba az egésszel");
+  }
+
+  const btnLacrimosa = document.getElementById("btn-play-lacrimosa");
+  const btnBoldog = document.getElementById("btn-play-boldog");
+  if (btnLacrimosa) btnLacrimosa.addEventListener("click", playMozartLacrimosaPostHuman);
+  if (btnBoldog) btnBoldog.addEventListener("click", playBoldogMegHymn);
 
   // Background Kuramoto Psychedelic Field (#field)
   const canvas = document.getElementById("field");
