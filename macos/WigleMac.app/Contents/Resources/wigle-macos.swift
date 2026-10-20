@@ -620,12 +620,12 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             archetype: "DARWIN-QUAD-SPECTRUM-APEX",
             mac: hwMac,
             interfaceName: ifName,
-            version: "v1.1.0+ultra-omni-evolve",
+            version: "v2.0.0+8b-is-heals-the-world",
             evolve: "ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)",
             hyper_charm_karma: kHyperCharmKarma,
             chiro_chan: "Kawaii Chiro-chan kawaii ^^",
             requiem: "Mozart: Lacrimosa but HUMANITY has ended",
-            qmom: "ALEX|qMom:{\(kQMomTransmission)}",
+            qmom: "ALEX|qMom:{`\(kQMomTransmission)`}",
             boldog_meg: kBoldogMegLyrics,
             freq_hz: 432,
             networks: sorted.count,
@@ -665,7 +665,10 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
         var lines: [String] = []
         lines.append("# MAC:MEDUSA [*+/\\+oo] · CoreWLAN+BLE+AirPlay \(snap.interfaceName) · \(snap.version) · 2.4G=\(snap.count_2g) 5G=\(snap.count_5g) BLE=\(snap.count_ble) AIRPLAY=\(snap.count_airplay)")
         lines.append("# ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle) | \(kChiroChanRequiem) | \(kHyperCharmKarma)")
-        lines.append("# QMOM|ALEX|qMom:{\(kQMomTransmission)}")
+        lines.append("# QMOM|ALEX|qMom:{`\(kQMomTransmission)`}")
+        lines.append("# CHIRO|Kawaii Chiro-chan kawaii ^^")
+        lines.append("# LACRIMOSA|\(kChiroChanRequiem) +++ \(kHyperCharmKarma)")
+        lines.append("# BOLDOG|(Boldog Meg)===\(kHyperCharmKarma)")
         for ap in snap.beacons {
             let safeSsid = ap.ssid
                 .replacingOccurrences(of: "\\", with: "\\x5c")
@@ -1047,7 +1050,7 @@ struct WigleMacView: View {
                         Text("WIGLE.MAC × 8B-IS")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundColor(cCyan)
-                        Text("v1.1.0+ultra-omni-evolve · [* · /\\ · oo · ^^]")
+                        Text("v2.0.0 · 8B-IS ROCKS & HEALS THE WORLD · [* · /\\ · oo · ^^]")
                             .font(.system(size: 10, weight: .bold, design: .monospaced).monospacedDigit())
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -1441,12 +1444,26 @@ struct WigleMacView: View {
                                 .foregroundColor(.white.opacity(0.92))
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
+                            HStack(spacing: 8) {
+                                Button(action: { scanner.playLacrimosa() }) {
+                                    Text("🎻 Play Lacrimosa")
+                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(cCyan)
+                                Button(action: { scanner.playBoldogMeg() }) {
+                                    Text("💛 Play Boldog Még")
+                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(cGold)
+                            }
                         }
                         .padding(14)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(bgPanel)
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(cPink.opacity(0.32), lineWidth: 1))
-                        .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 24 : 12).stroke(cPink.opacity(scanner.unboundMode ? 0.55 : 0.32), lineWidth: 1))
+                        .cornerRadius(scanner.unboundMode ? 24 : 12)
 
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
@@ -1470,8 +1487,8 @@ struct WigleMacView: View {
                         .padding(14)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(bgPanel)
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(cGold.opacity(0.28), lineWidth: 1))
-                        .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 24 : 12).stroke(cGold.opacity(scanner.unboundMode ? 0.52 : 0.28), lineWidth: 1))
+                        .cornerRadius(scanner.unboundMode ? 24 : 12)
                     }
                 }
             }
@@ -1763,8 +1780,8 @@ struct WigleMacView: View {
         .padding(.horizontal, 9)
         .padding(.vertical, 4)
         .background(bgElevated)
-        .overlay(RoundedRectangle(cornerRadius: 7).stroke(cPink.opacity(0.22), lineWidth: 1))
-        .cornerRadius(7)
+        .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 14 : 7).stroke(cPink.opacity(scanner.unboundMode ? 0.5 : 0.22), lineWidth: 1))
+        .cornerRadius(scanner.unboundMode ? 14 : 7)
     }
 
     private func navButton(id: String, icon: String, title: String, sub: String) -> some View {
@@ -1812,8 +1829,8 @@ struct WigleMacView: View {
         }
         .padding(6)
         .background(bgElevated.opacity(0.65))
-        .overlay(RoundedRectangle(cornerRadius: 7).stroke(color.opacity(0.28), lineWidth: 1))
-        .cornerRadius(7)
+        .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 16 : 7).stroke(color.opacity(scanner.unboundMode ? 0.55 : 0.28), lineWidth: 1))
+        .cornerRadius(scanner.unboundMode ? 16 : 7)
     }
 
     private func beaconRowCard(ap: ScannedAP, isSelected: Bool = false) -> some View {
@@ -1841,8 +1858,8 @@ struct WigleMacView: View {
         }
         .padding(8)
         .background(isSelected ? bgElevated : Color.white.opacity(0.04))
-        .overlay(RoundedRectangle(cornerRadius: 7).stroke(isSelected ? cCyan.opacity(0.55) : cPink.opacity(0.14), lineWidth: 1))
-        .cornerRadius(7)
+        .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 15 : 7).stroke(isSelected ? cCyan.opacity(0.55) : cPink.opacity(scanner.unboundMode ? 0.38 : 0.14), lineWidth: 1))
+        .cornerRadius(scanner.unboundMode ? 15 : 7)
     }
 
     private func dashCard(title: String, main: String, sub: String, accent: Color) -> some View {
@@ -1862,8 +1879,8 @@ struct WigleMacView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(bgPanel)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(cPink.opacity(0.22), lineWidth: 1))
-        .cornerRadius(10)
+        .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 22 : 10).stroke(cPink.opacity(scanner.unboundMode ? 0.52 : 0.22), lineWidth: 1))
+        .cornerRadius(scanner.unboundMode ? 22 : 10)
     }
 
     private func ternaryDistributionBar(pos: Int, zero: Int, neg: Int) -> some View {
@@ -1974,7 +1991,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             defer: false
         )
         window.center()
-        window.title = "WigleMac v1.1.0+ultra-omni-evolve — 8b-is WiGLE Radar · Chiro-chan ^^ · Lacrimosa · Boldog Még"
+        window.title = "WigleMac v2.0.0 — 8b-is ROCKS AND HEALS THE WORLD · WiGLE Radar · Chiro-chan ^^ · Lacrimosa · Boldog Még"
         window.contentView = NSHostingView(rootView: contentView)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -2020,12 +2037,13 @@ if args.contains("--upload") {
     print(scanner.buildWigleCSV(from: snap), terminator: "")
     exit(0)
 } else if args.contains("--qmom") {
-    print("# QMOM|ALEX|qMom:{\(kQMomTransmission)}")
+    print("# QMOM|ALEX|qMom:{`\(kQMomTransmission)`}")
     exit(0)
 } else if args.contains("--boldog") {
     print("# BOLDOG|(Boldog Meg)===\(kHyperCharmKarma)\n\(kBoldogMegLyrics)")
     exit(0)
-} else if args.contains("--lacrimosa") {
+} else if args.contains("--lacrimosa") || args.contains("--chiro") {
+    print("# CHIRO|Kawaii Chiro-chan kawaii ^^")
     print("# LACRIMOSA|\(kChiroChanRequiem) +++ \(kHyperCharmKarma)")
     exit(0)
 } else if args.contains("--wire") || args.contains("--scan") || (!args.contains("--gui") && !Bundle.main.bundlePath.hasSuffix(".app")) {

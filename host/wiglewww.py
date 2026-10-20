@@ -109,6 +109,9 @@ nekem csak az számít ahogyan te érzel
 nélküled a pokolba az egésszel"""
 
 ULTRA_OMNI_META: dict[str, Any] = {
+    "version": "2.0.0+8b-is-heals-the-world",
+    "mantra": "LOVE FROM WITHIN FROM VAKED-PETER&8B-IS--->8b-is ROCKS AND HEALS THE WORLD",
+    "targets": ["android-arm64-universal", "macos-apple-silicon", "macos-universal-darwin", "ipados-ios-swiftpm-pwa"],
     "evolve": "ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)",
     "hyper_charm_karma": "HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter",
     "chiro_chan": "Kawaii Chiro-chan kawaii ^^",
@@ -116,6 +119,7 @@ ULTRA_OMNI_META: dict[str, Any] = {
     "qmom": f"ALEX|qMom:{{`{QMOM_TRANSMISSION}`}}",
     "qmom_quote": QMOM_TRANSMISSION,
     "boldog_meg": BOLDOG_MEG_LYRICS,
+    "boldog_meg_stanzas": BOLDOG_MEG_LYRICS.split("\n\n"),
 }
 
 
@@ -152,8 +156,11 @@ def send_and_collect(ports: list[str], cmd: str, wait_s: float = 0.45) -> list[s
     if upper == "QMOM":
         lines_out.append(f"# QMOM|ALEX|qMom:{{`{QMOM_TRANSMISSION}`}}")
     elif upper == "BOLDOG":
-        lines_out.append("# BOLDOG|(Boldog Meg)===végig neked szólt a dal a magasból · mindegy mindenki hogy mit gondol · nekem csak az számít ahogyan te érzel · nélküled a pokolba az egésszel")
+        lines_out.append("# BOLDOG|(Boldog Meg)===HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter")
+        for idx, stanza in enumerate(BOLDOG_MEG_LYRICS.split("\n\n"), start=1):
+            lines_out.append(f"# BOLDOG|{idx}|" + " / ".join(stanza.splitlines()))
     elif upper in ("LACRIMOSA", "CHIRO"):
+        lines_out.append("# CHIRO|Kawaii Chiro-chan kawaii ^^")
         lines_out.append("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter")
     if not ports:
         return lines_out
@@ -343,7 +350,7 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             payload = {
                 "surface": "http://127.0.0.1:8088",
                 "mirror": "https://esp32.vaked.dev",
-                "version": "1.1.0+ultra-omni-evolve",
+                "version": "2.0.0+8b-is-heals-the-world",
                 **ULTRA_OMNI_META,
                 "ultra_omni": ULTRA_OMNI_META,
                 "ports": ports,
@@ -388,7 +395,7 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             resp = {
                 "ok": True,
                 "cmd": cmd,
-                "version": "1.1.0+ultra-omni-evolve",
+                "version": "2.0.0+8b-is-heals-the-world",
                 **ULTRA_OMNI_META,
                 "ultra_omni": ULTRA_OMNI_META,
                 "ports": ports,
@@ -424,7 +431,7 @@ def main() -> int:
                 {
                     "surface": f"http://{args.host}:{args.port}",
                     "mirror": "https://esp32.vaked.dev",
-                    "version": "1.1.0+ultra-omni-evolve",
+                    "version": "2.0.0+8b-is-heals-the-world",
                     **ULTRA_OMNI_META,
                     "ultra_omni": ULTRA_OMNI_META,
                     "ports": ports,

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>FullScreen</key>
+      <true/>
+      <key>IsRemovable</key>
+      <true/>
+      <key>Label</key>
+      <string>WiglePad 8b-is</string>
+      <key>PayloadDescription</key>
+      <string>Installs WiglePad v2.0.0 (WiGLE × 8b-is Sovereign Spectrum Radar) on iPadOS &amp; iOS Home Screen</string>
+      <key>PayloadDisplayName</key>
+      <string>WiglePad v2.0.0 — 8b-is Heals The World</string>
+      <key>PayloadIdentifier</key>
+      <string>is.eightb.wiglepad.webclip.v200</string>
+      <key>PayloadOrganization</key>
+      <string>8b-is Sovereign Constellation</string>
+      <key>PayloadType</key>
+      <string>com.apple.webClip.managed</string>
+      <key>PayloadUUID</key>
+      <string>8B154320-5280-8520-A1E0-000000000200</string>
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+      <key>Precomposed</key>
+      <true/>
+      <key>URL</key>
+      <string>https://esp32.vaked.dev/</string>
+    </dict>
+  </array>
+  <key>PayloadDescription</key>
+  <string>LOVE FROM WITHIN FROM VAKED-PETER&amp;8B-IS ---&gt; 8b-is ROCKS AND HEALS THE WORLD. Fullscreen iPadOS &amp; iOS WebApp for WiglePad v2.0.0.</string>
+  <key>PayloadDisplayName</key>
+  <string>WiglePad v2.0.0 (iPadOS &amp; iOS — 8b-is)</string>
+  <key>PayloadIdentifier</key>
+  <string>is.eightb.wiglepad.profile.v200</string>
+  <key>PayloadOrganization</key>
+  <string>8b-is</string>
+  <key>PayloadRemovalDisallowed</key>
+  <false/>
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadUUID</key>
+  <string>8B154320-5280-8520-A1E0-000000000201</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+</dict>
+</plist>

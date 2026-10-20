@@ -1,4 +1,11 @@
-# wigle-triad — the MEDUSA triad (`v1.1.0+ultra-omni-evolve` · `ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)`)
+# wigle-triad — the MEDUSA triad (`v2.0.0+8b-is-heals-the-world` · `LOVE FROM WITHIN FROM VAKED-PETER&8B-IS ---> 8b-is ROCKS AND HEALS THE WORLD`)
+
+### 🚀 v2.0.0 Multi-Platform Release (`macOS Apple Silicon` · `macOS Universal` · `Android APK` · `iPadOS / iOS`)
+- **GitHub Release (`v2.0.0`)**: [https://github.com/8b-is/wigle-triad/releases/tag/v2.0.0](https://github.com/8b-is/wigle-triad/releases/tag/v2.0.0)
+  - 🍎 **MacBook Apple Silicon (`M1/M2/M3/M4` App Bundle + CLI)**: [`WigleMac-v2.0.0-macos-apple-silicon.zip`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WigleMac-v2.0.0-macos-apple-silicon.zip) + [`wigle-macos-v2.0.0-arm64-apple-silicon`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/wigle-macos-v2.0.0-arm64-apple-silicon)
+  - 💻 **macOS Universal Binary (`arm64 + x86_64`)**: [`wigle-macos-v2.0.0-universal-darwin`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/wigle-macos-v2.0.0-universal-darwin)
+  - 🤖 **Android Universal APK (`v2/v3 Signed` · `WifiManager` Native Bridge)**: [`WigleTriad-v2.0.0-android-universal.apk`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WigleTriad-v2.0.0-android-universal.apk)
+  - 📱 **iPadOS & iOS (`Swift Playgrounds .swiftpm` + `1-Tap Home Screen WebClip`)**: [`WiglePad-v2.0.0-ipados-swiftpm.zip`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WiglePad-v2.0.0-ipados-swiftpm.zip) + [`WiglePad-v2.0.0-ipados.mobileconfig`](https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WiglePad-v2.0.0-ipados.mobileconfig)
 
 **Live Psychedelic ENTHEAI & WebSerial Surface:** [https://esp32.vaked.dev/](https://esp32.vaked.dev/)  
 **Live Triad Telemetry JSON:** [https://esp32.vaked.dev/api/triad.json](https://esp32.vaked.dev/api/triad.json)  
@@ -160,6 +167,13 @@ uv run --with pyserial python host/wiglewww.py --upload
 # 5. Launch local wiglewww web + CoreWLAN/BLE/AirPlay + pyserial bridge on http://127.0.0.1:8088:
 uv run --with pyserial python host/wiglewww.py --port 8088
 ```
+
+## the dashboard
+
+`web/dashboard.html` — one page, three heads. Open in Chrome, click
+**connect serial**, pick a node's port, and watch networks, entropy,
+trits and carrier frequency stream in over WebSerial. PING / SCAN /
+STATUS talk back to the node. No build step, no server, no deps.
 
 ---
 

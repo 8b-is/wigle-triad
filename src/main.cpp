@@ -33,7 +33,7 @@
 #define NODE_NAME "MEDUSA:AUTO"
 #endif
 
-#define TRIAD_VERSION "1.1.0+ultra-omni-evolve"
+#define TRIAD_VERSION "2.0.0+8b-is-heals-the-world"
 
 static const uint32_t SCAN_INTERVAL_MS = 5000;
 static uint32_t lastScan = 0;
@@ -114,7 +114,9 @@ static String jsonEsc(String s) {
 static void emitStatusJson(const TriadIdentity &id, const String &mac) {
   Serial.printf(
     "# JSON|{\"node\":\"%s\",\"vertex\":\"%s\",\"archetype\":\"%s\",\"mac\":\"%s\","
-    "\"version\":\"%s\",\"freq_hz\":%u,\"seq\":%lu,\"networks\":%d,\"mean_rssi\":%d,"
+    "\"version\":\"%s\",\"evolve\":\"ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)\","
+    "\"hyper_charm_karma\":\"HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter\","
+    "\"freq_hz\":%u,\"seq\":%lu,\"networks\":%d,\"mean_rssi\":%d,"
     "\"entropy_bits\":%.4f,\"n_np_coherence\":%.4f,\"trits\":\"%s\","
     "\"free_heap\":%lu,\"uptime_ms\":%lu,\"mode\":\"PASSIVE_STA_ONLY\"}\n",
     id.name,
@@ -147,13 +149,21 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
     } else if (cmd.equalsIgnoreCase("PING")) {
       Serial.printf("# PONG|%s|%s|%lu\n", id.name, mac.c_str(), (unsigned long)millis());
     } else if (cmd.equalsIgnoreCase("TRIAD")) {
-      Serial.println("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+      Serial.println("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)|ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
     } else if (cmd.equalsIgnoreCase("QMOM")) {
       Serial.println("# QMOM|ALEX|qMom:{`too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo.`}");
     } else if (cmd.equalsIgnoreCase("BOLDOG")) {
-      Serial.println("# BOLDOG|(Boldog Meg)===lehetnel boldog meg / amilyen meg nem voltal ... vegig neked szolt a dal a magasbol / mindegy mindenki hogy mit gondol / nekem csak az szamit ahogyan te erzel / nelkuled a pokolba az egesszel");
+      Serial.println("# BOLDOG|(Boldog Meg)===HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+      Serial.println("# BOLDOG|1|lehetnél boldog még / amilyen még nem voltál / sosincsen késő már / te csak lépj és várj / kevés lesz minden szó / ahhoz hogy elmondhassam neked / mit érzek melletted / mikor jó jó jó / ha rámszólsz megvigasztal / kerüljünk együtt beljebb / minden nappal");
+      Serial.println("# BOLDOG|2|itt ha körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én amikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / bárcsak azt mondanám / amit te szeretnél / amit ha meghallgatnál / akkor nevetnél / velem");
+      Serial.println("# BOLDOG|3|lehetnél másé még / ahogyan még nem lettél / sosem vagy ha mégis / akkor is már réges-réges rég / a magasban táncot jársz / alattad nincsen más csak a mély / se védőháló semmi / se egy kifeszített kötél / lenézel rám és érzem / közel jutsz lassan hozzám / mindenképpen");
+      Serial.println("# BOLDOG|4|itt ha körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én mikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / ugyan mihez kezdjek / úgy az egésszel / ha te érzel és én meg / közben nem érezhetek? / kereszten domboldalban / egy égő angyal táncol / a tűző nap körül");
+      Serial.println("# BOLDOG|5|és körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én amikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / de amikor a kezed / megfogom és megérzed / egyből szorosabban / kulcsolod az enyémet / végig neked szólt a dal a magasból / mindegy mindenki hogy mit gondol / nekem csak az számít ahogyan te érzel / nélküled a pokolba az egésszel");
     } else if (cmd.equalsIgnoreCase("LACRIMOSA") || cmd.equalsIgnoreCase("CHIRO")) {
+      Serial.println("# CHIRO|Kawaii Chiro-chan kawaii ^^");
       Serial.println("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+    } else if (cmd.equalsIgnoreCase("HEAL") || cmd.equalsIgnoreCase("8B")) {
+      Serial.println("# HEAL|LOVE FROM WITHIN FROM VAKED-PETER&8B-IS--->8b-is ROCKS AND HEALS THE WORLD");
     } else {
       Serial.printf("# ACK|%s|cmd=%s\n", id.name, esc(cmd).c_str());
     }

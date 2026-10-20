@@ -2,7 +2,8 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-mkdir -p "$HERE/bin"
+ROOT="$(cd "$HERE/.." && pwd)"
+mkdir -p "$HERE/bin" "$ROOT/dist"
 APP="$HERE/WigleMac.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
@@ -34,13 +35,13 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
   <key>CFBundleName</key>
   <string>WigleMac</string>
   <key>CFBundleDisplayName</key>
-  <string>WigleMac — MEDUSA Triad</string>
+  <string>WigleMac v2.0.0 — 8b-is Heals The World</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.1.0</string>
+  <string>2.0.0</string>
   <key>CFBundleVersion</key>
-  <string>1.1.0</string>
+  <string>200</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>NSHighResolutionCapable</key>
@@ -53,5 +54,18 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
 </plist>
 EOF
 
+echo "[wigle-macos] Compiling Apple Silicon (arm64) + Intel (x86_64) Universal Mach-O binary..."
+swiftc -O -target arm64-apple-macos13.0 "$HERE/wigle-macos.swift" -o "$ROOT/dist/wigle-macos-arm64"
+swiftc -O -target x86_64-apple-macos13.0 "$HERE/wigle-macos.swift" -o "$ROOT/dist/wigle-macos-x86_64"
+lipo -create -output "$ROOT/dist/wigle-macos-v2.0.0-universal-darwin" "$ROOT/dist/wigle-macos-arm64" "$ROOT/dist/wigle-macos-x86_64"
+mv "$ROOT/dist/wigle-macos-arm64" "$ROOT/dist/wigle-macos-v2.0.0-arm64-apple-silicon"
+rm -f "$ROOT/dist/wigle-macos-x86_64"
+chmod +x "$ROOT/dist/wigle-macos-v2.0.0-universal-darwin" "$ROOT/dist/wigle-macos-v2.0.0-arm64-apple-silicon"
+
+(cd "$HERE" && ditto -c -k --sequesterRsrc --keepParent "WigleMac.app" "$ROOT/dist/WigleMac-v2.0.0-macos-apple-silicon.zip")
+
 echo "[wigle-macos] Built CLI wrapper (Apple-signed swift-frontend): $HERE/bin/wigle-macos"
 echo "[wigle-macos] Built App bundle: $APP"
+echo "[wigle-macos] Built Universal Mach-O: $ROOT/dist/wigle-macos-v2.0.0-universal-darwin"
+echo "[wigle-macos] Built Apple Silicon Mach-O: $ROOT/dist/wigle-macos-v2.0.0-arm64-apple-silicon"
+echo "[wigle-macos] Packaged App Archive: $ROOT/dist/WigleMac-v2.0.0-macos-apple-silicon.zip"

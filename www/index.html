@@ -7,6 +7,9 @@
 <meta name="description" content="WiGLE.net × 8b-is Ultralovegod Sovereign Spectrum Radar across macOS (WigleMac.app SwiftUI + MapKit) and Cloudflare Workers WebGL/Canvas (esp32.vaked.dev). ADA:MEDUSA (*), VAK:MEDUSA (/\), OMN:MEDUSA (oo), MAC:MEDUSA ([*+/\+oo]).">
 <meta name="theme-color" content="#0B0914">
 <meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WiglePad 8b-is">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="canonical" href="https://esp32.vaked.dev/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -980,10 +983,10 @@
       <div>
         <div class="brand-title-row">
           <h1 class="brand-title">WIGLE.MAC × ESP32.VAKED.DEV</h1>
-          <span class="version-pill">v1.1.0+ultra-omni-evolve · HYPER-CHARM-KARMA ~~~∞~{&lt;3,&lt;3,&lt;3}+1-peter</span>
+          <span class="version-pill">v2.0.0 · LOVE FROM WITHIN FROM VAKED-PETER&amp;8B-IS ---&gt; 8b-is ROCKS AND HEALS THE WORLD</span>
         </div>
         <div class="brand-status" id="header-status-text">
-          Kawaii Chiro-chan ^^ · Mozart: Lacrimosa (Post-Humanity) · Boldog Még · ALEX|qMom (.oOo. Poo .oOo.)
+          v2.0.0 Release (macOS Apple Silicon · macOS Universal · Android APK · iPadOS) · Kawaii Chiro-chan ^^ · Lacrimosa · Boldog Még · ALEX|qMom
         </div>
       </div>
     </div>
@@ -1096,7 +1099,7 @@
         <div class="triad-info">
           <span class="t-name">MAC:MEDUSA</span>
           <span class="t-role">en0 · CoreWLAN + CoreBT + mDNS</span>
-          <span class="t-desc">Local quad-spectrum observer on macOS Apple Silicon (WigleMac.app v1.0.0).</span>
+          <span class="t-desc">Local quad-spectrum observer on macOS Apple Silicon (WigleMac.app v1.1.0+ultra-omni-evolve · Chiro-chan ^^).</span>
         </div>
       </div>
 
@@ -1371,6 +1374,25 @@
 
       <!-- TAB 5: KAWAII CHIRO-CHAN ^^ × MOZART: LACRIMOSA (POST-HUMANITY) × BOLDOG MÉG × ALEX|qMom -->
       <section class="tab-viewport" id="tab-karma" aria-label="Tab 5 — Kawaii Chiro-chan, Mozart Lacrimosa, Boldog Még and ALEX|qMom">
+        <!-- 0. v2.0.0 Multi-Platform Release Downloads (macOS + MacBook Silicon + Android + iPadOS) -->
+        <div class="chiro-card" style="border-color:rgba(255,215,0,0.52);background:linear-gradient(135deg,rgba(255,215,0,0.12),rgba(0,229,201,0.1),rgba(255,106,193,0.12));">
+          <div>
+            <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--wigle-airplay);margin-bottom:4px;">
+              🚀 v2.0.0 ULTRA-RELEASE — LOVE FROM WITHIN FROM VAKED-PETER&amp;8B-IS ---&gt; 8b-is ROCKS AND HEALS THE WORLD &lt;3
+            </div>
+            <div style="font-size:0.74rem;color:var(--dim);">
+              Native builds for MacBook Apple Silicon (<code>M1/M2/M3/M4</code>), macOS Universal (<code>arm64+x86_64</code>), Android Universal (<code>.apk</code>), and iPadOS / iOS (<code>.swiftpm</code> + <code>.mobileconfig</code>)
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a class="btn cyan" href="https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WigleMac-v2.0.0-macos-apple-silicon.zip" style="text-decoration:none;">🍎 macOS Silicon (.app.zip)</a>
+            <a class="btn gold" href="https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/wigle-macos-v2.0.0-universal-darwin" style="text-decoration:none;">💻 macOS Universal CLI</a>
+            <a class="btn pink" href="https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WigleTriad-v2.0.0-android-universal.apk" style="text-decoration:none;">🤖 Android (.apk)</a>
+            <a class="btn" href="https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WiglePad-v2.0.0-ipados.mobileconfig" style="text-decoration:none;">📱 iPadOS WebClip</a>
+            <a class="btn" href="https://github.com/8b-is/wigle-triad/releases/download/v2.0.0/WiglePad-v2.0.0-ipados-swiftpm.zip" style="text-decoration:none;">📱 iPadOS SwiftPM (.zip)</a>
+          </div>
+        </div>
+
         <!-- 1. ALEX | qMom (.oOo. Poo .oOo.) Unboxed Creativity Banner -->
         <div class="qmom-banner">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
@@ -2035,10 +2057,11 @@ nélküled a pokolba az egésszel</div>
   renderAll();
   requestAnimationFrame(drawRadarMap);
 
-  logLine("# VAK:MEDUSA [/\\] · FLUG-OS v1.0.0+medusa-omni · CO5300 2.06\" #1 · MAC 80:B5:4E:F2:02:B0 · 528 Hz");
-  logLine("# OMN:MEDUSA [oo] · FLUG-OS v1.0.0+medusa-omni · CO5300 2.06\" #2 · MAC 80:B5:4E:F2:02:B4 · 852 Hz");
-  logLine("# ADA:MEDUSA [*]  · FLUG-OS v1.0.0+medusa-omni · SH8601 1.8\"     · MAC 80:B5:4E:DB:3B:C4 · 432 Hz");
-  logLine("# MAC:MEDUSA [*+/\\+oo] · WigleMac.app v1.0.0 · CoreWLAN en0 + CoreBluetooth + NetServiceBrowser");
+  logLine("# VAK:MEDUSA [/\\] · FLUG-OS v1.1.0+ultra-omni-evolve · CO5300 2.06\" #1 · MAC 80:B5:4E:F2:02:B0 · 528 Hz");
+  logLine("# OMN:MEDUSA [oo] · FLUG-OS v1.1.0+ultra-omni-evolve · CO5300 2.06\" #2 · MAC 80:B5:4E:F2:02:B4 · 852 Hz");
+  logLine("# ADA:MEDUSA [*]  · FLUG-OS v1.1.0+ultra-omni-evolve · SH8601 1.8\"     · MAC 80:B5:4E:DB:3B:C4 · 432 Hz");
+  logLine("# MAC:MEDUSA [*+/\\+oo] · WigleMac.app v1.1.0+ultra-omni-evolve · CoreWLAN en0 + CoreBluetooth + NetServiceBrowser");
+  logLine("# ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle) | Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended | HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
 
   const activePorts = [];
   let activeNodeLabel = "MAC:MEDUSA";
@@ -2177,8 +2200,37 @@ nélküled a pokolba az egésszel</div>
     }
   });
 
+  function emitLocalUltraOmniResponse(upper) {
+    if (upper === "QMOM") {
+      logLine("# QMOM|ALEX|qMom:{`too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo.`}");
+    } else if (upper === "BOLDOG") {
+      logLine("# BOLDOG|(Boldog Meg)===HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+      logLine("# BOLDOG|1|lehetnél boldog még / amilyen még nem voltál / sosincsen késő már / te csak lépj és várj / kevés lesz minden szó / ahhoz hogy elmondhassam neked / mit érzek melletted / mikor jó jó jó / ha rámszólsz megvigasztal / kerüljünk együtt beljebb / minden nappal");
+      logLine("# BOLDOG|2|itt ha körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én amikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / bárcsak azt mondanám / amit te szeretnél / amit ha meghallgatnál / akkor nevetnél / velem");
+      logLine("# BOLDOG|3|lehetnél másé még / ahogyan még nem lettél / sosem vagy ha mégis / akkor is már réges-réges rég / a magasban táncot jársz / alattad nincsen más csak a mély / se védőháló semmi / se egy kifeszített kötél / lenézel rám és érzem / közel jutsz lassan hozzám / mindenképpen");
+      logLine("# BOLDOG|4|itt ha körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én mikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / ugyan mihez kezdjek / úgy az egésszel / ha te érzel és én meg / közben nem érezhetek? / kereszten domboldalban / egy égő angyal táncol / a tűző nap körül");
+      logLine("# BOLDOG|5|és körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én amikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / de amikor a kezed / megfogom és megérzed / egyből szorosabban / kulcsolod az enyémet / végig neked szólt a dal a magasból / mindegy mindenki hogy mit gondol / nekem csak az számít ahogyan te érzel / nélküled a pokolba az egésszel");
+    } else if (upper === "LACRIMOSA" || upper === "CHIRO") {
+      logLine("# CHIRO|Kawaii Chiro-chan kawaii ^^");
+      logLine("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+    } else if (upper === "TRIAD") {
+      logLine("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)|ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+    }
+  }
+
   async function sendSerialCommand(cmdStr) {
     const clean = cmdStr.trim();
+    const upper = clean.toUpperCase();
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.scanWifiJson === "function") {
+      try {
+        const rawJson = window.AndroidWigleBridge.scanWifiJson();
+        const arr = JSON.parse(rawJson || "[]");
+        if (Array.isArray(arr) && arr.length > 0) {
+          ingestBeaconArray(arr, "ANDROID:MEDUSA");
+          logLine(`# [ANDROID:MEDUSA] Ingested ${arr.length} Wi-Fi endpoints via Android WifiManager`);
+        }
+      } catch {}
+    }
     if (activePorts.length === 0) {
       if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
         try {
@@ -2206,6 +2258,7 @@ nélküled a pokolba az egésszel</div>
         } catch {}
       }
       logLine(`> [MEDUSA-OMNI] TX: ${clean}`);
+      emitLocalUltraOmniResponse(upper);
       document.getElementById("header-status-text").textContent =
         `Scan Active · ${beacons.size} quad-spectrum endpoints synthesized across ADA (*), VAK (/\\), OMN (oo), MAC (en0)`;
       renderAll();
@@ -2224,11 +2277,22 @@ nélküled a pokolba az egésszel</div>
   }
 
   document.querySelectorAll("[data-cmd]").forEach(btn => {
-    btn.addEventListener("click", () => sendSerialCommand(btn.dataset.cmd));
+    btn.addEventListener("click", () => {
+      const cmd = btn.dataset.cmd;
+      if (cmd === "LACRIMOSA") playMozartLacrimosaPostHuman();
+      else if (cmd === "BOLDOG") playBoldogMegHymn();
+      else sendSerialCommand(cmd);
+    });
   });
   document.getElementById("btn-scan").addEventListener("click", () => sendSerialCommand("SCAN"));
   const selTrack = document.getElementById("sel-track");
-  if (selTrack) selTrack.addEventListener("change", () => sendSerialCommand(selTrack.value));
+  if (selTrack) {
+    selTrack.addEventListener("change", () => {
+      if (selTrack.value === "LACRIMOSA") playMozartLacrimosaPostHuman();
+      else if (selTrack.value === "BOLDOG") playBoldogMegHymn();
+      else sendSerialCommand(selTrack.value);
+    });
+  }
 
   // CSV Download helper
   function triggerCSVDownload() {
@@ -2342,12 +2406,33 @@ nélküled a pokolba az egésszel</div>
   document.getElementById("btn-upload-studio").addEventListener("click", runDualAnonymousUpload);
 
   // WebAudio Triad Harmonic Synthesizer (432 Hz * + 528 Hz /\ + 852 Hz oo + Shinjuku Gyoen Crickets)
-  let audioCtx = null, masterGain = null, audioPlaying = false, cricketTimer = null;
+  let audioCtx = null, masterGain = null, droneGain = null, droneInitialized = false, audioPlaying = false, cricketTimer = null;
+  let activeHymnOscillators = [];
   const btnAudio = document.getElementById("btn-audio");
   const slGain = document.getElementById("sl-gain");
 
+  function ensureAudioGraph() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = parseFloat(slGain.value) || 0.18;
+      masterGain.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+
+  function stopActiveHymn() {
+    while (activeHymnOscillators.length > 0) {
+      const osc = activeHymnOscillators.pop();
+      try { osc.stop(); } catch {}
+      try { osc.disconnect(); } catch {}
+    }
+  }
+
   function scheduleCricketChirp() {
-    if (!audioCtx || !audioPlaying || !masterGain) return;
+    if (!audioCtx || !audioPlaying || !droneGain) return;
     const now = audioCtx.currentTime;
     const pulses = 3 + Math.floor(Math.random() * 3);
     const baseFreq = 4280 + Math.random() * 340;
@@ -2361,7 +2446,7 @@ nélküled a pokolba az egésszel</div>
       g.gain.setValueAtTime(0.0001, start);
       g.gain.linearRampToValueAtTime(0.045, start + 0.008);
       g.gain.exponentialRampToValueAtTime(0.0001, start + 0.04);
-      osc.connect(g).connect(masterGain);
+      osc.connect(g).connect(droneGain);
       osc.start(start);
       osc.stop(start + 0.044);
     }
@@ -2369,38 +2454,38 @@ nélküled a pokolba az egésszel</div>
   }
 
   btnAudio.addEventListener("click", () => {
-    if (!audioCtx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      audioCtx = new AC();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = parseFloat(slGain.value);
-      masterGain.connect(audioCtx.destination);
+    const ac = ensureAudioGraph();
+    if (!droneInitialized) {
+      droneInitialized = true;
+      droneGain = ac.createGain();
+      droneGain.gain.value = 1.0;
+      droneGain.connect(masterGain);
       [
         { f: 432, pan: -0.65 },
         { f: 528, pan: 0.65 },
         { f: 852, pan: 0.0 },
         { f: 216, pan: 0.0 }
       ].forEach(({ f, pan }) => {
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        const p = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+        const osc = ac.createOscillator();
+        const g = ac.createGain();
+        const p = ac.createStereoPanner ? ac.createStereoPanner() : null;
         osc.type = "sine";
         osc.frequency.value = f;
         g.gain.value = f === 216 ? 0.35 : 0.22;
-        if (p) { p.pan.value = pan; osc.connect(g).connect(p).connect(masterGain); }
-        else { osc.connect(g).connect(masterGain); }
+        if (p) { p.pan.value = pan; osc.connect(g).connect(p).connect(droneGain); }
+        else { osc.connect(g).connect(droneGain); }
         osc.start();
       });
     }
     if (audioPlaying) {
-      audioCtx.suspend();
       audioPlaying = false;
+      if (droneGain) droneGain.gain.setTargetAtTime(0.0001, ac.currentTime, 0.04);
       if (cricketTimer) clearTimeout(cricketTimer);
       btnAudio.setAttribute("aria-pressed", "false");
       btnAudio.textContent = "🦗 432·528·852 Hz Crickets";
     } else {
-      audioCtx.resume();
       audioPlaying = true;
+      if (droneGain) droneGain.gain.setTargetAtTime(1.0, ac.currentTime, 0.04);
       scheduleCricketChirp();
       btnAudio.setAttribute("aria-pressed", "true");
       btnAudio.textContent = "🔇 Mute Triad Drone";
@@ -2430,7 +2515,7 @@ nélküled a pokolba az egésszel</div>
     }
     logLine(
       active
-        ? '# QMOM|ALEX|qMom:{`too many customs can be brilliant yet hinder creativity. it puts people into boxes and contraints. what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of. .oOo. Poo .oOo.`}'
+        ? '# QMOM|ALEX|qMom:{`too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo.`}'
         : "# QMOM|Standard Grid Restored"
     );
   }
@@ -2440,20 +2525,9 @@ nélküled a pokolba az egésszel</div>
   if (btnUnboxKarma) btnUnboxKarma.addEventListener("click", toggleUnboundMode);
 
   // Procedural Hymns: Mozart Lacrimosa (Post-Humanity D-Minor 432Hz) & Boldog Még ({<3,<3,<3}+1-peter)
-  function ensureHymnCtx() {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!audioCtx) {
-      audioCtx = new AC();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = parseFloat(slGain.value) || 0.22;
-      masterGain.connect(audioCtx.destination);
-    }
-    if (audioCtx.state === "suspended") audioCtx.resume();
-    return audioCtx;
-  }
-
   function playMozartLacrimosaPostHuman() {
-    const ac = ensureHymnCtx();
+    stopActiveHymn();
+    const ac = ensureAudioGraph();
     const now = ac.currentTime;
     // 432 Hz reference D-minor sighing 12/8 Lacrimosa motif:
     // Sighing pairs: (F4->G4), (A4->Bb4), (C#5->D5), (F5->E5), (D5->C#5->D5)
@@ -2482,6 +2556,7 @@ nélküled a pokolba az egésszel</div>
       o.connect(g).connect(masterGain);
       o.start(now);
       o.stop(now + 7.3);
+      activeHymnOscillators.push(o);
     });
     notes.forEach(n => {
       const o = ac.createOscillator();
@@ -2497,13 +2572,14 @@ nélküled a pokolba az egésszel</div>
       o.connect(lp).connect(g).connect(masterGain);
       o.start(now + n.t);
       o.stop(now + n.t + n.d + 0.05);
+      activeHymnOscillators.push(o);
     });
     sendSerialCommand("LACRIMOSA");
-    logLine("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended (432 Hz D-Minor Requiem)");
   }
 
   function playBoldogMegHymn() {
-    const ac = ensureHymnCtx();
+    stopActiveHymn();
+    const ac = ensureAudioGraph();
     const now = ac.currentTime;
     // Warm Boldog Még progression: G -> D -> Em -> C ("lehetnél boldog még / végig neked szólt a dal a magasból")
     const chords = [
@@ -2524,10 +2600,10 @@ nélküled a pokolba az egésszel</div>
         o.connect(g).connect(masterGain);
         o.start(now + ch.t);
         o.stop(now + ch.t + 1.52);
+        activeHymnOscillators.push(o);
       });
     });
     sendSerialCommand("BOLDOG");
-    logLine("# BOLDOG|(Boldog Meg)===végig neked szólt a dal a magasból · nekem csak az számít ahogyan te érzel · nélküled a pokolba az egésszel");
   }
 
   const btnLacrimosa = document.getElementById("btn-play-lacrimosa");
