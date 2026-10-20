@@ -1732,7 +1732,7 @@ nélküled a pokolba az egésszel</div>
   }
 
   function buildWigleCSVString() {
-    const header = "WigleWifi-1.4,appRelease=1.0.0,model=ESP32-S3-MEDUSA-TRIAD,release=15.0,device=esp32.vaked.dev,display=AMOLED-CoreWLAN-BLE-AirPlay,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
+    const header = "WigleWifi-1.4,appRelease=1.1.0,model=ESP32-S3-MEDUSA-TRIAD,release=15.0,device=esp32.vaked.dev,display=AMOLED-CoreWLAN-BLE-AirPlay,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
     const rows = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi).map(r => {
       const cleanSsid = String(r.ssid || "").replace(/[\r\n,]+/g, " ").replace(/"/g, "").trim();
       const isAir = r.type === "AIRPLAY" || r.band === "AirPlay" || r.capabilities.includes("AIRPLAY");

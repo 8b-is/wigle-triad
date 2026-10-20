@@ -692,7 +692,7 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     func buildWigleCSV(from snap: MacTriadTelemetry) -> String {
-        var out = "WigleWifi-1.4,appRelease=1.0.0,model=MacBookPro-AppleSilicon,release=15.0,device=wigle-macos,display=CoreWLAN-BLE-AirPlay,board=arm64-apple-darwin,brand=8b-is\n"
+        var out = "WigleWifi-1.4,appRelease=1.1.0,model=MacBookPro-AppleSilicon,release=15.0,device=wigle-macos,display=CoreWLAN-BLE-AirPlay,board=arm64-apple-darwin,brand=8b-is\n"
         out += "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n"
         for ap in snap.beacons {
             let esc = ap.ssid

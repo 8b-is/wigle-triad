@@ -230,7 +230,7 @@ def ingest_line(port: str, line: str) -> None:
 
 def build_wigle_csv() -> str:
     header = (
-        "WigleWifi-1.4,appRelease=1.0.0,model=ESP32-S3-MEDUSA-TRIAD,"
+        "WigleWifi-1.4,appRelease=1.1.0,model=ESP32-S3-MEDUSA-TRIAD,"
         "release=15.0,device=wiglewww,display=AMOLED-CoreWLAN-BLE-AirPlay,"
         "board=esp32-s3-touch-amoled,brand=8b-is\n"
         "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n"
