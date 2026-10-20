@@ -23,6 +23,9 @@ test('session starts empty and radio text renders as text across all views', () 
   const {context, nodes} = modelContext();
   vm.runInContext('renderAll()', context);
   assert.match(nodes.get('ap-total-badge').textContent, /^0 ENDPOINTS/);
+  assert.equal(nodes.get('card-rf-main').textContent, 'Awaiting observations');
+  assert.equal(nodes.get('card-rf-sub').textContent, 'No RF measurements');
+  assert.equal(nodes.get('sidebar-trits').textContent, '—');
   vm.runInContext(`const b = enrichBeacon({node:'<img>', band:'<svg>', type:'<iframe>', bssid:'<script>', ssid:'<img src=x onerror=alert(1)>', auth:'<iframe>', ch:1, rssi:-50}); beacons.set(b.bssid,b); renderAll();`, context);
   for (const id of ['ap-tbody', 'map-feed-list', 'waterfall-list']) {
     assert.doesNotMatch(nodes.get(id).innerHTML, /<(?:img|svg|script|iframe)/i);
@@ -47,4 +50,13 @@ test('CSV preserves quoted radio text, omits illustrative coordinates and normal
   assert.match(csv, /"a,""b""\nc"/);
   assert.match(csv, /"-50","","","","","WIFI"/);
   assert.match(csv, /"\[AIRPLAY-RAOP\]\[ESS\]"/);
+});
+
+test('external sharing has no active handler and both controls are disabled', () => {
+  for (const id of ['btn-upload-wigle', 'btn-upload-studio']) {
+    const button = html.match(new RegExp('<button[^>]*id="' + id + '"[^>]*>'));
+    assert.ok(button, id);
+    assert.match(button[0], /\bdisabled\b/);
+  }
+  assert.doesNotMatch(html, /runDualAnonymousUpload|fetch\(["'](?:https:\/\/api\.wigle\.net|\/api\/upload)/);
 });
