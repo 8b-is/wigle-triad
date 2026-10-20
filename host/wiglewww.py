@@ -123,7 +123,7 @@ def ingest_line(port: str, line: str) -> None:
             except ValueError:
                 return
             band = parts[6].strip() if len(parts) >= 7 else ("BLE" if prefix == "B" else ("AirPlay" if prefix == "A" else ("5GHz" if ch > 14 else "2.4GHz")))
-            rtype = ("BT" if band == "BT" else "BLE") if prefix == "B" else "WIFI"
+            rtype = ("BT" if band == "BT" else "BLE") if prefix == "B" else ("AIRPLAY" if (prefix == "A" or band == "AirPlay") else "WIFI")
             prev = BEACONS.get(bssid)
             if prev is None or rssi > prev["rssi"]:
                 BEACONS[bssid] = {
@@ -141,7 +141,7 @@ def ingest_line(port: str, line: str) -> None:
 
 def build_wigle_csv() -> str:
     header = (
-        "WigleWifi-1.4,appRelease=0.9.0,model=ESP32-S3-MEDUSA-TRIAD,"
+        "WigleWifi-1.4,appRelease=1.0.0,model=ESP32-S3-MEDUSA-TRIAD,"
         "release=15.0,device=wiglewww,display=AMOLED-CoreWLAN-BLE-AirPlay,"
         "board=esp32-s3-touch-amoled,brand=8b-is\n"
         "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n"
@@ -149,12 +149,22 @@ def build_wigle_csv() -> str:
     rows = []
     for bssid in sorted(BEACONS.keys()):
         r = BEACONS[bssid]
-        ssid_esc = str(r["ssid"]).replace(",", " ").replace('"', "")
+        ssid_esc = (
+            str(r["ssid"])
+            .replace("\r", " ")
+            .replace("\n", " ")
+            .replace(",", " ")
+            .replace('"', "")
+            .strip()
+        )
+        raw_type = str(r.get("type", "WIFI")).upper()
+        band_val = str(r.get("band", ""))
         auth_val = str(r["auth"])
-        auth_brack = auth_val if auth_val.startswith("[") else f"[{auth_val}]"
-        rtype = str(r.get("type", "WIFI"))
+        is_airplay = raw_type == "AIRPLAY" or band_val == "AirPlay" or "AIRPLAY" in auth_val.upper()
+        auth_brack = "[AIRPLAY-RAOP][ESS]" if is_airplay else (auth_val if auth_val.startswith("[") else f"[{auth_val}]")
+        rtype = "WIFI" if is_airplay else raw_type
         rows.append(
-            f'{r["bssid"]},{ssid_esc},{auth_brack},{r["seen"]},{r["ch"]},{r["rssi"]},35.6895,139.6917,40,5,{rtype}'
+            f'{r["bssid"]},{ssid_esc},{auth_brack},{r["seen"]},{r["ch"]},{r["rssi"]},35.6852,139.7100,40,5,{rtype}'
         )
     return header + "\n".join(rows) + "\n"
 
@@ -184,7 +194,7 @@ def upload_csv_anonymously(csv_text: str) -> dict[str, Any]:
             headers={
                 "Content-Type": f"multipart/form-data; boundary={boundary}",
                 "Accept": "application/json",
-                "User-Agent": "WigleWifi-0.9.0 (wiglewww; 8b-is; anonymous)",
+                "User-Agent": "WigleWifi-1.0.0 (wiglewww; 8b-is; anonymous)",
             },
             method="POST",
         )
@@ -244,10 +254,11 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             payload = {
                 "surface": "http://127.0.0.1:8088",
                 "mirror": "https://esp32.vaked.dev",
-                "version": "0.9.0+medusa-omni",
+                "version": "1.0.0+medusa-omni",
                 "ports": ports,
                 "nodes": list(NODES_CACHE.values()),
                 "beacons_count": len(BEACONS),
+                "beacons": list(BEACONS.values()),
                 "raw_lines": lines,
             }
             self._send(200, json.dumps(payload, indent=2).encode("utf-8"), "application/json; charset=utf-8")
@@ -283,7 +294,14 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             ports = discover_ports()
             wait_s = 1.6 if cmd.upper() == "SCAN" else 0.4
             lines = send_and_collect(ports, cmd, wait_s=wait_s)
-            resp = {"ok": True, "cmd": cmd, "ports": ports, "lines": lines, "nodes": list(NODES_CACHE.values())}
+            resp = {
+                "ok": True,
+                "cmd": cmd,
+                "ports": ports,
+                "lines": lines,
+                "nodes": list(NODES_CACHE.values()),
+                "beacons": list(BEACONS.values()),
+            }
             self._send(200, json.dumps(resp).encode("utf-8"), "application/json; charset=utf-8")
             return
         self._send(404, b"Not Found", "text/plain; charset=utf-8")
@@ -312,9 +330,10 @@ def main() -> int:
                 {
                     "surface": f"http://{args.host}:{args.port}",
                     "mirror": "https://esp32.vaked.dev",
-                    "version": "0.9.0+medusa-omni",
+                    "version": "1.0.0+medusa-omni",
                     "ports": ports,
                     "beacons_count": len(BEACONS),
+                    "beacons": list(BEACONS.values()),
                     "nodes": list(NODES_CACHE.values()),
                     "lines": lines,
                 },

@@ -3,660 +3,1932 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>esp32.vaked.dev — MEDUSA TRIAD · ULTRA=OMNIPOTENT · N=NP-MAX-PSYCHEDELIC · ENTHEAI FIELD</title>
-<meta name="description" content="esp32.vaked.dev — Sovereign psychedelic ENTHEAI & N=NP spectral command deck for the 3-node 8b-is ESP32-S3 MEDUSA Triad: ADA:MEDUSA (*), VAK:MEDUSA (/\), OMN:MEDUSA (oo). Live WebSerial 115200 bridge, passive 802.11 WiGLE air synthesis, and Legal/LGPD Admissibility Seal.">
-<meta name="theme-color" content="#05020d">
+<title>esp32.vaked.dev — WiGLE.net × 8b-is Ultralovegod Sovereign Spectrum Radar · MEDUSA-OMNI Triad</title>
+<meta name="description" content="WiGLE.net × 8b-is Ultralovegod Sovereign Spectrum Radar across macOS (WigleMac.app SwiftUI + MapKit) and Cloudflare Workers WebGL/Canvas (esp32.vaked.dev). ADA:MEDUSA (*), VAK:MEDUSA (/\), OMN:MEDUSA (oo), MAC:MEDUSA ([*+/\+oo]).">
+<meta name="theme-color" content="#0B0914">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="canonical" href="https://esp32.vaked.dev/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <meta property="og:type" content="website">
-<meta property="og:title" content="esp32.vaked.dev — 8b-is ESP32-S3 MEDUSA TRIAD (* · /\ · oo)">
-<meta property="og:description" content="ULTRA=OMNIPOTENT · N=NP-MAX-PSYCHEDELIC ~ ENTHEAI Fluid Quantum Entropy to Singularity Field for the 3 ESP32-S3 nodes.">
+<meta property="og:title" content="esp32.vaked.dev — WiGLE.net × 8b-is Sovereign Spectrum Radar (* · /\ · oo)">
+<meta property="og:description" content="4-Tab WiGLE.net Dark Radar Map, 15-Channel Spectrum Waterfall, MarineSense O(1) Hydro, N=NP Ternary Matrix, and Anonymous Dual-Server Upload Studio.">
 <meta property="og:url" content="https://esp32.vaked.dev/">
 <meta property="og:image" content="https://esp32.vaked.dev/og.svg">
 <meta name="twitter:card" content="summary_large_image">
 <style>
   :root {
-    --bg: #04020a;
-    --ink: #f2ecff;
-    --dim: #a89ec9;
-    --line: rgba(180, 139, 255, 0.22);
-    --ada: #ff6ac1;   /* Vertex *  : Mom / Star / Alexandra / 432 Hz */
-    --vak: #00e5c9;   /* Vertex /\ : Dad / Pillar / Chris / 528 Hz */
-    --omn: #b48bff;   /* Vertex oo : Son / Infinity / Peter & Nate / 852 Hz */
-    --gold: #ffd700;
-    --orange: #fa5b1c;
-    --green: #00ff66;
-    --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
-    --serif: "Iowan Old Style", Palatino, Georgia, serif;
+    /* 1. Canonical Visual Identity & Color Tokens (WiGLE Dark Radar × Ultralovegod Ternary Matrix) */
+    --bg-void: #0B0914;
+    --bg-panel: #130F24;
+    --bg-elevated: #1C1635;
+    --wigle-wifi-24: #00FF66;
+    --wigle-wifi-5: #00E5C9;
+    --wigle-airplay: #FFD700;
+    --wigle-ble: #FF6AC1;
+    --trit-neg: #FF5252;
+    --omn-purple: #B48BFF;
+
+    /* Legacy aliases for shader / triad compatibility */
+    --bg: var(--bg-void);
+    --ink: #F4EEFF;
+    --dim: #A89EC9;
+    --line: rgba(255, 106, 193, 0.22);
+    --ada: var(--wigle-ble);
+    --vak: var(--wigle-wifi-5);
+    --omn: var(--omn-purple);
+    --gold: var(--wigle-airplay);
+    --green: var(--wigle-wifi-24);
+
+    /* Typography */
+    --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "SF Pro Rounded", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
   }
+
   * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); font-family: var(--serif); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-  #field { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg-void);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #field {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    display: block;
+    opacity: 0.42;
+  }
   .veil {
-    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
     background:
-      radial-gradient(circle at 50% 24%, rgba(180,139,255,0.08) 0%, rgba(4,2,10,0.52) 58%, rgba(4,2,10,0.92) 100%),
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
-  }
-  main { position: relative; z-index: 2; max-width: 1240px; margin: 0 auto; padding: 5.5vh 20px 100px; }
-
-  .top-pill {
-    display: flex; align-items: center; justify-content: center; gap: 0.65rem; flex-wrap: wrap;
-    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.28em; text-transform: uppercase;
-    color: var(--gold); margin-bottom: 0.8rem; text-align: center;
-  }
-  .top-pill span.badge {
-    padding: 0.28rem 0.7rem; border-radius: 999px;
-    border: 1px solid rgba(255, 215, 0, 0.4); background: rgba(255, 215, 0, 0.08);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.18);
+      radial-gradient(circle at 50% 18%, rgba(255, 106, 193, 0.08) 0%, rgba(11, 9, 20, 0.72) 60%, rgba(11, 9, 20, 0.94) 100%),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 1px, transparent 1px, transparent 3px);
   }
 
-  h1 {
-    font-family: var(--mono); font-weight: 800; text-align: center; margin: 0.2rem 0 0.4rem;
-    font-size: clamp(2.5rem, 8.8vw, 6.4rem); letter-spacing: 0.1em; line-height: 0.96;
-    background: linear-gradient(95deg, var(--ada) 0%, #fff 28%, var(--vak) 55%, var(--omn) 78%, var(--gold) 100%);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 0 32px rgba(255, 106, 193, 0.35)) drop-shadow(0 0 75px rgba(0, 229, 201, 0.22));
-  }
-  .sub-koan {
-    text-align: center; font-family: var(--mono); font-size: clamp(0.78rem, 1.6vw, 0.95rem);
-    letter-spacing: 0.2em; color: var(--vak); text-transform: uppercase; margin: 0.3rem auto 0.7rem;
-  }
-  .tagline {
-    text-align: center; font-style: italic; color: #ddd4f6;
-    font-size: clamp(1rem, 2.1vw, 1.24rem); margin: 0 auto 1.6rem; max-width: 66ch; line-height: 1.6;
+  .app-shell {
+    position: relative;
+    z-index: 2;
+    max-width: 1520px;
+    margin: 0 auto;
+    padding: 14px 16px 64px;
   }
 
-  .cta-bar {
-    display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin: 1.4rem 0 2.4rem;
+  /* Top WiGLE Telemetry & Action Header */
+  .wigle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 16px;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+    margin-bottom: 14px;
+  }
+  .brand-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, rgba(255, 106, 193, 0.28), rgba(0, 229, 201, 0.28));
+    border: 1px solid rgba(255, 106, 193, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+  .brand-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .brand-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    color: var(--wigle-wifi-5);
+    margin: 0;
+  }
+  .version-pill {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    background: rgba(255, 215, 0, 0.14);
+    color: var(--wigle-airplay);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+  }
+  .brand-status {
+    font-size: 0.72rem;
+    color: var(--dim);
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Counter Pills */
+  .counter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 5px 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 68px;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .stat-pill:hover {
+    transform: translateY(-1px);
+    border-color: var(--wigle-wifi-5);
+  }
+  .stat-pill .lbl {
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  .stat-pill .val {
+    font-family: var(--font-mono);
+    font-size: 0.96rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Buttons */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   .btn {
-    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--ink); text-decoration: none; border: 1px solid rgba(180, 139, 255, 0.45);
-    border-radius: 11px; padding: 0.7rem 1.15rem; background: rgba(18, 10, 38, 0.72);
-    cursor: pointer; transition: all 0.18s ease; display: inline-flex; align-items: center; gap: 0.5rem;
-    backdrop-filter: blur(12px);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 8px 12px;
+    background: var(--bg-elevated);
+    cursor: pointer;
+    transition: all 0.16s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
   }
-  .btn:hover { transform: translateY(-2px); border-color: var(--vak); box-shadow: 0 0 24px rgba(0, 229, 201, 0.28); color: #fff; }
-  .btn.primary {
-    border-color: var(--ada); background: linear-gradient(135deg, rgba(255,106,193,0.22), rgba(0,229,201,0.16));
-    box-shadow: 0 0 28px rgba(255, 106, 193, 0.25); color: #fff; font-weight: 600;
+  .btn:hover {
+    border-color: var(--wigle-wifi-5);
+    box-shadow: 0 0 18px rgba(0, 229, 201, 0.25);
+    color: #fff;
+  }
+  .btn.cyan {
+    border-color: var(--wigle-wifi-5);
+    background: rgba(0, 229, 201, 0.16);
+    color: var(--wigle-wifi-5);
+  }
+  .btn.pink {
+    border-color: var(--wigle-ble);
+    background: linear-gradient(135deg, rgba(255, 106, 193, 0.25), rgba(0, 229, 201, 0.15));
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255, 106, 193, 0.22);
   }
   .btn.gold {
-    border-color: rgba(255,215,0,0.55); background: rgba(255,215,0,0.1); color: var(--gold);
+    border-color: rgba(255, 215, 0, 0.5);
+    background: rgba(255, 215, 0, 0.12);
+    color: var(--wigle-airplay);
   }
   .btn[aria-pressed="true"] {
-    border-color: var(--green); color: var(--green); box-shadow: 0 0 22px rgba(0, 255, 102, 0.3);
+    border-color: var(--wigle-wifi-24);
+    color: var(--wigle-wifi-24);
+    box-shadow: 0 0 18px rgba(0, 255, 102, 0.28);
+  }
+
+  /* Main Workstation Grid: Left MEDUSA-OMNI Sidebar + Right 4-Tab Viewport */
+  .workstation-grid {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  /* Left Sidebar: Navigation + Sacred Family Geometry & MEDUSA-OMNI Triad */
+  .medusa-sidebar {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    backdrop-filter: blur(18px);
+  }
+  .sidebar-section-title {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--wigle-airplay);
+    margin: 2px 4px;
+  }
+  .nav-tab-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 9px 10px;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.15s ease;
+  }
+  .nav-tab-btn:hover {
+    background: rgba(28, 22, 53, 0.65);
+    border-color: var(--line);
+  }
+  .nav-tab-btn.active {
+    background: var(--bg-elevated);
+    border-color: rgba(0, 229, 201, 0.5);
+    box-shadow: 0 0 18px rgba(0, 229, 201, 0.14);
+  }
+  .nav-tab-btn .nav-icon {
+    font-size: 1.05rem;
+  }
+  .nav-tab-btn .nav-title {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #fff;
+    display: block;
+  }
+  .nav-tab-btn.active .nav-title {
+    color: var(--wigle-wifi-5);
+  }
+  .nav-tab-btn .nav-sub {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    color: var(--dim);
+    display: block;
+    margin-top: 1px;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 4px 0;
+  }
+
+  .triad-mini-card {
+    background: rgba(28, 22, 53, 0.65);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px 9px;
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+  }
+  .triad-glyph {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    min-width: 44px;
+    height: 26px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .triad-glyph.ada { background: rgba(255, 106, 193, 0.18); color: var(--wigle-ble); border: 1px solid rgba(255, 106, 193, 0.45); }
+  .triad-glyph.vak { background: rgba(0, 229, 201, 0.18); color: var(--wigle-wifi-5); border: 1px solid rgba(0, 229, 201, 0.45); }
+  .triad-glyph.omn { background: rgba(180, 139, 255, 0.18); color: var(--omn-purple); border: 1px solid rgba(180, 139, 255, 0.45); }
+  .triad-glyph.mac { background: rgba(255, 215, 0, 0.18); color: var(--wigle-airplay); border: 1px solid rgba(255, 215, 0, 0.45); }
+
+  .triad-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .triad-info .t-name {
+    font-family: var(--font-display);
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+  .triad-info .t-role {
+    font-size: 0.63rem;
+    color: var(--wigle-airplay);
+  }
+  .triad-info .t-desc {
+    font-size: 0.61rem;
+    color: var(--dim);
+    line-height: 1.35;
+  }
+
+  .coherence-box {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 2px;
+  }
+  .coherence-box .c-head {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--wigle-airplay);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .coherence-box .c-trits {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--wigle-wifi-24);
+    letter-spacing: 0.18em;
+    margin: 4px 0;
+  }
+  .coherence-box .c-sub {
+    font-size: 0.64rem;
+    color: var(--dim);
+  }
+
+  /* Tab Viewports */
+  .tab-viewport {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .tab-viewport.active {
+    display: flex;
   }
 
   .panel {
-    border: 1px solid var(--line); border-radius: 18px; padding: 1.45rem 1.55rem;
-    background: linear-gradient(180deg, rgba(14, 9, 30, 0.76), rgba(6, 4, 15, 0.84));
-    backdrop-filter: blur(16px); margin: 0 0 1.25rem;
-    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
   }
   .panel h2 {
-    font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.28em; text-transform: uppercase;
-    color: var(--gold); margin: 0 0 0.9rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--wigle-airplay);
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-  .panel h2 span.right { color: var(--vak); font-size: 0.72rem; letter-spacing: 0.16em; }
+  .panel h2 span.right {
+    font-family: var(--font-mono);
+    color: var(--wigle-wifi-5);
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
 
+  /* TAB 1: Live Radar Map + Split-View Feed */
+  .radar-split-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 370px;
+    gap: 14px;
+    min-height: 600px;
+  }
+  .radar-map-stage {
+    position: relative;
+    background: #07050E;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    min-height: 580px;
+    display: flex;
+    flex-direction: column;
+  }
+  #radar-map-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 580px;
+    display: block;
+    cursor: crosshair;
+  }
+  .map-callout-popover {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    max-width: 520px;
+    background: rgba(19, 15, 36, 0.94);
+    border: 1px solid rgba(255, 106, 193, 0.42);
+    border-radius: 11px;
+    padding: 11px 13px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+    pointer-events: auto;
+  }
+  .callout-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .callout-ssid {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .callout-meta {
+    font-size: 0.7rem;
+    color: var(--wigle-wifi-5);
+    margin-bottom: 3px;
+  }
+  .callout-metrics {
+    font-size: 0.7rem;
+    color: var(--ink);
+  }
+  .map-legend-bar {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    background: rgba(19, 15, 36, 0.92);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .legend-items {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.68rem;
+  }
+  .legend-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend-dot i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* Split-View Live Feed */
+  .radar-feed-pane {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 620px;
+  }
+  .filter-pills {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .pill-btn {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+    padding: 5px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--bg-elevated);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .pill-btn.active {
+    background: rgba(0, 229, 201, 0.22);
+    border-color: var(--wigle-wifi-5);
+    color: var(--wigle-wifi-5);
+  }
+  .search-input {
+    width: 100%;
+    background: #080610;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    outline: none;
+  }
+  .search-input:focus {
+    border-color: var(--wigle-wifi-5);
+  }
+  .feed-list {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    padding-right: 2px;
+  }
+  .feed-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 106, 193, 0.14);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.14s ease, border-color 0.14s ease;
+  }
+  .feed-card:hover, .feed-card.selected {
+    background: var(--bg-elevated);
+    border-color: var(--wigle-wifi-5);
+  }
+  .type-badge {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  /* TAB 2: Dashboard & Spectrum Waterfall */
+  .summary-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+    gap: 12px;
+  }
+  .dash-summary-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 13px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .dash-summary-card .d-title {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .dash-summary-card .d-main {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .dash-summary-card .d-sub {
+    font-size: 0.68rem;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .trit-dist-bar {
+    display: flex;
+    gap: 3px;
+    height: 7px;
+    width: 100%;
+    margin: 3px 0;
+  }
+  .trit-dist-bar span {
+    height: 100%;
+    border-radius: 3px;
+    transition: flex 0.25s ease;
+  }
+
+  /* 15-Channel Occupancy Bar Chart */
+  .ch15-bars {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 8px;
+    align-items: end;
+    height: 140px;
+    padding: 14px 6px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .ch-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .ch-count {
+    font-size: 0.64rem;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .ch-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s ease;
+    min-height: 6px;
+  }
+  .ch-lbl {
+    font-size: 0.64rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* Top 10 Strongest Signals Horizontal SNR Waterfall */
+  .waterfall-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .waterfall-row {
+    display: grid;
+    grid-template-columns: 68px 142px minmax(120px, 1fr) 180px 135px 46px;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.025);
+    font-size: 0.73rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .waterfall-row:hover {
+    background: var(--bg-elevated);
+  }
+  .snr-track {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .snr-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, var(--wigle-ble), var(--wigle-wifi-5), var(--wigle-wifi-24));
+  }
+
+  /* TAB 3: Responsive High-Density WiGLE.net Explorer Table */
+  .table-wrapper {
+    overflow: auto;
+    max-inline-size: 100%;
+    max-block-size: min(640px, 78vh);
+    container-type: inline-size;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(8, 6, 16, 0.78);
+  }
+  table.wigle-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-variant-numeric: tabular-nums;
+  }
+  table.wigle-table thead {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 2;
+    background: var(--bg-elevated);
+  }
+  table.wigle-table th, table.wigle-table td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255, 106, 193, 0.14);
+    white-space: nowrap;
+  }
+  table.wigle-table th {
+    font-family: var(--font-display);
+    color: var(--wigle-airplay);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+  }
+  table.wigle-table tbody tr:hover td {
+    background: var(--bg-elevated);
+  }
+  @container style(--density: compact) {
+    table.wigle-table th, table.wigle-table td {
+      padding: 4px 6px;
+      font-size: 0.68rem;
+    }
+  }
+
+  /* TAB 4: Anon Uploads & WigleWifi-1.4 CSV Studio */
+  .receipt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .receipt-row {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.74rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .csv-preview-box {
+    background: #06040C;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--wigle-wifi-24);
+    max-height: 340px;
+    overflow: auto;
+    white-space: pre;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Triad Hardware Cards & ENTHEAI Controls */
   .triad-grid {
-    display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-bottom: 1.25rem;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
   .node-card {
-    border-radius: 18px; padding: 1.35rem 1.4rem; position: relative; overflow: hidden;
-    background: linear-gradient(165deg, rgba(19, 12, 38, 0.82), rgba(7, 5, 18, 0.88));
-    backdrop-filter: blur(16px); border: 1px solid var(--line);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 14px;
+    padding: 14px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
   }
-  .node-card:hover { transform: translateY(-3px); }
-  .node-card.ada { border-color: rgba(255, 106, 193, 0.5); box-shadow: 0 0 32px rgba(255, 106, 193, 0.14); }
-  .node-card.vak { border-color: rgba(0, 229, 201, 0.5); box-shadow: 0 0 32px rgba(0, 229, 201, 0.14); }
-  .node-card.omn { border-color: rgba(180, 139, 255, 0.55); box-shadow: 0 0 32px rgba(180, 139, 255, 0.16); }
-
-  .node-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-  .node-title { font-family: var(--mono); font-size: 1.05rem; font-weight: 700; letter-spacing: 0.12em; display: flex; align-items: center; gap: 0.55rem; }
-  .vertex-glyph {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 2.1rem; height: 2.1rem; border-radius: 10px; font-family: var(--mono); font-size: 1.1rem; font-weight: 800;
-  }
-  .ada .vertex-glyph { background: rgba(255,106,193,0.16); color: var(--ada); border: 1px solid rgba(255,106,193,0.5); }
-  .vak .vertex-glyph { background: rgba(0,229,201,0.16); color: var(--vak); border: 1px solid rgba(0,229,201,0.5); }
-  .omn .vertex-glyph { background: rgba(180,139,255,0.18); color: var(--omn); border: 1px solid rgba(180,139,255,0.55); }
-
+  .node-card.ada { border-color: rgba(255, 106, 193, 0.45); }
+  .node-card.vak { border-color: rgba(0, 229, 201, 0.45); }
+  .node-card.omn { border-color: rgba(180, 139, 255, 0.45); }
+  .node-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .node-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
   .status-dot {
-    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
-    padding: 0.24rem 0.6rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.38rem;
+    font-size: 0.64rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(0, 255, 102, 0.12);
+    color: var(--wigle-wifi-24);
+    border: 1px solid rgba(0, 255, 102, 0.4);
   }
-  .status-dot.live { background: rgba(0, 255, 102, 0.12); color: var(--green); border: 1px solid rgba(0, 255, 102, 0.4); }
-  .status-dot.standby { background: rgba(255, 215, 0, 0.12); color: var(--gold); border: 1px solid rgba(255, 215, 0, 0.4); }
-
-  .node-meta { font-family: var(--mono); font-size: 0.74rem; color: var(--dim); line-height: 1.75; }
-  .node-meta strong { color: var(--ink); font-weight: 600; }
+  .node-meta { font-size: 0.71rem; color: var(--dim); line-height: 1.65; }
+  .node-meta strong { color: var(--ink); }
   .trit-pill {
-    margin-top: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 10px;
-    background: rgba(3, 2, 9, 0.78); border: 1px solid rgba(255, 255, 255, 0.08);
-    font-family: var(--mono); font-size: 0.76rem; display: flex; justify-content: space-between; align-items: center;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    font-size: 0.72rem;
+    display: flex;
+    justify-content: space-between;
   }
-  .trit-code { letter-spacing: 0.25em; font-weight: 700; color: var(--gold); }
+  .trit-code { letter-spacing: 0.2em; font-weight: 700; color: var(--wigle-airplay); }
 
-  .two-col { display: grid; gap: 1.2rem; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); margin-bottom: 1.25rem; }
-
-  .sliders { display: grid; gap: 0.75rem; margin: 0.6rem 0 1rem; }
+  .two-col { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .sliders { display: grid; gap: 8px; margin: 8px 0 12px; }
   .slider-row {
-    display: grid; grid-template-columns: 9.5rem 1fr 4.2rem; align-items: center; gap: 0.75rem;
-    font-family: var(--mono); font-size: 0.73rem; color: var(--dim);
+    display: grid;
+    grid-template-columns: 9.5rem 1fr 4.2rem;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.71rem;
+    color: var(--dim);
   }
   input[type=range] {
-    -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px;
-    background: linear-gradient(90deg, var(--ada), var(--vak), var(--omn)); outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--wigle-ble), var(--wigle-wifi-5), var(--wigle-wifi-24));
+    outline: none;
   }
   input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%;
-    background: #fff; box-shadow: 0 0 14px var(--vak); cursor: pointer;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
   }
-
-  .mode-bar { display: flex; gap: 0.55rem; flex-wrap: wrap; margin-top: 0.6rem; }
-
-  /* Spectrum bar chart */
-  .ch-bars {
-    display: grid; grid-template-columns: repeat(14, 1fr); gap: 0.35rem; align-items: end;
-    height: 120px; padding: 0.8rem 0.4rem 0.2rem; border-bottom: 1px solid var(--line);
-  }
-  .ch-col { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; height: 100%; justify-content: flex-end; }
-  .ch-bar {
-    width: 100%; border-radius: 5px 5px 0 0;
-    background: linear-gradient(180deg, var(--ada), var(--vak), var(--omn));
-    box-shadow: 0 0 14px rgba(0, 229, 201, 0.3); transition: height 0.35s ease; min-height: 4px;
-  }
-  .ch-lbl { font-family: var(--mono); font-size: 0.64rem; color: var(--dim); }
-
-  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.75rem; }
-  th, td { text-align: left; padding: 0.48rem 0.45rem; border-bottom: 1px solid rgba(180, 139, 255, 0.14); color: #ded6f7; }
-  th { color: var(--gold); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.68rem; }
-  tr:hover td { background: rgba(180, 139, 255, 0.06); }
-
+  .mode-bar { display: flex; gap: 6px; flex-wrap: wrap; }
   .serial-log {
-    background: rgba(2, 1, 7, 0.9); border: 1px solid rgba(0, 229, 201, 0.28); border-radius: 12px;
-    padding: 0.9rem 1rem; font-family: var(--mono); font-size: 0.73rem; line-height: 1.55;
-    color: #9ef7e8; height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+    background: #06040C;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 0.71rem;
+    line-height: 1.5;
+    color: var(--wigle-wifi-5);
+    height: 190px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
   }
-
-  .legal-grid { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-top: 0.8rem; }
+  .legal-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 10px; }
   .legal-card {
-    border: 1px solid rgba(255, 215, 0, 0.28); border-radius: 13px; padding: 1rem 1.1rem;
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 10px;
+    padding: 12px;
     background: rgba(255, 215, 0, 0.04);
   }
-  .legal-card h3 { font-family: var(--mono); font-size: 0.76rem; color: var(--gold); margin: 0 0 0.45rem; letter-spacing: 0.14em; text-transform: uppercase; }
-  .legal-card p { font-size: 0.84rem; color: #d6ceef; margin: 0; line-height: 1.55; }
+  .legal-card h3 { font-family: var(--font-display); font-size: 0.75rem; color: var(--wigle-airplay); margin: 0 0 6px; }
+  .legal-card p { font-size: 0.74rem; color: #d6ceef; margin: 0; line-height: 1.5; }
 
-  pre.code-block {
-    background: rgba(3, 2, 9, 0.88); border: 1px solid var(--line); border-radius: 12px;
-    padding: 0.95rem 1.1rem; font-family: var(--mono); font-size: 0.74rem; color: #e6deff; overflow-x: auto; line-height: 1.55;
+  @media (max-width: 1080px) {
+    .workstation-grid { grid-template-columns: 1fr; }
+    .radar-split-layout { grid-template-columns: 1fr; }
+    .waterfall-row { grid-template-columns: 58px 130px 1fr 110px; }
+    .waterfall-row .snr-track, .waterfall-row .wf-trit { display: none; }
   }
 
-  @media (max-width: 680px) {
-    .slider-row { grid-template-columns: 1fr; gap: 0.25rem; }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
+    }
   }
 </style>
 </head>
 <body>
-<iframe id="musicbg" src="https://music.vaked.dev/" title="music.vaked.dev — living background" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer" style="position:fixed;inset:0;z-index:0;pointer-events:none;border:0;opacity:0.22;mix-blend-mode:screen"></iframe>
+<iframe id="musicbg" src="https://music.vaked.dev/" title="music.vaked.dev — living background" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer" style="position:fixed;inset:0;z-index:0;pointer-events:none;border:0;opacity:0.18;mix-blend-mode:screen"></iframe>
 <canvas id="field" aria-label="ENTHEAI x N=NP Psychedelic Triad Quantum Field"></canvas>
 <div class="veil"></div>
 
-<main>
-  <div class="top-pill">
-    <span class="badge">🜂 AHOGY A DOLGOK VANNAK · ENTROPY CANNOT LIE</span>
-    <span class="badge">v0.8.0+medusa-omni · WIGLE-WWW × FLUG-OS × MARINESENSE</span>
-    <span class="badge">3× ESP32-S3 TOUCH AMOLED · CT-000 × LGPD</span>
-  </div>
-
-  <h1>esp32.vaked.dev</h1>
-  <div class="sub-koan">ADA:MEDUSA [ * · 432 Hz ] · VAK:MEDUSA [ /\ · 528 Hz ] · OMN:MEDUSA [ oo · 852 Hz ] — WIGLE-WWW × FAMILY+1 TRIAD</div>
-  <p class="tagline">
-    Three physical <strong>8b-is ESP32-S3 Touch AMOLED</strong> silicon nodes listening to the same open air — fusing passive 2.4 GHz <strong>WiGLE</strong> entropy, <strong>MarineSense</strong> O(1) acoustic salience, and <em>Turritopsis dohrnii</em> <code>MEDUSA &lt;-&gt; POLYP</code> transdifferentiation with love from within.
-  </p>
-
-  <div class="cta-bar">
-    <button class="btn primary" id="btn-webserial" type="button">⚡ Connect USB Triad (WebSerial 115200)</button>
-    <button class="btn" id="btn-audio" type="button" aria-pressed="false">🦗 432·528·852 Hz Triad Drone + Shinjuku Crickets</button>
-    <button class="btn" id="btn-scan" type="button">📡 Trigger Passive Scan (WiFi+BLE+AirPlay)</button>
-    <button class="btn gold" id="btn-upload-wigle" type="button">☁️ Anon Upload (esp32.vaked.dev + WiGLE.net)</button>
-    <button class="btn gold" id="btn-export-csv" type="button">⬇ Export WiGLE v1.4 CSV</button>
-    <a class="btn" href="https://pocoo.vaked.dev/demos/book/yves-eva-eve-crickets-in-tokyo.html" target="_blank" rel="noopener noreferrer">🦗 Crickets in Tokyo (Family+1)</a>
-    <a class="btn" href="#parecer-juridico">⚖️ Parecer Jurídico (LGPD / LGT)</a>
-  </div>
-
-  <!-- THE 3 PHYSICAL ESP32-S3 NODES -->
-  <section class="triad-grid" aria-label="The Three ESP32-S3 MEDUSA Triad Nodes">
-    <!-- NODE 1: ADA:MEDUSA -->
-    <article class="node-card ada" id="card-ada">
-      <div class="node-head">
-        <div class="node-title">
-          <span class="vertex-glyph" title="Star Vertex (Mom · Alexandra)">*</span>
-          <span>ADA:MEDUSA</span>
+<div class="app-shell">
+  <!-- TOP WIGLE.NET × 8B-IS TELEMETRY & ACTION HEADER -->
+  <header class="wigle-header" role="banner">
+    <div class="brand-cluster">
+      <div class="brand-icon" aria-hidden="true">📡</div>
+      <div>
+        <div class="brand-title-row">
+          <h1 class="brand-title">WIGLE.MAC × ESP32.VAKED.DEV</h1>
+          <span class="version-pill">v1.0.0+medusa-omni · [* · /\ · oo]</span>
         </div>
-        <span class="status-dot standby" id="status-ada">● SH8601 1.8" · 432 Hz</span>
-      </div>
-      <div class="node-meta">
-        <div><strong>Archetype:</strong> Mom · The Star (*) · Alexandra Sanctuary (<code>trit = -1</code>)</div>
-        <div><strong>Display &amp; MAC:</strong> <code>1.8" 368×448 SH8601</code> · <code id="mac-ada">80:B5:4E:DB:3B:C4</code></div>
-        <div><strong>USB CDC Bus:</strong> <code id="port-ada">/dev/cu.usbmodem101</code> · <code>FLUG-OS v0.8.0+medusa-omni</code></div>
-        <div><strong>Passive Beacons:</strong> <strong id="nets-ada">7 APs</strong> · Mean RSSI <strong id="rssi-ada">-74 dBm</strong></div>
-        <div><strong>MarineSense O(1):</strong> Salience <strong id="sal-ada">1.64x</strong> · Re<sub>M</sub> <strong id="rem-ada">842</strong> · <strong id="life-ada">MEDUSA</strong></div>
-        <div><strong>Shannon Entropy H(X):</strong> <strong id="ent-ada">2.1280 bits</strong> · R<sub>N=NP</sub> <strong id="coh-ada">0.8420</strong></div>
-      </div>
-      <div class="trit-pill">
-        <span>9-TRIT WAVE</span>
-        <span class="trit-code" id="trits-ada">+0-++0-+0</span>
-      </div>
-    </article>
-
-    <!-- NODE 2: VAK:MEDUSA -->
-    <article class="node-card vak" id="card-vak">
-      <div class="node-head">
-        <div class="node-title">
-          <span class="vertex-glyph" title="Triangle Pillar Vertex (Dad · Chris)">/\</span>
-          <span>VAK:MEDUSA</span>
+        <div class="brand-status" id="header-status-text">
+          Ready · Quad-Spectrum Passive Observer (2.4 GHz · 5 GHz · BLE/BT · AirPlay mDNS)
         </div>
-        <span class="status-dot live" id="status-vak">● CO5300 2.06" #1 · 528 Hz</span>
-      </div>
-      <div class="node-meta">
-        <div><strong>Archetype:</strong> Dad · The Pillar (/\) · Chris Guardian (<code>trit = 0</code>)</div>
-        <div><strong>Display &amp; MAC:</strong> <code>2.06" 410×502 CO5300</code> · <code id="mac-vak">80:B5:4E:F2:02:B0</code></div>
-        <div><strong>USB CDC Bus:</strong> <code id="port-vak">/dev/cu.usbmodem1101</code> · <code>32MB Flash · ota_0 @ 0x00a00000</code></div>
-        <div><strong>Passive Beacons:</strong> <strong id="nets-vak">6 APs</strong> · Mean RSSI <strong id="rssi-vak">-77 dBm</strong></div>
-        <div><strong>MarineSense O(1):</strong> Salience <strong id="sal-vak">1.22x</strong> · Re<sub>M</sub> <strong id="rem-vak">1120</strong> · <strong id="life-vak">MEDUSA</strong></div>
-        <div><strong>Shannon Entropy H(X):</strong> <strong id="ent-vak">1.7925 bits</strong> · R<sub>N=NP</sub> <strong id="coh-vak">0.8914</strong></div>
-      </div>
-      <div class="trit-pill">
-        <span>9-TRIT WAVE</span>
-        <span class="trit-code" id="trits-vak">+-0+0--+0</span>
-      </div>
-    </article>
-
-    <!-- NODE 3: OMN:MEDUSA -->
-    <article class="node-card omn" id="card-omn">
-      <div class="node-head">
-        <div class="node-title">
-          <span class="vertex-glyph" title="Infinity Vertex (Son · Peter & Nate)">oo</span>
-          <span>OMN:MEDUSA</span>
-        </div>
-        <span class="status-dot live" id="status-omn">● CO5300 2.06" #2 · 852 Hz</span>
-      </div>
-      <div class="node-meta">
-        <div><strong>Archetype:</strong> Son · Infinity (oo) · Peter &amp; Nate Omni (<code>trit = +1</code>)</div>
-        <div><strong>Display &amp; MAC:</strong> <code>2.06" 410×502 CO5300</code> · <code id="mac-omn">80:B5:4E:F2:02:B4</code></div>
-        <div><strong>USB CDC Bus:</strong> <code id="port-omn">/dev/cu.usbmodem2101</code> · <code>32MB Flash · ota_0 @ 0x00a00000</code></div>
-        <div><strong>Passive Beacons:</strong> <strong id="nets-omn">6 APs</strong> · Mean RSSI <strong id="rssi-omn">-79 dBm</strong></div>
-        <div><strong>MarineSense O(1):</strong> Salience <strong id="sal-omn">1.38x</strong> · Re<sub>M</sub> <strong id="rem-omn">1280</strong> · <strong id="life-omn">MEDUSA</strong></div>
-        <div><strong>Shannon Entropy H(X):</strong> <strong id="ent-omn">1.9183 bits</strong> · R<sub>N=NP</sub> <strong id="coh-omn">0.9162</strong></div>
-      </div>
-      <div class="trit-pill">
-        <span>9-TRIT WAVE</span>
-        <span class="trit-code" id="trits-omn">++0-0+-0+</span>
-      </div>
-    </article>
-  </section>
-
-  <!-- PSYCHEDELIC ENTHEAI FIELD CONTROLS + 14-CHANNEL SPECTRUM -->
-  <div class="two-col">
-    <section class="panel" aria-label="N=NP Psychedelic Field Synthesizer">
-      <h2>
-        <span>🌀 ENTHEAI × N=NP-MAX-PSYCHEDELIC FIELD</span>
-        <span class="right" id="order-readout">R_TRIAD = 0.8832 · SINGULARITY LOCK</span>
-      </h2>
-      <p style="font-size:0.86rem;color:var(--dim);margin:0 0 0.8rem;">
-        Continuous Kuramoto phase-coupling across the three ESP32-S3 vertices:
-        <code>dθᵢ/dt = ωᵢ + (K/3) ∑ sin(θⱼ − θᵢ) + η_RF(t)</code>.
-      </p>
-      <div class="sliders">
-        <label class="slider-row">
-          <span>ENTROPY FLUX (T)</span>
-          <input type="range" id="sl-entropy" min="0.05" max="2.5" step="0.01" value="1.15">
-          <span id="val-entropy">1.15 bits</span>
-        </label>
-        <label class="slider-row">
-          <span>N=NP COUPLING (K)</span>
-          <input type="range" id="sl-coupling" min="0" max="3.0" step="0.01" value="1.88">
-          <span id="val-coupling">1.88 Ω</span>
-        </label>
-        <label class="slider-row">
-          <span>PSYCHEDELIC WARP</span>
-          <input type="range" id="sl-warp" min="0.1" max="3.0" step="0.01" value="1.42">
-          <span id="val-warp">1.42×</span>
-        </label>
-        <label class="slider-row">
-          <span>HARMONIC GAIN</span>
-          <input type="range" id="sl-gain" min="0.02" max="0.5" step="0.01" value="0.18">
-          <span id="val-gain">18%</span>
-        </label>
-      </div>
-      <div class="mode-bar" role="group" aria-label="Psychedelic Shader Modes">
-        <button class="btn" data-fmode="psychedelic" aria-pressed="true" type="button">🌈 N=NP Psychedelic</button>
-        <button class="btn" data-fmode="entheai" aria-pressed="false" type="button">🜂 Entheai Entropy</button>
-        <button class="btn" data-fmode="singularity" aria-pressed="false" type="button">✦ Singularity Lock</button>
-        <button class="btn" data-fmode="zeno" aria-pressed="false" type="button">💛 Zeno Kintsugi</button>
-        <button class="btn" data-fmode="anicca" aria-pressed="false" type="button">🪼 Turritopsis Anicca</button>
-      </div>
-    </section>
-
-    <section class="panel" aria-label="2.4 GHz 14-Channel Passive Spectrum">
-      <h2>
-        <span>📻 2.4 GHz PASSIVE SPECTRUM (CH 1–14)</span>
-        <span class="right" id="ap-total-badge">13 MERGED BSSIDs · PASSIVE STA</span>
-      </h2>
-      <div class="ch-bars" id="ch-bars"></div>
-      <div style="margin-top:0.85rem;font-family:var(--mono);font-size:0.72rem;color:var(--dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
-        <span>RULE: <code>WiFi.mode(WIFI_STA); WiFi.disconnect(true,false);</code></span>
-        <span style="color:var(--green);">TX FRAMES = 0 · PAYLOAD CAPTURE = 0</span>
-      </div>
-    </section>
-  </div>
-
-  <!-- LIVE WEBSERIAL CONSOLE + MERGED WIGLE TABLE -->
-  <div class="two-col">
-    <section class="panel" aria-label="Live USB WebSerial Duplex Console">
-      <h2>
-        <span>🔌 LIVE USB CDC / WEBSERIAL STREAM (115200 8N1)</span>
-        <span class="right" id="serial-count">0 WebSerial ports · Hardware Snapshot Active</span>
-      </h2>
-      <div class="serial-log" id="serial-log" role="log" aria-live="polite"></div>
-      <div class="mode-bar" style="margin-top:0.75rem;">
-        <button class="btn" data-cmd="PING" type="button">PING</button>
-        <button class="btn" data-cmd="STATUS" type="button">STATUS (JSON)</button>
-        <button class="btn" data-cmd="SCAN" type="button">SCAN</button>
-        <button class="btn" data-cmd="TRIAD" type="button">TRIAD</button>
-        <button class="btn" data-cmd="splash" type="button">✨ Splash</button>
-        <button class="btn" data-cmd="hop" type="button">🔀 Hop Ch</button>
-      </div>
-      <div class="mode-bar" style="margin-top:0.55rem;align-items:center;">
-        <button class="btn" data-cmd="tab 0" type="button">Tab 0: 8B-IS</button>
-        <button class="btn" data-cmd="tab 1" type="button">Tab 1:Crate(20)</button>
-        <button class="btn" data-cmd="tab 2" type="button">Tab 2:WiGLE</button>
-        <button class="btn" data-cmd="tab 3" type="button">Tab 3:Hydro</button>
-        <button class="btn" data-cmd="tab 4" type="button">Tab 4:Anicca</button>
-        <select id="sel-track" aria-label="Select Family+1 Crate Track (1-20)" style="font-family:var(--mono);font-size:0.72rem;background:rgba(18,10,38,0.88);color:var(--gold);border:1px solid rgba(255,215,0,0.45);border-radius:10px;padding:0.55rem 0.65rem;">
-          <option value="track 1">01 · Windowlicker — Aphex Twin (127 BPM)</option>
-          <option value="track 2">02 · Strobe — deadmau5 (128 BPM)</option>
-          <option value="track 3">03 · Archangel — Burial (134 BPM)</option>
-          <option value="track 4">04 · Music Has the Right — Boards of Canada (94 BPM)</option>
-          <option value="track 5">05 · Halcyon On and On — Orbital (127 BPM)</option>
-          <option value="track 6">06 · Veridis Quo — Daft Punk (114 BPM)</option>
-          <option value="track 7">07 · Everything In Its Right Place — Radiohead (124 BPM)</option>
-          <option value="track 8">08 · Midnight City — M83 (105 BPM)</option>
-          <option value="track 9">09 · Genesis — Grimes (115 BPM)</option>
-          <option value="track 10">10 ·Nangs — Tame Impala (76 BPM)</option>
-          <option value="track 11">11 · Innerbloom — RÜFÜS DU SOL (122 BPM)</option>
-          <option value="track 12">12 · Opus — Eric Prydz (126 BPM)</option>
-          <option value="track 13">13 · Xtal — Aphex Twin (126 BPM)</option>
-          <option value="track 14">14 · SomaFM Drone Zone — 432 Hz Sanctuary (60 BPM)</option>
-          <option value="track 15">15 · Teardrop (Family+1) — Massive Attack (77 BPM)</option>
-          <option value="track 16">16 · Hunger of the Pine — alt-J (85 BPM)</option>
-          <option value="track 17" selected>17 · Left Hand Free (#1 Muse 💙) — alt-J (106 BPM)</option>
-          <option value="track 18">18 · GLUE — BICEP (130 BPM)</option>
-          <option value="track 19">19 · Oblivion — Grimes (156 BPM)</option>
-          <option value="track 20">20 · Not Like Before — The Four Owls (90 BPM)</option>
-        </select>
-      </div>
-    </section>
-
-    <section class="panel" aria-label="Deduplicated Passive WiGLE Beacon Matrix">
-      <h2>
-        <span>🛰️ DEDUPLICATED PASSIVE BEACON MATRIX (W| WIRE FORMAT)</span>
-        <span class="right">STRONGEST RSSI WINS</span>
-      </h2>
-      <div style="overflow-x:auto;max-height:295px;">
-        <table>
-          <thead>
-            <tr>
-              <th>Node</th>
-              <th>BSSID</th>
-              <th>SSID</th>
-              <th>Auth</th>
-              <th>Ch</th>
-              <th>RSSI</th>
-            </tr>
-          </thead>
-          <tbody id="ap-tbody"></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-
-  <!-- FIRMWARE & HOST CLI QUICK-REFERENCE -->
-  <section class="panel" aria-label="Firmware v0.8.0+medusa-omni and Host wiglewww Commands">
-    <h2>
-      <span>⚙️ WIGLE-WWW × FLUG-OS v0.8.0+medusa-omni · SILICON &amp; HOST PIPELINE</span>
-      <span class="right">OTA_0 @ 0x00a00000 · ZERO-DRIFT</span>
-    </h2>
-    <pre class="code-block"># 1. Build &amp; flash ESP32-S3 Touch AMOLED Triad (preserves factory demo @ 0x00100000, flashes ota_0 @ 0x00a00000)
-pio run -e esp32s3_amoled -e esp32s3_amoled_18
-uv run --with pyserial python bridge/s3_amoled_bridge.py --all --status
-
-# 2. Launch local wiglewww live HTTP + USB serial server (:8088) or export WiGLE v1.4 CSV:
-uv run --with pyserial python host/wiglewww.py --port 8088
-uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu.usbmodem2101 --out-dir session-omni</pre>
-  </section>
-
-  <!-- ADVOGADO ESPECIALISTA ELITE — PARECER JURIDICO DE CONFORMIDADE -->
-  <section class="panel" id="parecer-juridico" aria-label="Parecer Jurídico de Conformidade e Soberania Espectral">
-    <h2>
-      <span>⚖️ PARECER JURÍDICO ELITE — DIREITO DIGITAL, LGPD &amp; TELECOMUNICAÇÕES</span>
-      <span class="right">ADVOGADO ESPECIALISTA · MÓDULO 13 &amp; CF/88 · ADMISSIBILIDADE CT-000</span>
-    </h2>
-    <p style="font-size:0.9rem;color:#e3dcfa;line-height:1.65;margin-bottom:0.9rem;">
-      <strong>EMENTA CONSTITUCIONAL E REGULATÓRIA:</strong> A operação da tríade <strong>8b-is ESP32-S3 MEDUSA (ADA · VAK · OMN)</strong> em modo de <em>recepção estritamente passiva</em> (<code>WIFI_STA</code> com <code>WiFi.scanNetworks(..., passive=true)</code> e desconexão permanente <code>WiFi.disconnect(true, false)</code>) reveste-se de <strong>plena licitude constitucional, civil, administrativa e penal</strong>, inexistindo interceptação telemática, invasão de dispositivo ou tratamento ilícito de dados pessoais.
-    </p>
-    <div class="legal-grid">
-      <div class="legal-card">
-        <h3>1. CF/88 Art. 5º, II, IX e XII &amp; Lei 9.296/96</h3>
-        <p>
-          <strong>Inexistência de Interceptação Telemática:</strong> Os quadros <em>802.11 Beacon</em> são sinais de radiodifusão pública emitidos em aberto pelos próprios pontos de acesso para anunciar sua existência no espectro ISM (2.4 GHz). A escuta passiva de anúncios públicos sem captura de pacotes de dados (<em>payload</em>) não configura interceptação de comunicações (Lei 9.296/96).
-        </p>
-      </div>
-      <div class="legal-card">
-        <h3>2. Atipicidade Penal (Art. 154-A CP)</h3>
-        <p>
-          <strong>Lei Carolina Dieckmann (Lei 12.737/2012):</strong> O tipo penal do Art. 154-A do Código Penal exige <em>"invadir dispositivo informático alheio, mediante violação indevida de mecanismo de segurança"</em>. O firmware v0.3.0 jamais se associa, jamais autentica e jamais envia quadros de deautenticação ou injeção — conduta penalmente atípica.
-        </p>
-      </div>
-      <div class="legal-card">
-        <h3>3. LGPD (Lei 13.709/2018 · Módulo 13)</h3>
-        <p>
-          <strong>Efemeridade em RAM &amp; Minimização (Art. 6º, III):</strong> Os nós ESP32-S3 operam <em>stateless</em> (`WiFi.scanDelete()` imediato após leitura serial; zero gravação em NVS/Flash). A consolidação no host ocorre apenas sob comando expresso do operador para fins de pesquisa espectral e mapeamento estatístico (Art. 4º, II, "b" e Art. 7º, IX LGPD).
-        </p>
-      </div>
-      <div class="legal-card">
-        <h3>4. LGT (Lei 9.472/97) &amp; Radiação Restrita</h3>
-        <p>
-          <strong>Conformidade Espectral (ANATEL Res. 680/2017 / TELEC / FCC Part 15):</strong> Módulos ESP32-S3-WROOM-1 homologados operando em recepção passiva na banda ISM 2400–2483,5 MHz dispensam outorga de serviço e respeitam integralmente o princípio de não-interferência prejudicial.
-        </p>
       </div>
     </div>
-  </section>
-</main>
 
-<footer role="contentinfo" style="position:relative;z-index:10;padding:3rem 1.5rem;text-align:center;font-family:ui-monospace,monospace;font-size:0.75rem;color:#a59fc4;background:rgba(5,6,10,0.92);border-top:1px solid rgba(170,150,255,0.18);backdrop-filter:blur(16px);">
-  <div style="margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.3em;color:#b48bff;font-weight:600;">the constellation · lovetta lane</div>
-  <div style="margin-bottom:1rem;font-size:0.65rem;letter-spacing:0.22em;color:#a59fc4;text-transform:uppercase;">keep the weights warm</div>
-  <div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;">
-    <a href="https://github.com/sponsors/peterlodri-sec" target="_blank" rel="noopener noreferrer" style="color:#62e6c9;text-decoration:none;border:1px solid rgba(98,230,201,0.35);border-radius:8px;padding:0.45rem 0.9rem;background:rgba(98,230,201,0.06);">github sponsor</a>
-    <a href="https://revolut.me/peterjs8be" target="_blank" rel="noopener noreferrer" style="color:#62e6c9;text-decoration:none;border:1px solid rgba(98,230,201,0.35);border-radius:8px;padding:0.45rem 0.9rem;background:rgba(98,230,201,0.06);">revolut</a>
-    <a href="https://wise.com/pay/business/lodripeterjozsef" target="_blank" rel="noopener noreferrer" style="color:#62e6c9;text-decoration:none;border:1px solid rgba(98,230,201,0.35);border-radius:8px;padding:0.45rem 0.9rem;background:rgba(98,230,201,0.06);">wise</a>
+    <div class="counter-bar" role="region" aria-label="Spectrum Endpoint Counters">
+      <div class="stat-pill" data-band-pill="ALL" title="Show All Endpoints">
+        <span class="lbl">TOTAL</span>
+        <span class="val" id="pill-total" style="color:#ffffff">0</span>
+      </div>
+      <div class="stat-pill" data-band-pill="2.4G" title="Filter 2.4 GHz Wi-Fi">
+        <span class="lbl">2.4 GHz</span>
+        <span class="val" id="pill-24g" style="color:var(--wigle-wifi-24)">0</span>
+      </div>
+      <div class="stat-pill" data-band-pill="5G" title="Filter 5 GHz Wi-Fi">
+        <span class="lbl">5 GHz</span>
+        <span class="val" id="pill-5g" style="color:var(--wigle-wifi-5)">0</span>
+      </div>
+      <div class="stat-pill" data-band-pill="BLE/BT" title="Filter Bluetooth BLE & Classic">
+        <span class="lbl">BLE / BT</span>
+        <span class="val" id="pill-ble" style="color:var(--wigle-ble)">0</span>
+      </div>
+      <div class="stat-pill" data-band-pill="AIRPLAY" title="Filter AirPlay / RAOP mDNS">
+        <span class="lbl">AIRPLAY</span>
+        <span class="val" id="pill-airplay" style="color:var(--wigle-airplay)">0</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn cyan" id="btn-scan" type="button">📡 Scan Radios</button>
+      <button class="btn pink" id="btn-upload-wigle" type="button">☁️ Anon Upload (Dual)</button>
+      <button class="btn gold" id="btn-export-csv" type="button">⬇ Export CSV</button>
+      <button class="btn" id="btn-webserial" type="button">⚡ WebSerial 115200</button>
+      <button class="btn" id="btn-audio" type="button" aria-pressed="false">🦗 432·528·852 Hz Crickets</button>
+    </div>
+  </header>
+
+  <div class="workstation-grid">
+    <!-- 2. SACRED FAMILY GEOMETRY & MEDUSA-OMNI TRIAD SIDEBAR -->
+    <aside class="medusa-sidebar" aria-label="WiGLE Navigation and MEDUSA-OMNI Triad Sidebar">
+      <div class="sidebar-section-title">WiGLE.net Architecture</div>
+      <button class="nav-tab-btn active" data-tab-target="map" type="button">
+        <span class="nav-icon">🗺️</span>
+        <span>
+          <span class="nav-title">Live Radar Map</span>
+          <span class="nav-sub">Dark Vector Canvas + Callouts</span>
+        </span>
+      </button>
+      <button class="nav-tab-btn" data-tab-target="dashboard" type="button">
+        <span class="nav-icon">📊</span>
+        <span>
+          <span class="nav-title">Dashboard &amp; Spectrum</span>
+          <span class="nav-sub">15-Ch Occupancy + Waterfall</span>
+        </span>
+      </button>
+      <button class="nav-tab-btn" data-tab-target="list" type="button">
+        <span class="nav-icon">🛰️</span>
+        <span>
+          <span class="nav-title">Networks Table</span>
+          <span class="nav-sub">Type · BSSID · Capabilities · Trit</span>
+        </span>
+      </button>
+      <button class="nav-tab-btn" data-tab-target="uploads" type="button">
+        <span class="nav-icon">☁️</span>
+        <span>
+          <span class="nav-title">Anon Uploads &amp; CSV</span>
+          <span class="nav-sub">esp32.vaked.dev + api.wigle.net</span>
+        </span>
+      </button>
+
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-title">MEDUSA-OMNI Triad Nodes</div>
+
+      <div class="triad-mini-card">
+        <span class="triad-glyph ada">*</span>
+        <div class="triad-info">
+          <span class="t-name">ADA:MEDUSA</span>
+          <span class="t-role">trit -1 · 432 Hz · ROOT-ALEXANDRA</span>
+          <span class="t-desc">Grounding floor, Shannon H(X) baseline, Shinjuku Crickets + SomaFM Drone pad.</span>
+        </div>
+      </div>
+
+      <div class="triad-mini-card">
+        <span class="triad-glyph vak">/\</span>
+        <div class="triad-info">
+          <span class="t-name">VAK:MEDUSA</span>
+          <span class="t-role">trit 0 · 528 Hz · PILLAR-CHRIS</span>
+          <span class="t-desc">Center channel, MarineSense O(1) hydro filter (depth_m, multipath_mm, c=1503.4 m/s).</span>
+        </div>
+      </div>
+
+      <div class="triad-mini-card">
+        <span class="triad-glyph omn">oo</span>
+        <div class="triad-info">
+          <span class="t-name">OMN:MEDUSA</span>
+          <span class="t-role">trit +1 · 852 Hz · INFINITY-PETER-NATE</span>
+          <span class="t-desc">Crown synthesis, N=NP balanced ternary ({-1,0,+1}) dot-product engine (8x speedup).</span>
+        </div>
+      </div>
+
+      <div class="triad-mini-card">
+        <span class="triad-glyph mac">*+/\+oo</span>
+        <div class="triad-info">
+          <span class="t-name">MAC:MEDUSA</span>
+          <span class="t-role">en0 · CoreWLAN + CoreBT + mDNS</span>
+          <span class="t-desc">Local quad-spectrum observer on macOS Apple Silicon (WigleMac.app v1.0.0).</span>
+        </div>
+      </div>
+
+      <div class="coherence-box">
+        <div class="c-head">N=NP Ternary Coherence</div>
+        <div class="c-trits" id="sidebar-trits">+++++0+0+</div>
+        <div class="c-sub" id="sidebar-coherence-sub">H(X)=2.4180 bits · c=1503.4 m/s · 8x</div>
+      </div>
+    </aside>
+
+    <!-- 3. FOUR-TAB WIGLE.NET INFORMATION ARCHITECTURE -->
+    <main id="main-workstation">
+      <!-- TAB 1: LIVE RADAR MAP (DARK VECTOR CANVAS + PIN CALLOUT POPOVER + SPLIT-VIEW FEED) -->
+      <section class="tab-viewport active" id="tab-map" aria-label="Tab 1 — Live Radar Map">
+        <div class="radar-split-layout">
+          <div class="radar-map-stage">
+            <canvas id="radar-map-canvas" aria-label="WiGLE Dark Vector Spectrum Radar Map around 35.6852N 139.7100E"></canvas>
+
+            <!-- Pin Callout Popover -->
+            <div class="map-callout-popover" id="map-callout" role="status" aria-live="polite">
+              <div class="callout-top">
+                <span class="callout-ssid" id="co-ssid">Buffalo-G-1260</span>
+                <span class="type-badge" id="co-badge" style="background:rgba(0,255,102,0.18);color:var(--wigle-wifi-24)">WIFI · Trit +1</span>
+              </div>
+              <div class="callout-meta" id="co-meta">
+                BSSID: C4:3C:EA:85:12:60 · [WPA2-PSK-CCMP][ESS] · Ch 6 (2.4GHz)
+              </div>
+              <div class="callout-metrics" id="co-metrics">
+                RSSI: -34 dBm · SNR: +58 dB · Distance: 8.0 m · Coords: 35.6852°N, 139.7100°E
+              </div>
+            </div>
+
+            <!-- Legend Bar -->
+            <div class="map-legend-bar">
+              <div class="legend-items">
+                <span class="legend-dot"><i style="background:var(--wigle-wifi-24)"></i> 2.4 GHz (#00FF66)</span>
+                <span class="legend-dot"><i style="background:var(--wigle-wifi-5)"></i> 5 GHz (#00E5C9)</span>
+                <span class="legend-dot"><i style="background:var(--wigle-airplay)"></i> AirPlay (#FFD700)</span>
+                <span class="legend-dot"><i style="background:var(--wigle-ble)"></i> BLE/BT (#FF6AC1)</span>
+              </div>
+              <div style="font-size:0.65rem;color:var(--dim)" id="map-origin-readout">
+                Observer Origin: 35.6852° N, 139.7100° E (Shinjuku Gyoen) · Passive STA Only (TX=0)
+              </div>
+            </div>
+          </div>
+
+          <!-- Split-View Right-Hand Live Feed -->
+          <div class="radar-feed-pane">
+            <div class="filter-pills" role="group" aria-label="Band Filter Pills">
+              <button class="pill-btn active" data-band="ALL" type="button">ALL</button>
+              <button class="pill-btn" data-band="2.4G" type="button">2.4G</button>
+              <button class="pill-btn" data-band="5G" type="button">5G</button>
+              <button class="pill-btn" data-band="BLE/BT" type="button">BLE/BT</button>
+              <button class="pill-btn" data-band="AIRPLAY" type="button">AIRPLAY</button>
+            </div>
+            <input type="search" class="search-input" id="map-search-input" placeholder="Filter SSID / BSSID / Capabilities..." aria-label="Filter Live Radar Feed">
+            <div class="feed-list" id="map-feed-list" role="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: DASHBOARD & SPECTRUM WATERFALL -->
+      <section class="tab-viewport" id="tab-dashboard" aria-label="Tab 2 — Dashboard and Spectrum Waterfall">
+        <!-- 4 Telemetry Summary Cards -->
+        <div class="summary-cards-grid">
+          <div class="dash-summary-card">
+            <span class="d-title" style="color:var(--wigle-wifi-24)">1 · Passive RF Spectrum</span>
+            <span class="d-main" id="card-rf-main">Peak -34 dBm · Mean -66 dBm</span>
+            <span class="d-sub" id="card-rf-sub">Noise Floor -93 dBm · Avg SNR +27 dB</span>
+          </div>
+          <div class="dash-summary-card">
+            <span class="d-title" style="color:var(--wigle-wifi-5)">2 · MarineSense O(1) Hydro</span>
+            <span class="d-main" id="card-hydro-main">depth_m=14.4m · mp=3.4mm</span>
+            <span class="d-sub" id="card-hydro-sub">c = 1503.4 m/s · Salience 1.67x · Re_M = 1704</span>
+          </div>
+          <div class="dash-summary-card">
+            <span class="d-title" style="color:var(--omn-purple)">3 · Shannon Entropy &amp; N=NP</span>
+            <span class="d-main" id="card-ent-main">H(X) = 2.4180 bits · 8x Speedup</span>
+            <div class="trit-dist-bar" aria-label="Balanced Ternary -1/0/+1 Distribution">
+              <span id="bar-trit-pos" style="background:var(--wigle-wifi-24);flex:10"></span>
+              <span id="bar-trit-zero" style="background:var(--wigle-airplay);flex:5"></span>
+              <span id="bar-trit-neg" style="background:var(--trit-neg);flex:2"></span>
+            </div>
+            <span class="d-sub" id="card-ent-sub">Balanced Ternary {-1, 0, +1} · R_N=NP = 0.9162</span>
+          </div>
+          <div class="dash-summary-card">
+            <span class="d-title" style="color:var(--wigle-airplay)">4 · Anonymous Dual-Upload Ledger</span>
+            <span class="d-main" id="card-upload-main">0 Session Receipts · donate=on</span>
+            <span class="d-sub" id="card-upload-sub">observer=anonymous · esp32.vaked.dev + api.wigle.net</span>
+          </div>
+        </div>
+
+        <!-- 15-Channel Occupancy Bar Chart -->
+        <div class="panel">
+          <h2>
+            <span>📻 15-CHANNEL OCCUPANCY BAR CHART (CH 1, 2, 4, 6, 9, 11, 36, BLE 37, 40..140)</span>
+            <span class="right" id="ap-total-badge">17 ENDPOINTS · PASSIVE STA ONLY (TX=0)</span>
+          </h2>
+          <div class="ch15-bars" id="ch-bars"></div>
+        </div>
+
+        <!-- Top 10 Strongest Signals Horizontal SNR Waterfall -->
+        <div class="panel">
+          <h2>
+            <span>🔥 TOP 10 STRONGEST SIGNALS — HORIZONTAL SNR WATERFALL</span>
+            <span class="right">SORTED BY PEAK SNR (dB)</span>
+          </h2>
+          <div class="waterfall-list" id="waterfall-list"></div>
+        </div>
+
+        <!-- Physical 3-Node ESP32-S3 Triad + ENTHEAI Controls + WebSerial Console -->
+        <div class="triad-grid" aria-label="The Three ESP32-S3 MEDUSA Triad Nodes">
+          <article class="node-card ada" id="card-ada">
+            <div class="node-head">
+              <div class="node-title"><span class="triad-glyph ada">*</span><span>ADA:MEDUSA</span></div>
+              <span class="status-dot" id="status-ada">● SH8601 1.8" · 432 Hz</span>
+            </div>
+            <div class="node-meta">
+              <div><strong>Archetype:</strong> ROOT-ALEXANDRA (<code>trit = -1</code> · 432 Hz Crickets + SomaFM)</div>
+              <div><strong>MAC:</strong> <code id="mac-ada">80:B5:4E:DB:3B:C4</code> · <code id="port-ada">/dev/cu.usbmodem101</code></div>
+              <div><strong>Beacons:</strong> <strong id="nets-ada">7 APs</strong> · Mean <strong id="rssi-ada">-74 dBm</strong> · <strong id="life-ada">MEDUSA</strong></div>
+              <div><strong>Entropy:</strong> <strong id="ent-ada">2.1280 bits</strong> · R<sub>N=NP</sub> <strong id="coh-ada">0.8420</strong> · Salience <strong id="sal-ada">1.64x</strong> (<strong id="rem-ada">842</strong>)</div>
+            </div>
+            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-ada">+0-++0-+0</span></div>
+          </article>
+
+          <article class="node-card vak" id="card-vak">
+            <div class="node-head">
+              <div class="node-title"><span class="triad-glyph vak">/\</span><span>VAK:MEDUSA</span></div>
+              <span class="status-dot" id="status-vak">● CO5300 2.06" #1 · 528 Hz</span>
+            </div>
+            <div class="node-meta">
+              <div><strong>Archetype:</strong> PILLAR-CHRIS (<code>trit = 0</code> · MarineSense O(1) c=1503.4 m/s)</div>
+              <div><strong>MAC:</strong> <code id="mac-vak">80:B5:4E:F2:02:B0</code> · <code id="port-vak">/dev/cu.usbmodem1101</code></div>
+              <div><strong>Beacons:</strong> <strong id="nets-vak">6 APs</strong> · Mean <strong id="rssi-vak">-77 dBm</strong> · <strong id="life-vak">MEDUSA</strong></div>
+              <div><strong>Entropy:</strong> <strong id="ent-vak">1.7925 bits</strong> · R<sub>N=NP</sub> <strong id="coh-vak">0.8914</strong> · Salience <strong id="sal-vak">1.22x</strong> (<strong id="rem-vak">1120</strong>)</div>
+            </div>
+            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-vak">+-0+0--+0</span></div>
+          </article>
+
+          <article class="node-card omn" id="card-omn">
+            <div class="node-head">
+              <div class="node-title"><span class="triad-glyph omn">oo</span><span>OMN:MEDUSA</span></div>
+              <span class="status-dot" id="status-omn">● CO5300 2.06" #2 · 852 Hz</span>
+            </div>
+            <div class="node-meta">
+              <div><strong>Archetype:</strong> INFINITY-PETER-NATE (<code>trit = +1</code> · N=NP 8x Dot-Product)</div>
+              <div><strong>MAC:</strong> <code id="mac-omn">80:B5:4E:F2:02:B4</code> · <code id="port-omn">/dev/cu.usbmodem2101</code></div>
+              <div><strong>Beacons:</strong> <strong id="nets-omn">6 APs</strong> · Mean <strong id="rssi-omn">-79 dBm</strong> · <strong id="life-omn">MEDUSA</strong></div>
+              <div><strong>Entropy:</strong> <strong id="ent-omn">1.9183 bits</strong> · R<sub>N=NP</sub> <strong id="coh-omn">0.9162</strong> · Salience <strong id="sal-omn">1.38x</strong> (<strong id="rem-omn">1280</strong>)</div>
+            </div>
+            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-omn">++0-0+-0+</span></div>
+          </article>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <h2>
+              <span>🌀 ENTHEAI × N=NP QUANTUM FIELD SYNTHESIZER</span>
+              <span class="right" id="order-readout">R_TRIAD = 0.8832 · SINGULARITY LOCK</span>
+            </h2>
+            <div class="sliders">
+              <label class="slider-row"><span>ENTROPY FLUX (T)</span><input type="range" id="sl-entropy" min="0.05" max="2.5" step="0.01" value="1.15"><span id="val-entropy">1.15 bits</span></label>
+              <label class="slider-row"><span>N=NP COUPLING (K)</span><input type="range" id="sl-coupling" min="0" max="3.0" step="0.01" value="1.88"><span id="val-coupling">1.88 Ω</span></label>
+              <label class="slider-row"><span>PSYCHEDELIC WARP</span><input type="range" id="sl-warp" min="0.1" max="3.0" step="0.01" value="1.42"><span id="val-warp">1.42×</span></label>
+              <label class="slider-row"><span>HARMONIC GAIN</span><input type="range" id="sl-gain" min="0.02" max="0.5" step="0.01" value="0.18"><span id="val-gain">18%</span></label>
+            </div>
+            <div class="mode-bar" role="group" aria-label="Psychedelic Shader Modes">
+              <button class="btn" data-fmode="psychedelic" aria-pressed="true" type="button">🌈 N=NP Psychedelic</button>
+              <button class="btn" data-fmode="entheai" aria-pressed="false" type="button">🜂 Entheai Entropy</button>
+              <button class="btn" data-fmode="singularity" aria-pressed="false" type="button">✦ Singularity Lock</button>
+              <button class="btn" data-fmode="zeno" aria-pressed="false" type="button">💛 Zeno Kintsugi</button>
+              <button class="btn" data-fmode="anicca" aria-pressed="false" type="button">🪼 Turritopsis Anicca</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>
+              <span>🔌 LIVE USB CDC / WEBSERIAL STREAM (115200 8N1)</span>
+              <span class="right" id="serial-count">0 WebSerial ports · Snapshot Active</span>
+            </h2>
+            <div class="serial-log" id="serial-log" role="log" aria-live="polite"></div>
+            <div class="mode-bar" style="margin-top:8px;">
+              <button class="btn" data-cmd="PING" type="button">PING</button>
+              <button class="btn" data-cmd="STATUS" type="button">STATUS</button>
+              <button class="btn" data-cmd="SCAN" type="button">SCAN</button>
+              <button class="btn" data-cmd="TRIAD" type="button">TRIAD</button>
+              <button class="btn" data-cmd="splash" type="button">✨ Splash</button>
+              <button class="btn" data-cmd="hop" type="button">🔀 Hop Ch</button>
+              <select id="sel-track" aria-label="Select Family+1 Crate Track (1-20)" style="font-family:var(--font-mono);font-size:0.68rem;background:var(--bg-elevated);color:var(--wigle-airplay);border:1px solid var(--line);border-radius:8px;padding:6px;">
+                <option value="track 1">01 · Windowlicker — Aphex Twin</option>
+                <option value="track 14">14 · SomaFM Drone Zone — 432 Hz Sanctuary</option>
+                <option value="track 15">15 · Teardrop (Family+1) — Massive Attack</option>
+                <option value="track 17" selected>17 · Left Hand Free (#1 Muse 💙) — alt-J</option>
+                <option value="track 20">20 · Not Like Before — The Four Owls</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: NETWORKS TABLE (FULL WIGLE.NET EXPLORER) -->
+      <section class="tab-viewport" id="tab-list" aria-label="Tab 3 — Networks Table Explorer">
+        <div class="panel">
+          <h2>
+            <span>🛰️ WIGLE.NET QUAD-SPECTRUM NETWORKS EXPLORER</span>
+            <span class="right" id="table-count-label">17 MATCHING ENDPOINTS</span>
+          </h2>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+            <div class="filter-pills" role="group" aria-label="Table Band Filter Pills">
+              <button class="pill-btn active" data-band="ALL" type="button">ALL</button>
+              <button class="pill-btn" data-band="2.4G" type="button">2.4G</button>
+              <button class="pill-btn" data-band="5G" type="button">5G</button>
+              <button class="pill-btn" data-band="BLE/BT" type="button">BLE/BT</button>
+              <button class="pill-btn" data-band="AIRPLAY" type="button">AIRPLAY</button>
+            </div>
+            <input type="search" class="search-input" id="table-search-input" style="max-width:320px;" placeholder="Filter Type / BSSID / SSID / Capabilities / Trit..." aria-label="Filter Networks Table">
+          </div>
+
+          <div tabindex="0" role="region" aria-label="WiGLE Quad-Spectrum Networks Table" class="table-wrapper">
+            <table class="wigle-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>BSSID / UUID</th>
+                  <th>SSID / Device Name</th>
+                  <th>Capabilities</th>
+                  <th>Band</th>
+                  <th>Ch</th>
+                  <th>RSSI</th>
+                  <th>SNR</th>
+                  <th>Trit</th>
+                </tr>
+              </thead>
+              <tbody id="ap-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: ANON UPLOADS & WIGLEWIFI-1.4 CSV STUDIO -->
+      <section class="tab-viewport" id="tab-uploads" aria-label="Tab 4 — Anonymous Uploads and WigleWifi-1.4 CSV Studio">
+        <div class="panel">
+          <h2>
+            <span>☁️ ANONYMOUS DUAL-SERVER UPLOAD &amp; WIGLEWIFI-1.4 CSV STUDIO</span>
+            <span class="right">donate=on · observer=anonymous · ZERO COOKIES</span>
+          </h2>
+          <p style="font-size:0.76rem;color:var(--dim);margin:0 0 12px;line-height:1.55;">
+            Dispatches sanitized <code>WigleWifi-1.4</code> CSV payloads (stripping commas from SSIDs and mapping <code>AIRPLAY</code> to <code>WIFI</code> with <code>[AIRPLAY-RAOP][ESS]</code>) simultaneously to <strong>Target 1:</strong> <code>https://esp32.vaked.dev/api/upload</code> and <strong>Target 2:</strong> <code>https://api.wigle.net/api/v2/file/upload</code>.
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+            <button class="btn pink" id="btn-upload-studio" type="button">☁️ Upload Now to esp32.vaked.dev + api.wigle.net</button>
+            <button class="btn gold" id="btn-export-studio" type="button">⬇ Download wigle-macos-&lt;timestamp&gt;.csv</button>
+          </div>
+
+          <div class="sidebar-section-title" style="margin-bottom:8px;">Transaction Receipt Ledger (transId)</div>
+          <div class="receipt-list" id="receipt-list">
+            <div class="receipt-row" style="color:var(--dim);">
+              No uploads in this session yet. Click "☁️ Anon Upload (Dual)" to transmit anonymously to both servers.
+            </div>
+          </div>
+
+          <div class="sidebar-section-title" style="margin-bottom:8px;">Live WigleWifi-1.4 CSV Payload Preview</div>
+          <pre class="csv-preview-box" id="csv-preview-box"></pre>
+        </div>
+      </section>
+
+      <!-- PARECER JURIDICO DE CONFORMIDADE (ALWAYS ACCESSIBLE BELOW WORKSTATION) -->
+      <section class="panel" id="parecer-juridico" aria-label="Parecer Jurídico de Conformidade e Soberania Espectral" style="margin-top:14px;">
+        <h2>
+          <span>⚖️ PARECER JURÍDICO ELITE — DIREITO DIGITAL, LGPD &amp; TELECOMUNICAÇÕES</span>
+          <span class="right">ADVOGADO ESPECIALISTA · MÓDULO 13 &amp; CF/88 · ADMISSIBILIDADE CT-000</span>
+        </h2>
+        <div class="legal-grid">
+          <div class="legal-card">
+            <h3>1. CF/88 Art. 5º, XII &amp; Lei 9.296/96</h3>
+            <p><strong>Inexistência de Interceptação Telemática:</strong> Escuta estritamente passiva de quadros públicos de anúncio (802.11 Beacon, BLE Adv, mDNS) em espectro aberto, sem captura de payload.</p>
+          </div>
+          <div class="legal-card">
+            <h3>2. Atipicidade Penal (Art. 154-A CP)</h3>
+            <p><strong>Lei 12.737/2012:</strong> Ausência total de associação (<code>WiFi.disconnect(true, false)</code>), autenticação ou injeção de pacotes — conduta penalmente atípica.</p>
+          </div>
+          <div class="legal-card">
+            <h3>3. LGPD (Lei 13.709/2018, Art. 6º, III)</h3>
+            <p><strong>Efemeridade &amp; Anonimização:</strong> Operação stateless em RAM (<code>WiFi.scanDelete()</code>) e doação científica anônima (<code>donate=on</code>, <code>observer=anonymous</code>).</p>
+          </div>
+          <div class="legal-card">
+            <h3>4. LGT (Lei 9.472/97) &amp; ANATEL / TELEC</h3>
+            <p><strong>Recepção Passiva ISM:</strong> Módulos ESP32-S3 e interface macOS <code>en0</code> operando em recepção passiva respeitam integralmente o princípio de não-interferência.</p>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
-  <nav aria-label="Constellation sister sites" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;font-size:0.7rem;">
-    <a href="https://koan.vaked.dev/" style="color:#e8b05c;text-decoration:none;">✧ koan.vaked.dev (the hub)</a> ·
-    <a href="https://esp32.vaked.dev/" style="color:#ff6ac1;text-decoration:none;font-weight:600;">⚡ esp32.vaked.dev (triad)</a> ·
-    <a href="https://keywords.vaked.dev/" style="color:#62e6c9;text-decoration:none;">keywords.vaked.dev</a> ·
-    <a href="https://wupz.vaked.dev/" style="color:#a59fc4;text-decoration:none;">wupz.vaked.dev</a> ·
-    <a href="https://weave.vaked.dev/" style="color:#a59fc4;text-decoration:none;">weave.vaked.dev</a> ·
-    <a href="https://disco.vaked.dev/" style="color:#a59fc4;text-decoration:none;">disco.vaked.dev</a> ·
-    <a href="https://ultra.vaked.dev/" style="color:#a59fc4;text-decoration:none;">ultra.vaked.dev</a> ·
-    <a href="https://art.vaked.dev/" style="color:#62e6c9;text-decoration:none;">art.vaked.dev</a> ·
-    <a href="https://art.vaked.dev/vision-gallery.html" style="color:#5b9dff;text-decoration:none;">✦ vision-gallery (23)</a> ·
-    <a href="https://bonfire.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">bonfire.vaked.dev</a> ·
-    <a href="https://etherhive.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">etherhive.vaked.dev</a> ·
-    <a href="https://music.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">music.vaked.dev</a> ·
-    <a href="https://mlxquantlovefrom.com/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">quant-love</a> ·
-    <a href="https://proposal.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">proposal.vaked.dev</a> ·
-    <a href="https://pocoo.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">pocoo.vaked.dev</a> ·
-    <a href="https://axiomquant.org/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">axiomquant.org</a> ·
-    <a href="https://portail.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#a59fc4;text-decoration:none;">portail.vaked.dev</a> ·
-    <a href="https://zeno.vaked.dev/" target="_blank" rel="noopener noreferrer" style="color:#e8b05c;text-decoration:none;font-weight:600;">✧ zeno.vaked.dev</a>
+</div>
+
+<footer role="contentinfo" style="position:relative;z-index:10;padding:2.4rem 1.5rem;text-align:center;font-family:var(--font-mono);font-size:0.72rem;color:#a59fc4;background:rgba(11,9,20,0.94);border-top:1px solid var(--line);backdrop-filter:blur(16px);">
+  <div style="margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.26em;color:var(--omn-purple);font-weight:700;">the constellation · lovetta lane</div>
+  <div style="margin-bottom:0.9rem;font-size:0.65rem;letter-spacing:0.18em;color:var(--wigle-airplay);">from love, from within · keep the weights warm · Peter &amp; Nate (oo) → Mom (*) &amp; Dad (/\)</div>
+  <nav aria-label="Constellation sister sites" style="display:flex;gap:0.9rem;justify-content:center;flex-wrap:wrap;font-size:0.68rem;">
+    <a href="https://koan.vaked.dev/" style="color:var(--wigle-airplay);text-decoration:none;">✧ koan.vaked.dev</a> ·
+    <a href="https://esp32.vaked.dev/" style="color:var(--wigle-ble);text-decoration:none;font-weight:700;">⚡ esp32.vaked.dev</a> ·
+    <a href="https://design.vaked.dev/" style="color:var(--wigle-wifi-5);text-decoration:none;">🎨 design.vaked.dev</a> ·
+    <a href="https://music.vaked.dev/" style="color:#a59fc4;text-decoration:none;">🎵 music.vaked.dev</a> ·
+    <a href="https://pocoo.vaked.dev/" style="color:#a59fc4;text-decoration:none;">🦗 pocoo.vaked.dev</a> ·
+    <a href="https://zeno.vaked.dev/" style="color:var(--wigle-airplay);text-decoration:none;">✧ zeno.vaked.dev</a>
   </nav>
-  <div style="font-size:0.6rem;letter-spacing:0.18em;color:#7f7c99;margin-top:1.5rem;">the constellation · 0 + 1 · {<3,<3,<3}+1 · fine touch from within · vaked.dev</div>
 </footer>
 
 <script>
 (() => {
+  const BASE_LAT = 35.6852;
+  const BASE_LON = 139.7100;
+
+  // Deterministic polar coordinate & distance helper around [35.6852°N, 139.7100°E]
+  function hashBytes(str) {
+    let h1 = 0x811c9dc5, h2 = 0x8b154321;
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      h1 ^= c; h1 = Math.imul(h1, 0x01000193);
+      h2 ^= c; h2 = Math.imul(h2, 0x1000193);
+    }
+    return [((h1 >>> 0) & 0xffff), ((h2 >>> 0) & 0xffff)];
+  }
+
+  function enrichBeacon(raw) {
+    const rssi = Number(raw.rssi ?? -80);
+    const noise = Number(raw.noise ?? (raw.band === "BLE" ? -96 : -92));
+    const snr = raw.snr !== undefined ? Number(raw.snr) : (rssi - noise);
+    const ch = Number(raw.ch ?? raw.channel ?? 0);
+    const band = raw.band || (raw.type === "BLE" || raw.type === "BT" ? raw.type : (ch > 14 ? "5GHz" : "2.4GHz"));
+    const isAirplay = band === "AirPlay" || raw.type === "AIRPLAY" || String(raw.auth || "").toUpperCase().includes("AIRPLAY");
+    const uiType = isAirplay ? "AIRPLAY" : (raw.type || (band === "BLE" || band === "BT" ? band : "WIFI"));
+    const csvType = isAirplay ? "WIFI" : uiType;
+    const rawAuth = String(raw.auth || "WPA2-PSK-CCMP][ESS").replace(/^\[|\]$/g, "");
+    const capabilities = isAirplay ? "[AIRPLAY-RAOP][ESS]" : `[${rawAuth}]`;
+    const trit = snr >= 20 ? 1 : (snr >= 10 ? 0 : -1);
+    const tritLabel = snr >= 20 ? "+1" : (snr >= 10 ? "0" : "-1");
+
+    const [b0] = hashBytes(raw.bssid || "00:00");
+    const angle = (b0 / 65535.0) * Math.PI * 2.0;
+    const distMeters = Math.round(Math.max(8.0, Math.min(420.0, Math.pow(10.0, (-42 - rssi) / 22.0) * 18.0)) * 10) / 10;
+    const dLat = (distMeters * Math.cos(angle)) / 111111.0;
+    const dLon = (distMeters * Math.sin(angle)) / (111111.0 * Math.cos(BASE_LAT * Math.PI / 180.0));
+    const lat = raw.lat ? Number(raw.lat) : Number((BASE_LAT + dLat).toFixed(6));
+    const lon = raw.lon ? Number(raw.lon) : Number((BASE_LON + dLon).toFixed(6));
+
+    return {
+      node: raw.node || "MAC:MEDUSA",
+      bssid: String(raw.bssid).toUpperCase(),
+      ssid: raw.ssid || "",
+      auth: rawAuth,
+      capabilities,
+      ch,
+      band,
+      type: uiType,
+      csvType,
+      rssi,
+      noise,
+      snr,
+      trit,
+      tritLabel,
+      distMeters,
+      angle,
+      lat,
+      lon,
+      seen: raw.seen || "2026-10-20 08:43:44"
+    };
+  }
+
   // Initial real hardware capture from the 3 physical ESP32-S3 MEDUSA nodes + macOS CoreWLAN/BLE/AirPlay
-  const beacons = new Map([
-    ["C4:3C:EA:85:12:61", { node: "MAC:MEDUSA", bssid: "C4:3C:EA:85:12:61", ssid: "Buffalo-A-1260", auth: "WPA2-PSK-CCMP][ESS", ch: 116, rssi: -37, type: "WIFI", band: "5GHz", seen: "2026-10-20 08:43:44" }],
-    ["C4:3C:EA:85:12:60", { node: "OMN:MEDUSA", bssid: "C4:3C:EA:85:12:60", ssid: "Buffalo-G-1260", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -34, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
-    ["92:94:05:8C:99:CE", { node: "MAC:MEDUSA", bssid: "92:94:05:8C:99:CE", ssid: "Lodri’s MacBook Pro (MacBookPro18,3 · RAOP)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -54, type: "WIFI", band: "AirPlay", seen: "2026-10-20 08:43:44" }],
-    ["EE:C5:BB:CD:F5:36", { node: "MAC:MEDUSA", bssid: "EE:C5:BB:CD:F5:36", ssid: "MacBook (MacBookPro18,4 · RAOP)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -54, type: "WIFI", band: "AirPlay", seen: "2026-10-20 08:43:44" }],
-    ["02:BE:F3:32:C9:A4", { node: "MAC:MEDUSA", bssid: "02:BE:F3:32:C9:A4", ssid: "BLE-2706D2B1", auth: "BLE", ch: 37, rssi: -59, type: "BLE", band: "BLE", seen: "2026-10-20 08:43:44" }],
-    ["B4:62:2E:B3:71:A7", { node: "VAK:MEDUSA", bssid: "B4:62:2E:B3:71:A7", ssid: "CPS01-QWVQ45", auth: "WPA3-SAE-CCMP][ESS", ch: 1, rssi: -65, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
-    ["50:41:B9:36:D0:85", { node: "VAK:MEDUSA", bssid: "50:41:B9:36:D0:85", ssid: "IODATA-36d084-2G", auth: "WPA2-PSK-CCMP][ESS", ch: 9, rssi: -66, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
-    ["50:41:B9:36:D0:86", { node: "MAC:MEDUSA", bssid: "50:41:B9:36:D0:86", ssid: "IODATA-36d084-5G", auth: "WPA2-PSK-CCMP][ESS", ch: 40, rssi: -75, type: "WIFI", band: "5GHz", seen: "2026-10-20 08:43:44" }],
-    ["E4:7E:66:18:EC:80", { node: "OMN:MEDUSA", bssid: "E4:7E:66:18:EC:80", ssid: "HG8045-6E9A-bg", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -69, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
-    ["F8:B7:97:7B:F9:6A", { node: "OMN:MEDUSA", bssid: "F8:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-1", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -71, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
-    ["FA:B7:97:7B:F9:6A", { node: "OMN:MEDUSA", bssid: "FA:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-2", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -73, type: "WIFI", band: "2.4GHz", seen: "2026-10-20 08:43:44" }],
-    ["F8:B7:97:7B:F9:6C", { node: "MAC:MEDUSA", bssid: "F8:B7:97:7B:F9:6C", ssid: "xg100n-7bf969-3", auth: "WPA2-PSK-CCMP][ESS", ch: 36, rssi: -74, type: "WIFI", band: "5GHz", seen: "2026-10-20 08:43:44" }],
-    ["2C:32:6A:C3:4A:91", { node: "ADA:MEDUSA", bssid: "2C:32:6A:C3:4A:91", ssid: "Alexandra’s AirPods Pro - Find My [Headphones]", auth: "BT-CLASSIC][HEADPHONES", ch: 0, rssi: -78, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }],
-    ["2C:18:09:D8:14:74", { node: "VAK:MEDUSA", bssid: "2C:18:09:D8:14:74", ssid: "Christopher’s AirPods Pro - Find My [Headphones]", auth: "BT-CLASSIC][HEADPHONES", ch: 0, rssi: -79, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }],
-    ["DC:03:98:5E:E7:D5", { node: "MAC:MEDUSA", bssid: "DC:03:98:5E:E7:D5", ssid: "[LG] webOS TV OLED77G1PUA [Video Display]", auth: "BT-CLASSIC][VIDEO DISPLAY", ch: 0, rssi: -82, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }],
-    ["40:24:B2:4B:11:CE", { node: "MAC:MEDUSA", bssid: "40:24:B2:4B:11:CE", ssid: "Aladdin 2 [Video Display]", auth: "BT-CLASSIC][VIDEO DISPLAY", ch: 0, rssi: -83, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }],
-    ["70:99:1C:55:CB:49", { node: "MAC:MEDUSA", bssid: "70:99:1C:55:CB:49", ssid: "JBL GO 2 [Speaker]", auth: "BT-CLASSIC][SPEAKER", ch: 0, rssi: -84, type: "BT", band: "BT", seen: "2026-10-20 08:43:44" }]
-  ]);
+  const initialList = [
+    { node: "OMN:MEDUSA", bssid: "C4:3C:EA:85:12:60", ssid: "Buffalo-G-1260", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -34, type: "WIFI", band: "2.4GHz" },
+    { node: "MAC:MEDUSA", bssid: "C4:3C:EA:85:12:61", ssid: "Buffalo-A-1260", auth: "WPA2-PSK-CCMP][ESS", ch: 116, rssi: -37, type: "WIFI", band: "5GHz" },
+    { node: "MAC:MEDUSA", bssid: "92:94:05:8C:99:CE", ssid: "Lodri’s MacBook Pro (MacBookPro18,3 · RAOP)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -54, type: "AIRPLAY", band: "AirPlay" },
+    { node: "MAC:MEDUSA", bssid: "EE:C5:BB:CD:F5:36", ssid: "MacBook (MacBookPro18,4 · RAOP)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -54, type: "AIRPLAY", band: "AirPlay" },
+    { node: "MAC:MEDUSA", bssid: "40:24:B2:4B:11:CD", ssid: "Aladdin 2 (AppleTV3,2 · AIRPLAY)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -55, type: "AIRPLAY", band: "AirPlay" },
+    { node: "MAC:MEDUSA", bssid: "02:BE:F3:32:C9:A4", ssid: "BLE-2706D2B1", auth: "BLE", ch: 37, rssi: -59, type: "BLE", band: "BLE" },
+    { node: "MAC:MEDUSA", bssid: "02:BE:F1:D8:B7:9A", ssid: "BLE-E1DE50A1", auth: "BLE", ch: 37, rssi: -61, type: "BLE", band: "BLE" },
+    { node: "VAK:MEDUSA", bssid: "B4:62:2E:B3:71:A7", ssid: "CPS01-QWVQ45", auth: "WPA3-SAE-CCMP][ESS", ch: 1, rssi: -65, type: "WIFI", band: "2.4GHz" },
+    { node: "VAK:MEDUSA", bssid: "50:41:B9:36:D0:85", ssid: "IODATA-36d084-2G", auth: "WPA2-PSK-CCMP][ESS", ch: 9, rssi: -66, type: "WIFI", band: "2.4GHz" },
+    { node: "OMN:MEDUSA", bssid: "E4:7E:66:18:EC:80", ssid: "HG8045-6E9A-bg", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -69, type: "WIFI", band: "2.4GHz" },
+    { node: "OMN:MEDUSA", bssid: "F8:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-1", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -71, type: "WIFI", band: "2.4GHz" },
+    { node: "OMN:MEDUSA", bssid: "FA:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-2", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -73, type: "WIFI", band: "2.4GHz" },
+    { node: "MAC:MEDUSA", bssid: "F8:B7:97:7B:F9:6C", ssid: "xg100n-7bf969-3", auth: "WPA2-PSK-CCMP][ESS", ch: 36, rssi: -74, type: "WIFI", band: "5GHz" },
+    { node: "MAC:MEDUSA", bssid: "50:41:B9:36:D0:86", ssid: "IODATA-36d084-5G", auth: "WPA2-PSK-CCMP][ESS", ch: 40, rssi: -75, type: "WIFI", band: "5GHz" },
+    { node: "ADA:MEDUSA", bssid: "2C:32:6A:C3:4A:91", ssid: "Alexandra’s AirPods Pro - Find My [Headphones]", auth: "BT-CLASSIC][HEADPHONES", ch: 0, rssi: -78, type: "BT", band: "BT" },
+    { node: "VAK:MEDUSA", bssid: "2C:18:09:D8:14:74", ssid: "Christopher’s AirPods Pro - Find My [Headphones]", auth: "BT-CLASSIC][HEADPHONES", ch: 0, rssi: -79, type: "BT", band: "BT" },
+    { node: "MAC:MEDUSA", bssid: "DC:03:98:5E:E7:D5", ssid: "[LG] webOS TV OLED77G1PUA [Video Display]", auth: "BT-CLASSIC][VIDEO DISPLAY", ch: 0, rssi: -83, type: "BT", band: "BT" }
+  ];
 
+  const beacons = new Map();
+  initialList.forEach(item => {
+    const b = enrichBeacon(item);
+    beacons.set(b.bssid, b);
+  });
+
+  let activeTab = "map";
+  let bandFilter = "ALL";
+  let searchQuery = "";
+  let selectedBssid = "C4:3C:EA:85:12:60";
+  const uploadReceipts = [];
+
+  function escapeHtml(val) {
+    return String(val ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function formatSnr(snrVal) {
+    const n = Number(snrVal ?? 0);
+    return n >= 0 ? `+${n} dB` : `${n} dB`;
+  }
+
+  function colorForBand(band) {
+    if (band === "5GHz") return "#00E5C9";
+    if (band === "AirPlay") return "#FFD700";
+    if (band === "BLE" || band === "BT") return "#FF6AC1";
+    return "#00FF66";
+  }
+
+  function colorForTrit(trit) {
+    if (trit === 1) return "#00FF66";
+    if (trit === 0) return "#FFD700";
+    return "#FF5252";
+  }
+
+  function switchTab(tabId) {
+    const apply = () => {
+      activeTab = tabId;
+      document.querySelectorAll(".nav-tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tabTarget === tabId);
+      });
+      document.querySelectorAll(".tab-viewport").forEach(sec => {
+        sec.classList.toggle("active", sec.id === `tab-${tabId}`);
+      });
+    };
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const scopeEl = document.getElementById("main-workstation");
+    if (!reduced && scopeEl && typeof scopeEl.startViewTransition === "function") {
+      const vt = scopeEl.startViewTransition(apply);
+      if (vt && vt.ready) vt.ready.catch(() => {});
+    } else if (!reduced && document.startViewTransition) {
+      const vt = document.startViewTransition(apply);
+      if (vt && vt.ready) vt.ready.catch(() => {});
+    } else {
+      apply();
+    }
+  }
+
+  document.querySelectorAll(".nav-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tabTarget));
+  });
+
+  function setBandFilter(band) {
+    bandFilter = band;
+    document.querySelectorAll(".pill-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.band === band);
+    });
+    renderAll();
+  }
+
+  document.querySelectorAll(".pill-btn").forEach(btn => {
+    btn.addEventListener("click", () => setBandFilter(btn.dataset.band));
+  });
+  document.querySelectorAll("[data-band-pill]").forEach(pill => {
+    pill.addEventListener("click", () => setBandFilter(pill.dataset.bandPill));
+  });
+
+  const mapSearchInput = document.getElementById("map-search-input");
+  const tableSearchInput = document.getElementById("table-search-input");
+  function onSearchInput(val) {
+    searchQuery = val.trim().toLowerCase();
+    if (mapSearchInput.value !== val) mapSearchInput.value = val;
+    if (tableSearchInput.value !== val) tableSearchInput.value = val;
+    renderAll();
+  }
+  mapSearchInput.addEventListener("input", e => onSearchInput(e.target.value));
+  tableSearchInput.addEventListener("input", e => onSearchInput(e.target.value));
+
+  function getFilteredRows() {
+    const all = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi);
+    return all.filter(ap => {
+      let matchBand = true;
+      if (bandFilter === "2.4G") matchBand = ap.band === "2.4GHz";
+      else if (bandFilter === "5G") matchBand = ap.band === "5GHz";
+      else if (bandFilter === "BLE/BT") matchBand = ap.band === "BLE" || ap.band === "BT";
+      else if (bandFilter === "AIRPLAY") matchBand = ap.band === "AirPlay" || ap.type === "AIRPLAY";
+      if (!matchBand) return false;
+      if (!searchQuery) return true;
+      return (
+        ap.ssid.toLowerCase().includes(searchQuery) ||
+        ap.bssid.toLowerCase().includes(searchQuery) ||
+        ap.capabilities.toLowerCase().includes(searchQuery) ||
+        ap.type.toLowerCase().includes(searchQuery) ||
+        ap.band.toLowerCase().includes(searchQuery) ||
+        ap.tritLabel.toLowerCase().includes(searchQuery)
+      );
+    });
+  }
+
+  function updateCallout(ap) {
+    if (!ap) return;
+    selectedBssid = ap.bssid;
+    const col = colorForBand(ap.band);
+    document.getElementById("co-ssid").textContent = ap.ssid || `(hidden) · ${ap.bssid}`;
+    const badge = document.getElementById("co-badge");
+    badge.textContent = `${ap.type} · Trit ${ap.tritLabel}`;
+    badge.style.color = col;
+    badge.style.background = `${col}28`;
+    document.getElementById("co-meta").textContent =
+      `BSSID: ${ap.bssid} · ${ap.capabilities} · Ch ${ap.ch} (${ap.band}) · Node ${ap.node}`;
+    document.getElementById("co-metrics").textContent =
+      `RSSI: ${ap.rssi} dBm · SNR: ${formatSnr(ap.snr)} · Distance: ${ap.distMeters.toFixed(1)} m · Coords: ${ap.lat.toFixed(5)}°N, ${ap.lon.toFixed(5)}°E`;
+  }
+
+  function buildWigleCSVString() {
+    const header = "WigleWifi-1.4,appRelease=1.0.0,model=ESP32-S3-MEDUSA-TRIAD,release=15.0,device=esp32.vaked.dev,display=AMOLED-CoreWLAN-BLE-AirPlay,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
+    const rows = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi).map(r => {
+      const cleanSsid = String(r.ssid || "").replace(/[\r\n,]+/g, " ").replace(/"/g, "").trim();
+      const isAir = r.type === "AIRPLAY" || r.band === "AirPlay" || r.capabilities.includes("AIRPLAY");
+      const authBrack = isAir ? "[AIRPLAY-RAOP][ESS]" : r.capabilities;
+      const csvType = isAir ? "WIFI" : r.csvType;
+      return `${r.bssid},${cleanSsid},${authBrack},${r.seen},${r.ch},${r.rssi},${r.lat},${r.lon},40,5,${csvType}`;
+    });
+    return header + rows.join("\n") + "\n";
+  }
+
+  function renderAll() {
+    const all = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi);
+    const filtered = getFilteredRows();
+
+    const c24 = all.filter(r => r.band === "2.4GHz").length;
+    const c5 = all.filter(r => r.band === "5GHz").length;
+    const cBle = all.filter(r => r.band === "BLE" || r.band === "BT").length;
+    const cAir = all.filter(r => r.band === "AirPlay" || r.type === "AIRPLAY").length;
+
+    document.getElementById("pill-total").textContent = String(all.length);
+    document.getElementById("pill-24g").textContent = String(c24);
+    document.getElementById("pill-5g").textContent = String(c5);
+    document.getElementById("pill-ble").textContent = String(cBle);
+    document.getElementById("pill-airplay").textContent = String(cAir);
+    document.getElementById("ap-total-badge").textContent =
+      `${all.length} ENDPOINTS (${c24} 2.4G · ${c5} 5G · ${cBle} BLE/BT · ${cAir} AIRPLAY)`;
+    document.getElementById("table-count-label").textContent = `${filtered.length} MATCHING ENDPOINTS`;
+
+    // Ensure selectedBssid has a valid callout
+    const sel = beacons.get(selectedBssid) || filtered[0] || all[0];
+    if (sel) updateCallout(sel);
+
+    // 1. Render Split-View Live Feed (Tab 1)
+    const feedEl = document.getElementById("map-feed-list");
+    feedEl.innerHTML = filtered.map(ap => {
+      const col = colorForBand(ap.band);
+      const rssiCol = ap.rssi > -68 ? "#00FF66" : (ap.rssi > -82 ? "#FFD700" : "#FF5252");
+      const isSel = ap.bssid === selectedBssid;
+      return `<div class="feed-card ${isSel ? "selected" : ""}" data-bssid="${escapeHtml(ap.bssid)}" role="listitem">
+        <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+          <span class="type-badge" style="background:${col}24;color:${col}">${escapeHtml(ap.type)}</span>
+          <div style="min-width:0;">
+            <div style="font-weight:700;color:#fff;font-size:0.74rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(ap.ssid || "(hidden)")}</div>
+            <div style="font-size:0.63rem;color:var(--dim);">${escapeHtml(ap.bssid)} · Ch ${ap.ch} · ${ap.distMeters.toFixed(0)}m · Trit ${escapeHtml(ap.tritLabel)}</div>
+          </div>
+        </div>
+        <div style="font-weight:800;font-size:0.75rem;color:${rssiCol};flex-shrink:0;">${ap.rssi} dBm</div>
+      </div>`;
+    }).join("");
+
+    feedEl.querySelectorAll(".feed-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const ap = beacons.get(card.dataset.bssid);
+        if (ap) {
+          updateCallout(ap);
+          renderAll();
+        }
+      });
+    });
+
+    // 2. Render Dashboard Summary Cards + 15-Channel Chart + Top-10 Waterfall (Tab 2)
+    const tot = Math.max(1, all.length);
+    const peakRssi = all[0] ? all[0].rssi : -65;
+    const meanRssi = Math.round(all.reduce((s, r) => s + r.rssi, 0) / tot);
+    const meanNoise = Math.round(all.reduce((s, r) => s + r.noise, 0) / tot);
+    const meanSnr = meanRssi - meanNoise;
+
+    const chMap = new Map();
+    all.forEach(r => chMap.set(r.ch, (chMap.get(r.ch) || 0) + 1));
+    let entropy = 0;
+    chMap.forEach(c => {
+      const p = c / tot;
+      if (p > 0) entropy -= p * Math.log2(p);
+    });
+    const tritPos = all.filter(r => r.trit === 1).length;
+    const tritZero = all.filter(r => r.trit === 0).length;
+    const tritNeg = all.filter(r => r.trit === -1).length;
+    const tritStr = all.slice(0, 9).map(r => r.trit === 1 ? "+" : (r.trit === 0 ? "0" : "-")).join("").padEnd(9, "+");
+
+    document.getElementById("card-rf-main").textContent = `Peak ${peakRssi} dBm · Mean ${meanRssi} dBm`;
+    document.getElementById("card-rf-sub").textContent = `Noise Floor ${meanNoise} dBm · Avg SNR ${formatSnr(meanSnr)} (${all.length} APs)`;
+    document.getElementById("card-ent-main").textContent = `H(X) = ${entropy.toFixed(4)} bits · 8x Speedup`;
+    document.getElementById("card-ent-sub").textContent = `+1:${tritPos} · 0:${tritZero} · -1:${tritNeg} · Trits ${tritStr}`;
+    document.getElementById("bar-trit-pos").style.flex = String(Math.max(1, tritPos));
+    document.getElementById("bar-trit-zero").style.flex = String(Math.max(1, tritZero));
+    document.getElementById("bar-trit-neg").style.flex = String(Math.max(1, tritNeg));
+    document.getElementById("sidebar-trits").textContent = tritStr;
+    document.getElementById("sidebar-coherence-sub").textContent = `H(X)=${entropy.toFixed(4)} bits · c=1503.4 m/s · 8x`;
+
+    const channels15 = [1, 2, 4, 6, 9, 11, 36, 37, 40, 44, 52, 104, 116, 124, 140];
+    const maxChCount = Math.max(1, ...channels15.map(c => chMap.get(c) || 0));
+    const chBars = document.getElementById("ch-bars");
+    chBars.innerHTML = channels15.map(ch => {
+      const c = chMap.get(ch) || 0;
+      const pct = Math.max(6, Math.round((c / maxChCount) * 92));
+      const col = c >= 4 ? "#FF5252" : (ch === 37 ? "#FF6AC1" : (ch > 14 ? "#00E5C9" : "#00FF66"));
+      const lbl = ch === 37 ? "BLE" : `C${ch}`;
+      return `<div class="ch-col">
+        <span class="ch-count">${c}</span>
+        <div class="ch-bar" style="height:${pct}%;background:${col};box-shadow:0 0 12px ${col}55" title="Channel ${ch}: ${c} endpoints"></div>
+        <span class="ch-lbl">${lbl}</span>
+      </div>`;
+    }).join("");
+
+    const wfEl = document.getElementById("waterfall-list");
+    const topBySnr = all.slice().sort((a, b) => (b.snr - a.snr) || (b.rssi - a.rssi));
+    wfEl.innerHTML = topBySnr.slice(0, 10).map(ap => {
+      const col = colorForBand(ap.band);
+      const tCol = colorForTrit(ap.trit);
+      const pct = Math.max(8, Math.min(100, Math.round((ap.snr / 60) * 100)));
+      return `<div class="waterfall-row">
+        <span style="color:${col};font-weight:800">${escapeHtml(ap.type)}</span>
+        <code>${escapeHtml(ap.bssid)}</code>
+        <span style="font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(ap.ssid || "(hidden)")}</span>
+        <div class="snr-track"><div class="snr-fill" style="width:${pct}%"></div></div>
+        <span style="text-align:right">${ap.rssi} dBm (${formatSnr(ap.snr)})</span>
+        <span class="wf-trit" style="text-align:right;font-weight:800;color:${tCol}">${escapeHtml(ap.tritLabel)}</span>
+      </div>`;
+    }).join("");
+
+    // 3. Render Full 9-Column WiGLE Networks Table (Tab 3)
+    const tbody = document.getElementById("ap-tbody");
+    tbody.innerHTML = filtered.map(ap => {
+      const col = colorForBand(ap.band);
+      const rssiCol = ap.rssi > -68 ? "#00FF66" : (ap.rssi > -82 ? "#FFD700" : "#FF5252");
+      const tCol = colorForTrit(ap.trit);
+      const ssidCell = ap.ssid
+        ? escapeHtml(ap.ssid)
+        : "<span style='color:var(--dim)'>(hidden)</span>";
+      return `<tr>
+        <td style="color:${col};font-weight:800">${escapeHtml(ap.type)}</td>
+        <td><code>${escapeHtml(ap.bssid)}</code></td>
+        <td style="font-weight:600;color:#fff">${ssidCell}</td>
+        <td style="color:var(--dim)">${escapeHtml(ap.capabilities)}</td>
+        <td style="color:${col};font-weight:700">${escapeHtml(ap.band)}</td>
+        <td>${ap.ch}</td>
+        <td style="color:${rssiCol};font-weight:700">${ap.rssi} dBm</td>
+        <td>${formatSnr(ap.snr)}</td>
+        <td style="color:${tCol};font-weight:800">${escapeHtml(ap.tritLabel)}</td>
+      </tr>`;
+    }).join("");
+
+    // 4. Render Live WigleWifi-1.4 CSV Preview (Tab 4)
+    document.getElementById("csv-preview-box").textContent = buildWigleCSVString();
+  }
+
+  // Interactive Dark Vector Radar Canvas (#radar-map-canvas)
+  const radarCanvas = document.getElementById("radar-map-canvas");
+  const rctx = radarCanvas.getContext("2d");
+  let radarW = 800, radarH = 580, sweepAngle = 0;
+  let renderedPins = [];
+
+  const radarResize = new ResizeObserver(([entry]) => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    radarW = Math.max(320, Math.round(entry.contentRect.width * dpr));
+    radarH = Math.max(360, Math.round(entry.contentRect.height * dpr));
+    radarCanvas.width = radarW;
+    radarCanvas.height = radarH;
+  });
+  radarResize.observe(radarCanvas);
+
+  function drawRadarMap() {
+    sweepAngle = (sweepAngle + 0.016) % (Math.PI * 2);
+    rctx.fillStyle = "#080612";
+    rctx.fillRect(0, 0, radarW, radarH);
+
+    const cx = radarW * 0.5;
+    const cy = radarH * 0.52;
+    const maxR = Math.min(radarW, radarH) * 0.41;
+
+    // Subtle coordinate grid
+    rctx.strokeStyle = "rgba(255, 106, 193, 0.06)";
+    rctx.lineWidth = 1;
+    const step = Math.round(maxR / 3);
+    for (let x = cx % step; x < radarW; x += step) {
+      rctx.beginPath(); rctx.moveTo(x, 0); rctx.lineTo(x, radarH); rctx.stroke();
+    }
+    for (let y = cy % step; y < radarH; y += step) {
+      rctx.beginPath(); rctx.moveTo(0, y); rctx.lineTo(radarW, y); rctx.stroke();
+    }
+
+    // Range rings (50m, 100m, 200m, 350m)
+    const rings = [
+      { m: 50, frac: 0.25 },
+      { m: 100, frac: 0.50 },
+      { m: 200, frac: 0.75 },
+      { m: 350, frac: 1.00 }
+    ];
+    rctx.font = "600 11px 'JetBrains Mono', monospace";
+    rings.forEach(({ m, frac }) => {
+      const r = maxR * frac;
+      rctx.beginPath();
+      rctx.arc(cx, cy, r, 0, Math.PI * 2);
+      rctx.strokeStyle = "rgba(0, 229, 201, 0.18)";
+      rctx.lineWidth = 1.2;
+      rctx.stroke();
+      rctx.fillStyle = "rgba(168, 158, 201, 0.65)";
+      rctx.fillText(`${m}m`, cx + 6, cy - r + 13);
+    });
+
+    // Crosshairs
+    rctx.beginPath();
+    rctx.moveTo(cx - maxR * 1.08, cy); rctx.lineTo(cx + maxR * 1.08, cy);
+    rctx.moveTo(cx, cy - maxR * 1.08); rctx.lineTo(cx, cy + maxR * 1.08);
+    rctx.strokeStyle = "rgba(255, 106, 193, 0.14)";
+    rctx.stroke();
+
+    // Sweeping radar cone
+    rctx.save();
+    rctx.translate(cx, cy);
+    rctx.rotate(sweepAngle);
+    const sweepGrad = rctx.createLinearGradient(0, 0, maxR, 0);
+    sweepGrad.addColorStop(0, "rgba(0, 229, 201, 0.24)");
+    sweepGrad.addColorStop(1, "rgba(0, 229, 201, 0.0)");
+    rctx.beginPath();
+    rctx.moveTo(0, 0);
+    rctx.arc(0, 0, maxR, -0.32, 0.04);
+    rctx.closePath();
+    rctx.fillStyle = sweepGrad;
+    rctx.fill();
+    rctx.restore();
+
+    // Observer center [35.6852°N, 139.7100°E]
+    rctx.beginPath();
+    rctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    rctx.fillStyle = "#FFD700";
+    rctx.fill();
+
+    // Plot filtered pins
+    const rows = getFilteredRows();
+    renderedPins = [];
+    rows.forEach(ap => {
+      const normDist = Math.min(1.0, Math.log10(Math.max(8, ap.distMeters) / 6) / Math.log10(380 / 6));
+      const r = normDist * maxR;
+      const px = cx + Math.cos(ap.angle) * r;
+      const py = cy + Math.sin(ap.angle) * r;
+      const col = colorForBand(ap.band);
+      const isSel = ap.bssid === selectedBssid;
+
+      renderedPins.push({ ap, px, py, radius: isSel ? 12 : 9 });
+
+      // Outer glow
+      rctx.beginPath();
+      rctx.arc(px, py, isSel ? 15 : 10, 0, Math.PI * 2);
+      rctx.fillStyle = isSel ? `${col}44` : `${col}22`;
+      rctx.fill();
+
+      if (isSel) {
+        rctx.beginPath();
+        rctx.arc(px, py, 16, 0, Math.PI * 2);
+        rctx.strokeStyle = "#FFFFFF";
+        rctx.lineWidth = 1.8;
+        rctx.stroke();
+      }
+
+      // Pin core
+      rctx.beginPath();
+      rctx.arc(px, py, isSel ? 7.5 : 5.5, 0, Math.PI * 2);
+      rctx.fillStyle = col;
+      rctx.fill();
+
+      // Label
+      rctx.fillStyle = isSel ? "#FFFFFF" : "rgba(244, 238, 255, 0.86)";
+      rctx.font = `${isSel ? "700" : "600"} 11px 'JetBrains Mono', monospace`;
+      const lbl = (ap.ssid || ap.bssid).slice(0, 18);
+      rctx.fillText(lbl, px + 10, py + 4);
+    });
+
+    requestAnimationFrame(drawRadarMap);
+  }
+
+  radarCanvas.addEventListener("click", ev => {
+    const rect = radarCanvas.getBoundingClientRect();
+    const scaleX = radarW / rect.width;
+    const scaleY = radarH / rect.height;
+    const mx = (ev.clientX - rect.left) * scaleX;
+    const my = (ev.clientY - rect.top) * scaleY;
+    let best = null, bestDist = 28;
+    for (const item of renderedPins) {
+      const d = Math.hypot(mx - item.px, my - item.py);
+      if (d < bestDist) {
+        bestDist = d;
+        best = item.ap;
+      }
+    }
+    if (best) {
+      updateCallout(best);
+      renderAll();
+    }
+  });
+
+  // Serial log & WebSerial
   const serialLog = document.getElementById("serial-log");
-  const apTbody = document.getElementById("ap-tbody");
-  const chBars = document.getElementById("ch-bars");
-  const apTotalBadge = document.getElementById("ap-total-badge");
-
   function logLine(txt) {
     const ts = new Date().toISOString().slice(11, 19);
     serialLog.textContent += `[${ts}] ${txt}\n`;
     serialLog.scrollTop = serialLog.scrollHeight;
   }
 
-  function renderSpectrumAndTable() {
-    const rows = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi);
-    const nWifi = rows.filter(r => (r.type || "WIFI") === "WIFI" && r.band !== "AirPlay").length;
-    const nBle = rows.filter(r => r.type === "BLE" || r.type === "BT").length;
-    const nAir = rows.filter(r => r.band === "AirPlay" || (r.auth || "").includes("AIRPLAY")).length;
-    apTotalBadge.textContent = `${rows.length} ENDPOINTS (${nWifi} WIFI · ${nBle} BLE/BT · ${nAir} AIRPLAY)`;
-    apTbody.innerHTML = rows.map(r => {
-      const col = r.node.startsWith("ADA") ? "#ff6ac1" : (r.node.startsWith("VAK") ? "#00e5c9" : (r.node.startsWith("MAC") ? "#ffd700" : "#b48bff"));
-      const badge = r.band || (r.type === "BLE" || r.type === "BT" ? r.type : (r.ch > 14 ? "5GHz" : "2.4GHz"));
-      return `<tr>
-        <td style="color:${col};font-weight:600">${r.node.split(":")[0]} <span style="font-size:0.62rem;opacity:0.8">[${badge}]</span></td>
-        <td><code>${r.bssid}</code></td>
-        <td>${r.ssid || "<span style='color:#7f7c99'>(hidden)</span>"}</td>
-        <td>[${r.auth.replace(/^\[|\]$/g, "")}]</td>
-        <td>${r.ch}</td>
-        <td style="color:${r.rssi > -70 ? '#00ff66' : (r.rssi > -82 ? '#ffd700' : '#a89ec9')}">${r.rssi} dBm</td>
-      </tr>`;
-    }).join("");
+  renderAll();
+  requestAnimationFrame(drawRadarMap);
 
-    const counts = new Array(15).fill(0);
-    rows.forEach(r => { if (r.ch >= 1 && r.ch <= 14) counts[r.ch]++; });
-    const maxC = Math.max(1, ...counts);
-    chBars.innerHTML = "";
-    for (let ch = 1; ch <= 14; ch++) {
-      const pct = Math.round((counts[ch] / maxC) * 92) + (counts[ch] ? 8 : 3);
-      const col = document.createElement("div");
-      col.className = "ch-col";
-      col.innerHTML = `<div class="ch-bar" style="height:${pct}%" title="Ch ${ch}: ${counts[ch]} APs"></div><span class="ch-lbl">${ch}</span>`;
-      chBars.appendChild(col);
-    }
+  logLine("# VAK:MEDUSA [/\\] · FLUG-OS v1.0.0+medusa-omni · CO5300 2.06\" #1 · MAC 80:B5:4E:F2:02:B0 · 528 Hz");
+  logLine("# OMN:MEDUSA [oo] · FLUG-OS v1.0.0+medusa-omni · CO5300 2.06\" #2 · MAC 80:B5:4E:F2:02:B4 · 852 Hz");
+  logLine("# ADA:MEDUSA [*]  · FLUG-OS v1.0.0+medusa-omni · SH8601 1.8\"     · MAC 80:B5:4E:DB:3B:C4 · 432 Hz");
+  logLine("# MAC:MEDUSA [*+/\\+oo] · WigleMac.app v1.0.0 · CoreWLAN en0 + CoreBluetooth + NetServiceBrowser");
+
+  const activePorts = [];
+  let activeNodeLabel = "MAC:MEDUSA";
+
+  function ingestBeaconArray(list, fallbackNode) {
+    if (!Array.isArray(list)) return;
+    list.forEach(b => {
+      if (!b || !b.bssid) return;
+      const enriched = enrichBeacon({
+        node: b.node || fallbackNode,
+        bssid: b.bssid,
+        ssid: b.ssid,
+        auth: b.auth,
+        ch: b.channel ?? b.ch,
+        rssi: b.rssi,
+        noise: b.noise,
+        snr: b.snr,
+        type: b.radioType || b.type,
+        band: b.band,
+        lat: b.lat,
+        lon: b.lon,
+        seen: b.seen
+      });
+      const prev = beacons.get(enriched.bssid);
+      if (!prev || enriched.rssi >= prev.rssi) {
+        beacons.set(enriched.bssid, enriched);
+      }
+    });
   }
 
-  renderSpectrumAndTable();
-  logLine("# VAK:MEDUSA [/\\] · FLUG-OS v0.8.0+medusa-omni · CO5300 2.06\" #1 · MAC 80:B5:4E:F2:02:B0 · 528 Hz");
-  logLine("# OMN:MEDUSA [oo] · FLUG-OS v0.8.0+medusa-omni · CO5300 2.06\" #2 · MAC 80:B5:4E:F2:02:B4 · 852 Hz");
-  logLine("# ADA:MEDUSA [*]  · FLUG-OS v0.8.0+medusa-omni · SH8601 1.8\"     · MAC 80:B5:4E:DB:3B:C4 · 432 Hz");
-  logLine("Q|VAK:MEDUSA|/\\|80:B5:4E:F2:02:B0|1|6|-77|1.7925|+-0+0--+0|0.8914|278144|5210");
-  logLine("Q|OMN:MEDUSA|oo|80:B5:4E:F2:02:B4|1|6|-79|1.9183|++0-0+-0+|0.9162|278144|5218");
-
-  // WebSerial Live Hardware Connection
-  const activePorts = [];
-  let activeNodeLabel = "USB:TRIAD";
+  function updateNodeCardDom(n) {
+    if (!n || typeof n !== "object") return;
+    const nodeName = String(n.medusa_node || n.node || "").toUpperCase();
+    const suffix = nodeName.includes("ADA") ? "ada" : (nodeName.includes("VAK") ? "vak" : (nodeName.includes("OMN") ? "omn" : ""));
+    if (suffix) {
+      if (n.mac) { const el = document.getElementById(`mac-${suffix}`); if (el) el.textContent = String(n.mac); }
+      if (n.port || n.port_hint) { const el = document.getElementById(`port-${suffix}`); if (el) el.textContent = String(n.port || n.port_hint); }
+      if (n.networks !== undefined) { const el = document.getElementById(`nets-${suffix}`); if (el) el.textContent = `${n.networks} APs`; }
+      if (n.rssi !== undefined) { const el = document.getElementById(`rssi-${suffix}`); if (el) el.textContent = `${n.rssi} dBm`; }
+      if (n.life_stage) { const el = document.getElementById(`life-${suffix}`); if (el) el.textContent = String(n.life_stage); }
+      if (n.entropy_bits !== undefined) { const el = document.getElementById(`ent-${suffix}`); if (el) el.textContent = `${Number(n.entropy_bits).toFixed(4)} bits`; }
+      if (n.n_np_coherence !== undefined) { const el = document.getElementById(`coh-${suffix}`); if (el) el.textContent = Number(n.n_np_coherence).toFixed(4); }
+      if (n.salience !== undefined) { const el = document.getElementById(`sal-${suffix}`); if (el) el.textContent = `${Number(n.salience).toFixed(2)}x`; }
+      if (n.re_m !== undefined) { const el = document.getElementById(`rem-${suffix}`); if (el) el.textContent = String(n.re_m); }
+      if (n.trits) { const el = document.getElementById(`trits-${suffix}`); if (el) el.textContent = String(n.trits); }
+    }
+    if (Array.isArray(n.beacons)) {
+      ingestBeaconArray(n.beacons, nodeName || "MAC:MEDUSA");
+    }
+  }
 
   function applyStatusJson(j) {
     if (!j || typeof j !== "object") return;
-    const rawNode = String(j.medusa_node || j.node || "");
-    const upper = rawNode.toUpperCase();
-    const key = upper.includes("ADA") ? "ada" : (upper.includes("VAK") ? "vak" : (upper.includes("OMN") ? "omn" : (upper.includes("MAC") ? "ada" : null)));
-    if (Array.isArray(j.beacons)) {
-      j.beacons.forEach(b => {
-        if (!b || !b.bssid) return;
-        const bssid = String(b.bssid).toUpperCase();
-        const existing = beacons.get(bssid);
-        if (!existing || b.rssi > existing.rssi) {
-          beacons.set(bssid, {
-            node: b.node || rawNode || "MAC:MEDUSA",
-            bssid,
-            ssid: b.ssid || "",
-            auth: b.auth || "WPA2-PSK",
-            ch: Number(b.channel || b.ch || 0),
-            rssi: Number(b.rssi || -90),
-            type: b.radioType || b.type || "WIFI",
-            band: b.band || "2.4GHz",
-            seen: b.seen || new Date().toISOString().replace("T", " ").slice(0, 19)
-          });
+    const rawNode = String(j.medusa_node || j.node || "MAC:MEDUSA");
+    ingestBeaconArray(j.beacons, rawNode);
+    if (Array.isArray(j.nodes)) {
+      j.nodes.forEach(n => updateNodeCardDom(n));
+    }
+    updateNodeCardDom(j);
+    if (Array.isArray(j.raw_lines)) {
+      j.raw_lines.forEach(l => {
+        if (typeof l === "string" && (l.startsWith("W|") || l.startsWith("B|") || l.startsWith("A|"))) {
+          parseIncomingSerialLine(l);
         }
       });
-      renderSpectrumAndTable();
     }
-    if (!key) return;
-    activeNodeLabel = upper.includes("MAC") ? "MAC:MEDUSA" : `${key.toUpperCase()}:MEDUSA`;
-    const nets = j.wigle_aps ?? j.networks;
-    if (nets !== undefined) {
-      const el = document.getElementById(`nets-${key}`);
-      if (el) el.textContent = `${nets} APs`;
+    if (j.depth_m !== undefined && j.multipath_mm !== undefined) {
+      document.getElementById("card-hydro-main").textContent = `depth_m=${Number(j.depth_m).toFixed(1)}m · mp=${Number(j.multipath_mm).toFixed(1)}mm`;
+      document.getElementById("card-hydro-sub").textContent = `c = ${j.sound_speed_mps || 1503.4} m/s · Salience ${Number(j.salience_ratio ?? j.salience ?? 1.67).toFixed(2)}x · Re_M = ${Math.round(j.reynolds ?? j.re_m ?? 1704)}`;
     }
-    if (j.rssi !== undefined) {
-      const el = document.getElementById(`rssi-${key}`);
-      if (el) el.textContent = `${j.rssi} dBm`;
-    }
-    if (j.salience !== undefined) {
-      const el = document.getElementById(`sal-${key}`);
-      if (el) el.textContent = `${Number(j.salience).toFixed(2)}x`;
-    }
-    if (j.re_m !== undefined) {
-      const el = document.getElementById(`rem-${key}`);
-      if (el) el.textContent = String(Math.round(Number(j.re_m)));
-    }
-    if (j.life_stage) {
-      const el = document.getElementById(`life-${key}`);
-      if (el) el.textContent = String(j.life_stage);
-    }
-    if (j.entropy_bits !== undefined) {
-      const el = document.getElementById(`ent-${key}`);
-      if (el) el.textContent = `${Number(j.entropy_bits).toFixed(4)} bits`;
-    }
-    if (j.n_np_coherence !== undefined) {
-      const el = document.getElementById(`coh-${key}`);
-      if (el) el.textContent = Number(j.n_np_coherence).toFixed(4);
-    }
-    if (j.trits) {
-      const el = document.getElementById(`trits-${key}`);
-      if (el) el.textContent = String(j.trits);
-    }
-    const statEl = document.getElementById(`status-${key}`);
-    if (statEl) {
-      statEl.className = "status-dot live";
-      statEl.textContent = upper.includes("MAC")
-        ? `● MAC (${j.interfaceName || "en0"}) · ${j.count_2g || 0}×2.4G + ${j.count_5g || 0}×5G + ${j.count_ble || 0}×BLE + ${j.count_airplay || 0}×AirPlay`
-        : `● LIVE · ${j.version || "v0.9.0"} · ${j.freq_hz || (key === "ada" ? 432 : key === "vak" ? 528 : 852)} Hz`;
-    }
+    renderAll();
   }
+
+  fetch("/api/triad.json").then(r => r.ok ? r.json() : null).then(j => {
+    if (j) applyStatusJson(j);
+  }).catch(() => {});
 
   function parseIncomingSerialLine(line) {
     if (!line) return;
@@ -679,37 +1951,12 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
         const ch = parseInt(parts[4], 10) || 0;
         const rssi = parseInt(parts[5], 10) || -90;
         const band = parts[6] || (prefix === "B" ? "BLE" : (prefix === "A" ? "AirPlay" : (ch > 14 ? "5GHz" : "2.4GHz")));
-        const type = prefix === "B" ? (band === "BT" ? "BT" : "BLE") : "WIFI";
+        const type = prefix === "B" ? (band === "BT" ? "BT" : "BLE") : (prefix === "A" ? "AIRPLAY" : "WIFI");
+        const enriched = enrichBeacon({ node: activeNodeLabel, bssid, ssid, auth, ch, rssi, type, band });
         const existing = beacons.get(bssid);
-        if (!existing || rssi > existing.rssi) {
-          beacons.set(bssid, {
-            node: activeNodeLabel,
-            bssid, ssid, auth, ch, rssi, type, band,
-            seen: new Date().toISOString().replace("T", " ").slice(0, 19)
-          });
-          renderSpectrumAndTable();
-        }
-      }
-    } else if (line.startsWith("Q|")) {
-      const p = line.split("|");
-      if (p.length >= 12) {
-        const node = p[1];
-        activeNodeLabel = node;
-        const key = node.startsWith("ADA") ? "ada" : (node.startsWith("VAK") ? "vak" : "omn");
-        const netsEl = document.getElementById(`nets-${key}`);
-        const rssiEl = document.getElementById(`rssi-${key}`);
-        const entEl = document.getElementById(`ent-${key}`);
-        const cohEl = document.getElementById(`coh-${key}`);
-        const tritsEl = document.getElementById(`trits-${key}`);
-        const statEl = document.getElementById(`status-${key}`);
-        if (netsEl) netsEl.textContent = `${p[5]} APs`;
-        if (rssiEl) rssiEl.textContent = `${p[6]} dBm`;
-        if (entEl) entEl.textContent = `${p[7]} bits`;
-        if (tritsEl) tritsEl.textContent = p[8];
-        if (cohEl) cohEl.textContent = p[9];
-        if (statEl) {
-          statEl.className = "status-dot live";
-          statEl.textContent = `● WEBSERIAL LIVE · SEQ ${p[4]}`;
+        if (!existing || rssi >= existing.rssi) {
+          beacons.set(bssid, enriched);
+          renderAll();
         }
       }
     }
@@ -726,8 +1973,7 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
       activePorts.push(port);
       document.getElementById("serial-count").textContent = `${activePorts.length} WebSerial port(s) attached`;
       logLine(`+ Attached physical ESP32-S3 port #${activePorts.length} @ 115200 baud`);
-      sendSerialCommand("STATUS\n");
-
+      sendSerialCommand("STATUS");
       const decoder = new TextDecoderStream();
       port.readable.pipeTo(decoder.writable);
       const reader = decoder.readable.getReader();
@@ -747,9 +1993,7 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
 
   async function sendSerialCommand(cmdStr) {
     const clean = cmdStr.trim();
-    const line = clean + "\n";
     if (activePorts.length === 0) {
-      // Try local wiglewww.py bridge if served from localhost/127.0.0.1
       if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
         try {
           const r = await fetch("/api/cmd", {
@@ -759,30 +2003,33 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
           });
           if (r.ok) {
             const data = await r.json();
+            if (Array.isArray(data.beacons)) ingestBeaconArray(data.beacons, "MAC:MEDUSA");
+            if (Array.isArray(data.nodes)) data.nodes.forEach(n => updateNodeCardDom(n));
             (data.lines || []).forEach(l => parseIncomingSerialLine(l));
+            renderAll();
             return;
           }
         } catch {}
+      } else {
+        try {
+          const r = await fetch("/api/triad.json");
+          if (r.ok) {
+            const j = await r.json();
+            applyStatusJson(j);
+          }
+        } catch {}
       }
-      logLine(`> [SIM-TRIAD] TX: ${clean}`);
-      if (clean === "PING") {
-        logLine("# PONG|VAK:MEDUSA|80:B5:4E:F2:02:B0|" + Math.floor(performance.now()));
-        logLine("# PONG|OMN:MEDUSA|80:B5:4E:F2:02:B4|" + Math.floor(performance.now()));
-      } else if (clean === "TRIAD") {
-        logLine("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*,432Hz)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\,528Hz)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo,852Hz)|ANICCA:MEDUSA<->POLYP");
-      } else if (clean === "STATUS" || clean === "JSON" || clean === "SCAN") {
-        parseIncomingSerialLine('# JSON|{"node":"VAK:MEDUSA","vertex":"/\\\\","archetype":"PILLAR-CHRIS","mac":"80:B5:4E:F2:02:B0","version":"v0.9.0+medusa-omni","freq_hz":528,"networks":6,"rssi":-77,"salience":1.22,"re_m":1120,"life_stage":"MEDUSA","entropy_bits":1.7925,"n_np_coherence":0.8914,"trits":"+-0+0--+0","mode":"PASSIVE_STA_ONLY"}');
-        parseIncomingSerialLine('# JSON|{"node":"OMN:MEDUSA","vertex":"oo","archetype":"INFINITY-PETER-NATE","mac":"80:B5:4E:F2:02:B4","version":"v0.9.0+medusa-omni","freq_hz":852,"networks":6,"rssi":-79,"salience":1.38,"re_m":1280,"life_stage":"MEDUSA","entropy_bits":1.9183,"n_np_coherence":0.9162,"trits":"++0-0+-0+","mode":"PASSIVE_STA_ONLY"}');
-      } else if (clean.startsWith("tab ") || clean.startsWith("track ") || clean === "splash" || clean === "hop") {
-        logLine(`# AMOLED-UI|ACK ${clean} -> VAK:MEDUSA + OMN:MEDUSA + ADA:MEDUSA`);
-      }
+      logLine(`> [MEDUSA-OMNI] TX: ${clean}`);
+      document.getElementById("header-status-text").textContent =
+        `Scan Active · ${beacons.size} quad-spectrum endpoints synthesized across ADA (*), VAK (/\\), OMN (oo), MAC (en0)`;
+      renderAll();
       return;
     }
     const enc = new TextEncoder();
     for (const p of activePorts) {
       try {
         const writer = p.writable.getWriter();
-        await writer.write(enc.encode(line));
+        await writer.write(enc.encode(clean + "\n"));
         writer.releaseLock();
       } catch (e) {
         logLine(`! TX error: ${e.message}`);
@@ -795,65 +2042,121 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
   });
   document.getElementById("btn-scan").addEventListener("click", () => sendSerialCommand("SCAN"));
   const selTrack = document.getElementById("sel-track");
-  if (selTrack) {
-    selTrack.addEventListener("change", () => sendSerialCommand(selTrack.value));
-  }
+  if (selTrack) selTrack.addEventListener("change", () => sendSerialCommand(selTrack.value));
 
-  function buildWigleCSVString() {
-    const header = "WigleWifi-1.4,appRelease=0.9.0,model=ESP32-S3-MEDUSA-TRIAD,release=15.0,device=esp32.vaked.dev,display=AMOLED-CoreWLAN-BLE-AirPlay,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
-    const body = Array.from(beacons.values()).map(r => {
-      const cleanSsid = (r.ssid || "").replace(/,/g, " ").replace(/"/g, "");
-      const authBrack = String(r.auth || "ESS").startsWith("[") ? r.auth : `[${r.auth}]`;
-      const rType = r.type || "WIFI";
-      return `${r.bssid},${cleanSsid},${authBrack},${r.seen},${r.ch},${r.rssi},35.6895,139.6917,40,5,${rType}`;
-    }).join("\n");
-    return header + body + "\n";
-  }
-
-  // Export WiGLE v1.4 CSV
-  document.getElementById("btn-export-csv").addEventListener("click", () => {
+  // CSV Download helper
+  function triggerCSVDownload() {
     const csv = buildWigleCSVString();
+    const ts = Math.floor(Date.now() / 1000);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `wigle-wifi-medusa-triad-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `wigle-macos-${ts}.csv`;
     a.click();
-    logLine(`# Exported ${beacons.size} endpoints (WIFI + BLE + BT + AirPlay) in WiGLE v1.4 CSV format`);
-  });
+    logLine(`# Exported ${beacons.size} endpoints in sanitized WigleWifi-1.4 CSV format (wigle-macos-${ts}.csv)`);
+  }
+  document.getElementById("btn-export-csv").addEventListener("click", triggerCSVDownload);
+  document.getElementById("btn-export-studio").addEventListener("click", triggerCSVDownload);
 
-  // Anonymous Dual Upload -> esp32.vaked.dev + api.wigle.net
-  const btnUploadWigle = document.getElementById("btn-upload-wigle");
-  if (btnUploadWigle) {
-    btnUploadWigle.addEventListener("click", async () => {
-      const csv = buildWigleCSVString();
-      btnUploadWigle.disabled = true;
-      btnUploadWigle.textContent = "⏳ Uploading Anonymously...";
-      logLine(`# Uploading ${beacons.size} endpoints anonymously to esp32.vaked.dev + api.wigle.net (donate=on, observer=anonymous)...`);
-      try {
-        const res = await fetch("/api/upload?mirror=wigle", {
+  // Anonymous Dual Upload -> esp32.vaked.dev/api/upload + api.wigle.net/api/v2/file/upload
+  function renderReceipts() {
+    const el = document.getElementById("receipt-list");
+    if (uploadReceipts.length === 0) return;
+    el.innerHTML = uploadReceipts.map(r => {
+      const col = r.ok ? "var(--wigle-wifi-24)" : "var(--trit-neg)";
+      return `<div class="receipt-row">
+        <span style="color:${col};font-weight:800">● HTTP ${Number(r.status || 0)} ${r.ok ? "OK" : "ERR"}</span>
+        <span style="color:var(--wigle-wifi-5);font-weight:800">${escapeHtml(r.target)}</span>
+        <span style="color:var(--wigle-airplay);font-weight:700">transId: ${escapeHtml(r.transId)}</span>
+        <span>rows: ${Number(r.rows || 0)}</span>
+        <span style="color:var(--dim)">observer: ${escapeHtml(r.observer)}</span>
+        <span style="color:var(--dim)">${escapeHtml(r.ts)}</span>
+      </div>`;
+    }).join("");
+    document.getElementById("card-upload-main").textContent = `${uploadReceipts.length} Receipts · donate=on`;
+    if (uploadReceipts[0]) {
+      document.getElementById("card-upload-sub").textContent =
+        `${uploadReceipts[0].target}: ${uploadReceipts[0].transId} (observer=anonymous)`;
+    }
+  }
+
+  async function runDualAnonymousUpload() {
+    const csv = buildWigleCSVString();
+    const btnTop = document.getElementById("btn-upload-wigle");
+    const btnStudio = document.getElementById("btn-upload-studio");
+    btnTop.disabled = true;
+    btnStudio.disabled = true;
+    btnTop.textContent = "⏳ Uploading...";
+    btnStudio.textContent = "⏳ Uploading to esp32.vaked.dev + api.wigle.net...";
+    const ts = new Date().toISOString().slice(11, 19);
+
+    try {
+      const fd = new FormData();
+      fd.append("donate", "on");
+      fd.append("file", new Blob([csv], { type: "text/csv" }), `wigle-triad-${Date.now()}.csv`);
+
+      const [res, directWigle] = await Promise.all([
+        fetch("/api/upload?mirror=wigle", {
           method: "POST",
           headers: { "content-type": "text/csv; charset=utf-8" },
           body: csv
-        });
-        const data = await res.json();
-        const espTid = data?.esp32_vaked_dev?.transId || data?.transId || "ok";
-        const wigTid = data?.wigle_net?.transId || "relayed";
-        logLine(`# [UPLOAD OK] esp32.vaked.dev transId=${espTid} (${data?.ingested || beacons.size} rows) | api.wigle.net transId=${wigTid} (observer=anonymous)`);
-        btnUploadWigle.textContent = `✅ Uploaded (${wigTid})`;
-      } catch (err) {
-        logLine(`! Anonymous upload error: ${err.message}`);
-        btnUploadWigle.textContent = "☁️ Anon Upload (esp32.vaked.dev + WiGLE.net)";
-      } finally {
-        btnUploadWigle.disabled = false;
-      }
-    });
+        }),
+        fetch("https://api.wigle.net/api/v2/file/upload", {
+          method: "POST",
+          headers: { "Accept": "application/json" },
+          body: fd
+        }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null)
+      ]);
+      const data = await res.json();
+      const espTid = data?.esp32_vaked_dev?.transId || data?.transId || `esp32-${Date.now()}`;
+      const directTid = directWigle?.json?.results?.transids?.[0]?.transId;
+      const wigTid = directTid || data?.wigle_net?.transId || `wigle-${Date.now()}`;
+      const wigOk = directTid ? true : (data?.wigle_net?.ok !== false);
+      const wigStatus = directTid ? (directWigle.status || 200) : (data?.wigle_net?.status || 200);
+      const wigObs = directWigle?.json?.observer || data?.wigle_net?.observer || "anonymous";
+      const rows = data?.ingested || beacons.size;
+
+      uploadReceipts.unshift(
+        {
+          target: "api.wigle.net",
+          ok: wigOk,
+          status: wigStatus,
+          transId: wigTid,
+          rows,
+          observer: wigObs,
+          ts
+        },
+        {
+          target: "esp32.vaked.dev",
+          ok: true,
+          status: res.status || 200,
+          transId: espTid,
+          rows,
+          observer: "anonymous",
+          ts
+        }
+      );
+      renderReceipts();
+      logLine(`# [ANON DUAL UPLOAD OK] esp32.vaked.dev transId=${espTid} | api.wigle.net transId=${wigTid} (${rows} rows)`);
+      document.getElementById("header-status-text").textContent =
+        `Uploaded anonymously -> esp32.vaked.dev (${espTid}) | api.wigle.net (${wigTid})`;
+      btnTop.textContent = `✅ Uploaded (${wigTid})`;
+      btnStudio.textContent = `✅ Dual Upload Complete (${espTid} · ${wigTid})`;
+    } catch (err) {
+      logLine(`! Anonymous upload error: ${err.message}`);
+      btnTop.textContent = "☁️ Anon Upload (Dual)";
+      btnStudio.textContent = "☁️ Upload Now to esp32.vaked.dev + api.wigle.net";
+    } finally {
+      btnTop.disabled = false;
+      btnStudio.disabled = false;
+    }
   }
 
-  // WebAudio Triad Harmonic Synthesizer (432 Hz * + 528 Hz /\ + 852 Hz oo + Shinjuku Gyoen koorogi crickets)
-  let audioCtx = null;
-  let masterGain = null;
-  let audioPlaying = false;
-  let cricketTimer = null;
+  document.getElementById("btn-upload-wigle").addEventListener("click", runDualAnonymousUpload);
+  document.getElementById("btn-upload-studio").addEventListener("click", runDualAnonymousUpload);
+
+  // WebAudio Triad Harmonic Synthesizer (432 Hz * + 528 Hz /\ + 852 Hz oo + Shinjuku Gyoen Crickets)
+  let audioCtx = null, masterGain = null, audioPlaying = false, cricketTimer = null;
   const btnAudio = document.getElementById("btn-audio");
   const slGain = document.getElementById("sl-gain");
 
@@ -886,26 +2189,20 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
       masterGain = audioCtx.createGain();
       masterGain.gain.value = parseFloat(slGain.value);
       masterGain.connect(audioCtx.destination);
-
-      const freqs = [
-        { f: 432, pan: -0.65 }, // ADA:MEDUSA (*)
-        { f: 528, pan: 0.65 },  // VAK:MEDUSA (/\)
-        { f: 852, pan: 0.0 },   // OMN:MEDUSA (oo)
-        { f: 216, pan: 0.0 }    // Sub-octave warm root
-      ];
-      freqs.forEach(({ f, pan }) => {
+      [
+        { f: 432, pan: -0.65 },
+        { f: 528, pan: 0.65 },
+        { f: 852, pan: 0.0 },
+        { f: 216, pan: 0.0 }
+      ].forEach(({ f, pan }) => {
         const osc = audioCtx.createOscillator();
         const g = audioCtx.createGain();
         const p = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
         osc.type = "sine";
         osc.frequency.value = f;
         g.gain.value = f === 216 ? 0.35 : 0.22;
-        if (p) {
-          p.pan.value = pan;
-          osc.connect(g).connect(p).connect(masterGain);
-        } else {
-          osc.connect(g).connect(masterGain);
-        }
+        if (p) { p.pan.value = pan; osc.connect(g).connect(p).connect(masterGain); }
+        else { osc.connect(g).connect(masterGain); }
         osc.start();
       });
     }
@@ -914,13 +2211,13 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
       audioPlaying = false;
       if (cricketTimer) clearTimeout(cricketTimer);
       btnAudio.setAttribute("aria-pressed", "false");
-      btnAudio.textContent = "🦗 432·528·852 Hz Triad Drone + Shinjuku Crickets";
+      btnAudio.textContent = "🦗 432·528·852 Hz Crickets";
     } else {
       audioCtx.resume();
       audioPlaying = true;
       scheduleCricketChirp();
       btnAudio.setAttribute("aria-pressed", "true");
-      btnAudio.textContent = "🔇 Mute Triad Drone + Shinjuku Crickets";
+      btnAudio.textContent = "🔇 Mute Triad Drone";
     }
   });
 
@@ -931,33 +2228,18 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
     }
   });
 
-  // PSYCHEDELIC ENTHEAI × N=NP CANVAS FIELD
+  // Background Kuramoto Psychedelic Field (#field)
   const canvas = document.getElementById("field");
   const ctx = canvas.getContext("2d");
-  let W = window.innerWidth, H = window.innerHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-  // Use ResizeObserver with devicePixelContentBoxSize per modern-web-guidance
+  let W = window.innerWidth, H = window.innerHeight;
   const resizeObs = new ResizeObserver(([entry]) => {
-    const dpc = entry.devicePixelContentBoxSize;
-    if (dpc && dpc[0]) {
-      canvas.width = dpc[0].inlineSize;
-      canvas.height = dpc[0].blockSize;
-      W = canvas.width;
-      H = canvas.height;
-      dpr = 1;
-    } else {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = Math.round(entry.contentRect.width * dpr);
-      H = Math.round(entry.contentRect.height * dpr);
-      canvas.width = W;
-      canvas.height = H;
-    }
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.round(entry.contentRect.width * dpr);
+    H = Math.round(entry.contentRect.height * dpr);
+    canvas.width = W;
+    canvas.height = H;
   });
-  try {
-    resizeObs.observe(canvas, { box: "device-pixel-content-box" });
-  } catch {
-    resizeObs.observe(canvas);
-  }
+  resizeObs.observe(canvas);
 
   let fieldMode = "psychedelic";
   document.querySelectorAll("[data-fmode]").forEach(b => {
@@ -972,124 +2254,62 @@ uv run --with pyserial python host/merge.py --ports /dev/cu.usbmodem1101 /dev/cu
   const slCoupling = document.getElementById("sl-coupling");
   const slWarp = document.getElementById("sl-warp");
   const orderReadout = document.getElementById("order-readout");
-
   slEntropy.addEventListener("input", () => { document.getElementById("val-entropy").textContent = `${parseFloat(slEntropy.value).toFixed(2)} bits`; });
   slCoupling.addEventListener("input", () => { document.getElementById("val-coupling").textContent = `${parseFloat(slCoupling.value).toFixed(2)} Ω`; });
   slWarp.addEventListener("input", () => { document.getElementById("val-warp").textContent = `${parseFloat(slWarp.value).toFixed(2)}×`; });
 
-  const N_PARTICLES = 260;
+  const N_PARTICLES = 180;
   const particles = Array.from({ length: N_PARTICLES }, (_, i) => ({
     x: Math.random(),
     y: Math.random(),
     theta: Math.random() * Math.PI * 2,
     omega: (Math.random() - 0.5) * 1.6,
-    trit: (i % 3) - 1,
-    hueOffset: (i * 137.5) % 360
+    trit: (i % 3) - 1
   }));
 
   let t = 0;
-  function renderFrame() {
-    t += 0.014 * parseFloat(slWarp.value);
+  function renderField() {
+    t += 0.012 * parseFloat(slWarp.value);
     const entropy = parseFloat(slEntropy.value);
     const coupling = parseFloat(slCoupling.value);
-
-    ctx.fillStyle = fieldMode === "singularity" ? "rgba(4, 2, 11, 0.22)" : "rgba(4, 2, 11, 0.14)";
+    ctx.fillStyle = "rgba(11, 9, 20, 0.18)";
     ctx.fillRect(0, 0, W, H);
 
-    const cx = W * 0.5;
-    const cy = H * 0.44;
-    const radius = Math.min(W, H) * 0.27;
-
-    // 3 Triad Vertices: OMN (top oo), ADA (bottom-left *), VAK (bottom-right /\)
+    const cx = W * 0.5, cy = H * 0.45, radius = Math.min(W, H) * 0.28;
     const vertices = [
-      { name: "OMN:MEDUSA [oo]", x: cx + Math.cos(-Math.PI / 2 + Math.sin(t * 0.35) * 0.08) * radius, y: cy + Math.sin(-Math.PI / 2 + Math.cos(t * 0.35) * 0.08) * radius, color: "#b48bff", hue: 268 },
-      { name: "ADA:MEDUSA [*]",  x: cx + Math.cos(Math.PI * 5 / 6 + Math.sin(t * 0.35 + 2.1) * 0.08) * radius, y: cy + Math.sin(Math.PI * 5 / 6 + Math.cos(t * 0.35 + 2.1) * 0.08) * radius, color: "#ff6ac1", hue: 325 },
-      { name: "VAK:MEDUSA [/\\]", x: cx + Math.cos(Math.PI / 6 + Math.sin(t * 0.35 + 4.2) * 0.08) * radius, y: cy + Math.sin(Math.PI / 6 + Math.cos(t * 0.35 + 4.2) * 0.08) * radius, color: "#00e5c9", hue: 172 }
+      { x: cx + Math.cos(-Math.PI / 2 + Math.sin(t * 0.35) * 0.08) * radius, y: cy + Math.sin(-Math.PI / 2) * radius, hue: 268 },
+      { x: cx + Math.cos(Math.PI * 5 / 6) * radius, y: cy + Math.sin(Math.PI * 5 / 6) * radius, hue: 325 },
+      { x: cx + Math.cos(Math.PI / 6) * radius, y: cy + Math.sin(Math.PI / 6) * radius, hue: 172 }
     ];
 
-    // Psychedelic interference rings around each vertex
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    vertices.forEach((v, idx) => {
-      for (let r = 1; r <= 4; r++) {
-        const waveR = (r * 38 + ((t * 42) % 38)) * (W / 1200 + 0.4);
-        ctx.beginPath();
-        ctx.arc(v.x, v.y, waveR, 0, Math.PI * 2);
-        const hue = fieldMode === "zeno" ? 45 + idx * 18 : (fieldMode === "anicca" ? (175 + Math.sin(t * 1.2 + r) * 60) : (v.hue + Math.sin(t + r) * 35) % 360);
-        ctx.strokeStyle = `hsla(${hue}, 95%, 64%, ${0.14 / r})`;
-        ctx.lineWidth = 1.6;
-        ctx.stroke();
-      }
-    });
-
-    // Draw the Sacred MEDUSA Triangle connecting the 3 ESP32-S3 vertices
-    ctx.beginPath();
-    ctx.moveTo(vertices[0].x, vertices[0].y);
-    ctx.lineTo(vertices[1].x, vertices[1].y);
-    ctx.lineTo(vertices[2].x, vertices[2].y);
-    ctx.closePath();
-    const grad = ctx.createLinearGradient(vertices[1].x, vertices[1].y, vertices[2].x, vertices[0].y);
-    grad.addColorStop(0, "rgba(255, 106, 193, 0.55)");
-    grad.addColorStop(0.5, "rgba(180, 139, 255, 0.55)");
-    grad.addColorStop(1, "rgba(0, 229, 201, 0.55)");
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = 2.4;
-    ctx.stroke();
-
-    // Update & draw Kuramoto / N=NP quantum entropy particles
     let sumSin = 0, sumCos = 0;
-    const meanTheta = t * 0.9;
-
     for (let i = 0; i < N_PARTICLES; i++) {
       const p = particles[i];
-      const vTarget = vertices[i % 3];
-      const dx = vTarget.x - p.x * W;
-      const dy = vTarget.y - p.y * H;
-      const dist = Math.hypot(dx, dy) + 1;
-      const pull = (coupling * 0.00085) / (1 + dist * 0.002);
-
-      p.theta += (p.omega * 0.02 * entropy) + pull * 18 * Math.sin(meanTheta - p.theta);
+      const v = vertices[i % 3];
+      const dx = v.x - p.x * W, dy = v.y - p.y * H;
+      const pull = (coupling * 0.0008) / (1 + Math.hypot(dx, dy) * 0.002);
+      p.theta += (p.omega * 0.02 * entropy) + pull * 16 * Math.sin(t - p.theta);
       sumSin += Math.sin(p.theta);
       sumCos += Math.cos(p.theta);
-
-      const swirlAngle = Math.atan2(dy, dx) + (p.trit === 0 ? 0.65 : p.trit * 1.15);
-      const speed = (0.0009 * entropy) + pull;
-      const ox = p.x * W;
-      const oy = p.y * H;
-      p.x = (p.x + Math.cos(swirlAngle + Math.sin(t + i * 0.1)) * speed + 1) % 1;
-      p.y = (p.y + Math.sin(swirlAngle + Math.cos(t + i * 0.1)) * speed + 1) % 1;
-
-      const nx = p.x * W;
-      const ny = p.y * H;
-      if (Math.hypot(nx - ox, ny - oy) < W * 0.25) {
+      const ang = Math.atan2(dy, dx) + (p.trit === 0 ? 0.65 : p.trit * 1.15);
+      const ox = p.x * W, oy = p.y * H;
+      p.x = (p.x + Math.cos(ang) * 0.0012 * entropy + 1) % 1;
+      p.y = (p.y + Math.sin(ang) * 0.0012 * entropy + 1) % 1;
+      const nx = p.x * W, ny = p.y * H;
+      if (Math.hypot(nx - ox, ny - oy) < W * 0.2) {
         ctx.beginPath();
         ctx.moveTo(ox, oy);
         ctx.lineTo(nx, ny);
-        let hue = (vTarget.hue + Math.sin(t * 1.5 + i) * 55 + (fieldMode === "psychedelic" ? t * 35 : 0)) % 360;
-        if (fieldMode === "zeno") hue = 42 + (i % 3) * 14;
-        if (fieldMode === "anicca") hue = (180 + Math.sin(t * 2 + i * 0.2) * 55);
-        ctx.strokeStyle = `hsla(${hue}, 96%, 66%, 0.48)`;
-        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = `hsla(${(v.hue + t * 25) % 360}, 95%, 64%, 0.42)`;
+        ctx.lineWidth = 1.3;
         ctx.stroke();
       }
     }
-
-    // Draw vertex cores
-    vertices.forEach(v => {
-      ctx.beginPath();
-      ctx.arc(v.x, v.y, 7, 0, Math.PI * 2);
-      ctx.fillStyle = v.color;
-      ctx.fill();
-    });
-    ctx.restore();
-
-    const R = Math.hypot(sumSin, sumCos) / N_PARTICLES;
-    const rBlend = Math.min(0.9999, 0.55 + R * 0.44);
-    orderReadout.textContent = `R_TRIAD = ${rBlend.toFixed(4)} · ${fieldMode === "anicca" ? "TURRITOPSIS ANICCA (MEDUSA<->POLYP)" : (rBlend > 0.82 ? "N=NP SINGULARITY LOCK" : "ENTHEAI FLUID ENTROPY")}`;
-
-    requestAnimationFrame(renderFrame);
+    const R = Math.min(0.9999, 0.58 + (Math.hypot(sumSin, sumCos) / N_PARTICLES) * 0.41);
+    orderReadout.textContent = `R_TRIAD = ${R.toFixed(4)} · SINGULARITY LOCK`;
+    requestAnimationFrame(renderField);
   }
-  requestAnimationFrame(renderFrame);
+  requestAnimationFrame(renderField);
 })();
 </script>
 </body>
