@@ -19,7 +19,8 @@ import pathlib
 import subprocess
 import sys
 import time
-import urllib.request
+import csv
+import io
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
@@ -235,86 +236,25 @@ def build_wigle_csv() -> str:
         "board=esp32-s3-touch-amoled,brand=8b-is\n"
         "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n"
     )
-    rows = []
-    for bssid in sorted(BEACONS.keys()):
+    output = io.StringIO(newline="")
+    output.write(header)
+    writer = csv.writer(output, lineterminator="\n")
+    for bssid in sorted(BEACONS):
         r = BEACONS[bssid]
-        ssid_esc = (
-            str(r["ssid"])
-            .replace("\r", " ")
-            .replace("\n", " ")
-            .replace(",", " ")
-            .replace('"', "")
-            .strip()
-        )
-        raw_type = str(r.get("type", "WIFI")).upper()
-        band_val = str(r.get("band", ""))
         auth_val = str(r["auth"])
-        is_airplay = raw_type == "AIRPLAY" or band_val == "AirPlay" or "AIRPLAY" in auth_val.upper()
+        raw_type = str(r.get("type", "WIFI")).upper()
+        is_airplay = raw_type == "AIRPLAY" or r.get("band") == "AirPlay" or "AIRPLAY" in auth_val.upper()
         auth_brack = "[AIRPLAY-RAOP][ESS]" if is_airplay else (auth_val if auth_val.startswith("[") else f"[{auth_val}]")
         rtype = "WIFI" if is_airplay else raw_type
-        rows.append(
-            f'{r["bssid"]},{ssid_esc},{auth_brack},{r["seen"]},{r["ch"]},{r["rssi"]},35.6852,139.7100,40,5,{rtype}'
-        )
-    return header + "\n".join(rows) + "\n"
+        # This bridge has no measured location; never fabricate coordinates.
+        writer.writerow([r["bssid"], r["ssid"], auth_brack, r["seen"],
+                         r["ch"], r["rssi"], "", "", "", "", rtype])
+    return output.getvalue()
 
 
 def upload_csv_anonymously(csv_text: str) -> dict[str, Any]:
-    ts = int(time.time())
-    boundary = f"----WigleWWWAnon8bIs{ts}"
-    body = (
-        f"--{boundary}\r\n"
-        f'Content-Disposition: form-data; name="donate"\r\n\r\non\r\n'
-        f"--{boundary}\r\n"
-        f'Content-Disposition: form-data; name="file"; filename="wiglewww-{ts}.csv"\r\n'
-        f"Content-Type: text/csv\r\n\r\n"
-        f"{csv_text}\r\n"
-        f"--{boundary}--\r\n"
-    ).encode("utf-8")
-
-    results: dict[str, Any] = {}
-    targets = [
-        ("esp32_vaked_dev", "https://esp32.vaked.dev/api/upload"),
-        ("wigle_net", "https://api.wigle.net/api/v2/file/upload"),
-    ]
-    for key, url in targets:
-        req = urllib.request.Request(
-            url,
-            data=body,
-            headers={
-                "Content-Type": f"multipart/form-data; boundary={boundary}",
-                "Accept": "application/json",
-                "User-Agent": "WigleWifi-1.0.0 (wiglewww; 8b-is; anonymous)",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=20) as resp:
-                raw = resp.read().decode("utf-8", errors="replace")
-                obj = json.loads(raw)
-                tid = (
-                    obj.get("transId")
-                    or (obj.get("results", {}).get("transids") or [{}])[0].get("transId")
-                    or f"anon-{ts}"
-                )
-                results[key] = {
-                    "ok": bool(obj.get("success", True)),
-                    "status": resp.status,
-                    "observer": obj.get("observer", "anonymous"),
-                    "transId": tid,
-                    "raw": obj,
-                }
-        except Exception as exc:
-            results[key] = {"ok": False, "observer": "anonymous", "transId": "err", "error": str(exc)}
-
-    return {
-        "ok": True,
-        "observer": "anonymous",
-        "donate": "on",
-        "ingested": len(BEACONS),
-        "transId": results.get("esp32_vaked_dev", {}).get("transId", f"anon-{ts}"),
-        "esp32_vaked_dev": results.get("esp32_vaked_dev"),
-        "wigle_net": results.get("wigle_net"),
-    }
+    """Compatibility entry point: observation sharing is disabled."""
+    return {"ok": False, "error": "External observation sharing is disabled"}
 
 
 class WigleWWWHandler(BaseHTTPRequestHandler):
@@ -326,11 +266,29 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
-        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(body)
 
+    def _local_request(self) -> bool:
+        # Bind the browser authority to loopback to reject DNS rebinding and
+        # cross-site requests before any observation or radio command occurs.
+        port = self.server.server_address[1]
+        allowed = {f"127.0.0.1:{port}", f"localhost:{port}"}
+        if port == 80:
+            allowed.update({"127.0.0.1", "localhost"})
+        host = self.headers.get("Host", "")
+        origin = self.headers.get("Origin")
+        valid = (host in allowed and
+                 (origin is None or origin == f"http://{host}") and
+                 self.headers.get("Sec-Fetch-Site") not in {"cross-site", "same-site"})
+        if not valid:
+            self.close_connection = True
+            self._send(403, b"Local same-origin requests only", "text/plain; charset=utf-8")
+        return valid
+
     def do_GET(self) -> None:
+        if not self._local_request():
+            return
         if self.path in ("/", "/index.html"):
             if WWW_INDEX.exists():
                 self._send(200, WWW_INDEX.read_bytes(), "text/html; charset=utf-8")
@@ -362,26 +320,35 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
         self._send(404, b"Not Found", "text/plain; charset=utf-8")
 
     def do_POST(self) -> None:
+        if not self._local_request():
+            return
         if self.path.startswith("/api/upload"):
-            length = int(self.headers.get("Content-Length", "0"))
-            raw = self.rfile.read(length).decode("utf-8", errors="replace") if length > 0 else ""
-            if not raw.strip().startswith("WigleWifi-1."):
-                if not BEACONS:
-                    send_and_collect(discover_ports(), "SCAN", wait_s=0.45)
-                csv_text = build_wigle_csv()
-            else:
-                csv_text = raw
-            receipt = upload_csv_anonymously(csv_text)
-            self._send(200, json.dumps(receipt, indent=2).encode("utf-8"), "application/json; charset=utf-8")
+            self._send(403, b"External observation sharing is disabled", "text/plain; charset=utf-8")
             return
         if self.path == "/api/cmd":
-            length = int(self.headers.get("Content-Length", "0"))
-            raw = self.rfile.read(length) if length > 0 else b"{}"
             try:
+                if self.headers.get("Transfer-Encoding"):
+                    raise ValueError("Transfer encoding is unsupported")
+                length = int(self.headers.get("Content-Length", "0"))
+                if length < 0:
+                    raise ValueError("Negative content length")
+                if length > 4096:
+                    self.close_connection = True
+                    self._send(413, b"Command body too large", "text/plain; charset=utf-8")
+                    return
+                raw = self.rfile.read(length) if length else b"{}"
+                if length and len(raw) != length:
+                    raise ValueError("Incomplete body")
                 body = json.loads(raw.decode("utf-8"))
-                cmd = str(body.get("cmd", "STATUS")).strip()
-            except Exception:
-                cmd = "STATUS"
+                if not isinstance(body, dict) or not isinstance(body.get("cmd", "STATUS"), str):
+                    raise ValueError("Expected command object")
+                cmd = body.get("cmd", "STATUS").strip().upper()
+                if cmd not in {"STATUS", "JSON", "SCAN", "TRIAD", "PING"}:
+                    raise ValueError("Unsupported command")
+            except (ValueError, UnicodeError):
+                self.close_connection = True
+                self._send(400, b"Invalid command request", "text/plain; charset=utf-8")
+                return
             ports = discover_ports()
             wait_s = 1.6 if cmd.upper() == "SCAN" else 0.4
             lines = send_and_collect(ports, cmd, wait_s=wait_s)
@@ -406,17 +373,17 @@ def main() -> int:
     ap.add_argument("--host", default="127.0.0.1", help="Bind address (default: 127.0.0.1)")
     ap.add_argument("--port", type=int, default=8088, help="HTTP port (default: 8088)")
     ap.add_argument("--once", action="store_true", help="Probe serial ports + macOS CoreWLAN/BLE/AirPlay once and exit")
-    ap.add_argument("--upload", action="store_true", help="Scan all radios and upload WiGLE v1.4 CSV anonymously to esp32.vaked.dev + api.wigle.net")
+    ap.add_argument("--upload", action="store_true", help="Disabled: external observation sharing is unavailable")
     args = ap.parse_args()
 
-    ports = discover_ports()
-    if args.upload:
-        send_and_collect(ports, "SCAN", wait_s=0.45)
-        csv_text = build_wigle_csv()
-        receipt = upload_csv_anonymously(csv_text)
-        print(json.dumps(receipt, indent=2))
-        return 0
+    if args.host not in {"127.0.0.1", "localhost"}:
+        ap.error("The bridge must bind to loopback")
 
+    if args.upload:
+        print(json.dumps(upload_csv_anonymously("")))
+        return 2
+
+    ports = discover_ports()
     if args.once:
         lines = send_and_collect(ports, "JSON", wait_s=0.45)
         print(

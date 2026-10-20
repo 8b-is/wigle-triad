@@ -46,9 +46,9 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
   <key>NSHighResolutionCapable</key>
   <true/>
   <key>NSLocationWhenInUseUsageDescription</key>
-  <string>WigleMac uses Location Services so macOS CoreWLAN can read unredacted 802.11 BSSIDs and attach coordinates to WiGLE v1.4 CSV exports.</string>
+  <string>WigleMac uses Location Services so macOS CoreWLAN can read unredacted 802.11 BSSIDs for local observation and CSV export. Location fields in CSV exports are left blank.</string>
   <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-  <string>WigleMac uses Location Services so macOS CoreWLAN can read unredacted 802.11 BSSIDs and attach coordinates to WiGLE v1.4 CSV exports.</string>
+  <string>WigleMac uses Location Services so macOS CoreWLAN can read unredacted 802.11 BSSIDs for local observation and CSV export. Location fields in CSV exports are left blank.</string>
 </dict>
 </plist>
 EOF
