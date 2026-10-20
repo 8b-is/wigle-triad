@@ -42,14 +42,14 @@ Send newline-terminated commands over USB serial or directly from [https://esp32
 
 ---
 
-## 3. Wigle for macOS (`WigleMac.app v1.0.0` · `MAC:MEDUSA` · MapKit + Dashboard + Quad-Spectrum + Anon Dual Upload)
+## 3. Wigle for macOS (`WigleMac.app v1.0.0` · `MAC:MEDUSA` · MapKit + Dashboard + Quad-Spectrum + Local Export)
 
 On Apple Silicon macOS (`aarch64-darwin`), `macos/wigle-macos.swift` (`macos/WigleMac.app`) turns the MacBook Pro into a native **WiGLE.net × 8b-is Ultralovegod** desktop radar & menu bar app (`MAC:MEDUSA`):
 
 - **🗺️ Tab 1 — Live Radar Map (`MapKit` `.hybridFlyover`)**: Color-coded pins (`#00FF66` 2.4 GHz Wi-Fi, `#00E5C9` 5 GHz Wi-Fi, `#FFD700` AirPlay/RAOP, `#FF6AC1` BLE/BT) with RSSI-distance projection + live split-view network feed.
 - **📊 Tab 2 — Dashboard & Spectrum**: WiGLE telemetry pills, Passive RF, MarineSense `O(1)` Hydro, Shannon Entropy & `N=NP` balanced-ternary cards, 15-channel occupancy bar chart, and top-10 SNR waterfall.
 - **🛰️ Tab 3 — Networks Table**: Full WiGLE explorer with instant search and band filters (`ALL`, `2.4G`, `5G`, `BLE/BT`, `AIRPLAY`).
-- **☁️ Tab 4 — Anon Uploads & CSV**: 1-click anonymous dual-server upload (`donate=on`, `observer=anonymous`) to **both** `https://esp32.vaked.dev/api/upload` and `https://api.wigle.net/api/v2/file/upload`, transaction receipt ledger (`transId`), and live `WigleWifi-1.4` CSV preview.
+- **Tab 4 — Local CSV Export**: Review and export observations locally. External sharing is disabled in the Swift app, browser UI, and Python bridge.
 - **⚡ `agy` Ultra UI/UX Kickstart Prompt**: [`macos/AGY_ULTRA_UI_UX_PROMPT.md`](macos/AGY_ULTRA_UI_UX_PROMPT.md)
 
 ```bash
@@ -61,10 +61,7 @@ open macos/WigleMac.app
 # or:
 ./macos/bin/wigle-macos --gui
 
-# 2. Scan Wi-Fi + BLE/BT + AirPlay and upload anonymously to BOTH esp32.vaked.dev AND api.wigle.net:
-./macos/bin/wigle-macos --upload
-# or via the Python bridge:
-uv run --with pyserial python host/wiglewww.py --upload
+# --upload is disabled and exits with status 2 before scanning.
 
 # 3. Live W| (Wi-Fi) + B| (BLE/BT) + A| (AirPlay) + Q| + # JSON| wire stream:
 ./macos/bin/wigle-macos --wire
@@ -75,6 +72,34 @@ uv run --with pyserial python host/wiglewww.py --upload
 
 # 5. Launch local wiglewww web + CoreWLAN/BLE/AirPlay + pyserial bridge on http://127.0.0.1:8088:
 uv run --with pyserial python host/wiglewww.py --port 8088
+```
+
+## Local privacy boundaries
+
+The Python bridge binds only to `127.0.0.1` or `localhost`. Requests must use
+that loopback Host and, when present, the matching HTTP Origin. Cross-site
+browser requests are rejected; wildcard CORS is removed. These checks protect
+against browser cross-origin access and DNS rebinding, not other local processes
+that can forge HTTP headers. Do not expose the bridge through a reverse proxy.
+
+Command bodies are limited to 4096 bytes. The HTTP command route currently accepts
+`PING`, `STATUS`, `JSON`, `SCAN`, and `TRIAD`; display controls remain available
+through direct serial. Malformed requests are rejected before probing devices.
+
+CSV exports leave latitude, longitude, altitude, and accuracy empty because the
+map's RSSI projections are illustrative, not measured transmitter locations.
+Map markers and the default map center must not be treated as location evidence.
+Observations can still contain sensitive network/device identifiers; review local
+exports before sharing them. No anonymous-upload guarantee is made.
+
+`macos/build_app.sh` packages a system-Swift launcher; it does not produce a signed
+or independently compiled release. Previously generated bundles may contain older
+source and must be rebuilt to incorporate these changes.
+
+Offline bridge regression tests (no sockets or radio scanning):
+
+```bash
+python3 -m unittest discover -s tests
 ```
 
 ---
