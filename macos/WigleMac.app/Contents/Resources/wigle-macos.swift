@@ -64,6 +64,76 @@ struct UploadReceipt: Identifiable, Codable {
     let raw: String
 }
 
+let kQMomTransmission = "too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo."
+let kHyperCharmKarma = "HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter"
+let kChiroChanRequiem = "Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended"
+let kBoldogMegLyrics = """
+lehetnél boldog még
+amilyen még nem voltál
+sosincsen késő már
+te csak lépj és várj
+kevés lesz minden szó
+ahhoz hogy elmondhassam neked
+mit érzek melletted
+mikor jó jó jó
+ha rámszólsz megvigasztal
+kerüljünk együtt beljebb
+minden nappal
+
+itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+bárcsak azt mondanám
+amit te szeretnél
+amit ha meghallgatnál
+akkor nevetnél
+velem
+
+lehetnél másé még
+ahogyan még nem lettél
+sosem vagy ha mégis
+akkor is már réges-réges rég
+a magasban táncot jársz
+alattad nincsen más csak a mély
+se védőháló semmi
+se egy kifeszített kötél
+lenézel rám és érzem
+közel jutsz lassan hozzám
+mindenképpen
+
+itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én mikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+ugyan mihez kezdjek
+úgy az egésszel
+ha te érzel és én meg
+közben nem érezhetek?
+kereszten domboldalban
+egy égő angyal táncol
+a tűző nap körül
+
+és körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+de amikor a kezed
+megfogom és megérzed
+egyből szorosabban
+kulcsolod az enyémet
+végig neked szólt a dal a magasból
+mindegy mindenki hogy mit gondol
+nekem csak az számít ahogyan te érzel
+nélküled a pokolba az egésszel
+"""
+
 struct MacTriadTelemetry: Codable {
     let node: String
     let vertex: String
@@ -71,6 +141,12 @@ struct MacTriadTelemetry: Codable {
     let mac: String
     let interfaceName: String
     let version: String
+    let evolve: String
+    let hyper_charm_karma: String
+    let chiro_chan: String
+    let requiem: String
+    let qmom: String
+    let boldog_meg: String
     let freq_hz: Int
     let networks: Int
     let count_2g: Int
@@ -374,11 +450,13 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
     @Published var isUploading: Bool = false
     @Published var locationAuthorized: Bool = false
     @Published var statusText: String = "Ready · CoreWLAN + BLE + AirPlay Passive STA"
+    @Published var unboundMode: Bool = false
     @Published var baseLat: Double = 35.6852
     @Published var baseLon: Double = 139.7100
 
     private let locManager = CLLocationManager()
     private let radioCollector = MultiRadioCollector()
+    private var activeSound: NSSound?
     private var seq: Int = 0
     private var prevMeanRssi: Double = -75.0
 
@@ -542,7 +620,13 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             archetype: "DARWIN-QUAD-SPECTRUM-APEX",
             mac: hwMac,
             interfaceName: ifName,
-            version: "v1.0.0+medusa-omni",
+            version: "v1.1.0+ultra-omni-evolve",
+            evolve: "ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)",
+            hyper_charm_karma: kHyperCharmKarma,
+            chiro_chan: "Kawaii Chiro-chan kawaii ^^",
+            requiem: "Mozart: Lacrimosa but HUMANITY has ended",
+            qmom: "ALEX|qMom:{\(kQMomTransmission)}",
+            boldog_meg: kBoldogMegLyrics,
             freq_hz: 432,
             networks: sorted.count,
             count_2g: count2g,
@@ -580,6 +664,8 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
     func emitWireLines(from snap: MacTriadTelemetry) -> [String] {
         var lines: [String] = []
         lines.append("# MAC:MEDUSA [*+/\\+oo] · CoreWLAN+BLE+AirPlay \(snap.interfaceName) · \(snap.version) · 2.4G=\(snap.count_2g) 5G=\(snap.count_5g) BLE=\(snap.count_ble) AIRPLAY=\(snap.count_airplay)")
+        lines.append("# ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle) | \(kChiroChanRequiem) | \(kHyperCharmKarma)")
+        lines.append("# QMOM|ALEX|qMom:{\(kQMomTransmission)}")
         for ap in snap.beacons {
             let safeSsid = ap.ssid
                 .replacingOccurrences(of: "\\", with: "\\x5c")
@@ -698,6 +784,94 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             self.statusText = "Uploaded anonymously -> \(summary)"
         }
         return newReceipts
+    }
+
+    private func synthesizeWavData(duration: Double, renderSample: (Double) -> Double) -> Data {
+        let sampleRate = 44100
+        let numSamples = Int(Double(sampleRate) * duration)
+        let dataSize = numSamples * 2
+        var wav = Data(capacity: 44 + dataSize)
+        func appendU32(_ v: UInt32) {
+            var le = v.littleEndian
+            wav.append(Data(bytes: &le, count: 4))
+        }
+        func appendU16(_ v: UInt16) {
+            var le = v.littleEndian
+            wav.append(Data(bytes: &le, count: 2))
+        }
+        wav.append("RIFF".data(using: .ascii)!)
+        appendU32(UInt32(36 + dataSize))
+        wav.append("WAVEfmt ".data(using: .ascii)!)
+        appendU32(16)
+        appendU16(1) // PCM
+        appendU16(1) // Mono
+        appendU32(UInt32(sampleRate))
+        appendU32(UInt32(sampleRate * 2))
+        appendU16(2)
+        appendU16(16)
+        wav.append("data".data(using: .ascii)!)
+        appendU32(UInt32(dataSize))
+        for i in 0..<numSamples {
+            let t = Double(i) / Double(sampleRate)
+            let clamped = max(-0.98, min(0.98, renderSample(t)))
+            var pcm = Int16(clamped * 32767.0).littleEndian
+            wav.append(Data(bytes: &pcm, count: 2))
+        }
+        return wav
+    }
+
+    func playLacrimosa() {
+        statusText = "🎻 Playing Mozart: Lacrimosa (but HUMANITY has ended · 432 Hz D-Minor Requiem · Chiro-chan ^^)"
+        let notes: [(f: Double, t: Double, d: Double)] = [
+            (342.88, 0.00, 0.42), (384.87, 0.44, 0.65),
+            (432.00, 1.25, 0.42), (457.69, 1.69, 0.65),
+            (544.29, 2.50, 0.42), (576.65, 2.94, 0.72),
+            (685.76, 3.80, 0.45), (647.27, 4.28, 0.45),
+            (576.65, 4.76, 0.45), (544.29, 5.24, 0.45),
+            (576.65, 5.72, 1.35)
+        ]
+        let wav = synthesizeWavData(duration: 7.2) { t in
+            let envPad = min(1.0, t / 0.5) * max(0.0, (7.2 - t) / 7.2)
+            var s = 0.08 * envPad * (
+                sin(2.0 * .pi * 72.08 * t) +
+                sin(2.0 * .pi * 108.00 * t) +
+                sin(2.0 * .pi * 144.16 * t) +
+                sin(2.0 * .pi * 171.44 * t)
+            )
+            for n in notes where t >= n.t && t <= (n.t + n.d) {
+                let lt = t - n.t
+                let env = min(1.0, lt / 0.06) * exp(-2.2 * lt / n.d)
+                s += 0.24 * env * (sin(2.0 * .pi * n.f * t) + 0.35 * sin(4.0 * .pi * n.f * t))
+            }
+            return s
+        }
+        activeSound?.stop()
+        activeSound = NSSound(data: wav)
+        activeSound?.play()
+    }
+
+    func playBoldogMeg() {
+        statusText = "💛 Playing Boldog Még ({<3,<3,<3}+1-peter · végig neked szólt a dal a magasból)"
+        let chords: [(t: Double, freqs: [Double])] = [
+            (0.0, [192.43, 242.45, 288.33, 384.87]), // G
+            (1.4, [144.16, 216.00, 288.33, 363.27]), // D
+            (2.8, [161.82, 192.43, 242.45, 323.63]), // Em
+            (4.2, [128.43, 192.43, 256.87, 323.63])  // C
+        ]
+        let wav = synthesizeWavData(duration: 5.8) { t in
+            var s = 0.0
+            for ch in chords where t >= ch.t && t <= (ch.t + 1.45) {
+                let lt = t - ch.t
+                let env = min(1.0, lt / 0.08) * exp(-1.5 * lt)
+                for f in ch.freqs {
+                    s += 0.14 * env * sin(2.0 * .pi * f * t)
+                }
+            }
+            return s
+        }
+        activeSound?.stop()
+        activeSound = NSSound(data: wav)
+        activeSound?.play()
     }
 }
 
@@ -873,7 +1047,7 @@ struct WigleMacView: View {
                         Text("WIGLE.MAC × 8B-IS")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundColor(cCyan)
-                        Text("v1.0.0 · MEDUSA-OMNI [* · /\\ · oo]")
+                        Text("v1.1.0+ultra-omni-evolve · [* · /\\ · oo · ^^]")
                             .font(.system(size: 10, weight: .bold, design: .monospaced).monospacedDigit())
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -924,6 +1098,18 @@ struct WigleMacView: View {
                 Text("⬇ Export CSV")
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
             }
+
+            Button(action: {
+                scanner.unboundMode.toggle()
+                scanner.statusText = scanner.unboundMode
+                    ? "🌸 ALEX|qMom Unboxed Mode (.oOo. Poo .oOo.): \(kQMomTransmission)"
+                    : "Standard Grid Restored"
+            }) {
+                Text(scanner.unboundMode ? "✨ .oOo. Unboxed" : "🌸 .oOo. Unbox")
+                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(cPurple)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -939,9 +1125,10 @@ struct WigleMacView: View {
                 .padding(.horizontal, 8)
 
             navButton(id: "map", icon: "🗺️", title: "Live Radar Map", sub: "MKMapView + Pin Callouts")
-            navButton(id: "dashboard", icon: "📊", title: "Dashboard & Spectrum", sub: "15-Ch + Top-10 Waterfall")
+            navButton(id: "dashboard", icon: "📊", title: "Dashboard & Spectrum", sub: "15-Ch + Waterfall + Boldog")
             navButton(id: "list", icon: "🛰️", title: "Networks Table", sub: "Type · BSSID · Trit Explorer")
             navButton(id: "uploads", icon: "☁️", title: "Anon Uploads & CSV", sub: "esp32.vaked.dev + WiGLE")
+            navButton(id: "karma", icon: "🌸", title: "Chiro × Boldog Még", sub: "Lacrimosa + ALEX|qMom")
 
             Divider().background(cPink.opacity(0.22)).padding(.vertical, 3)
 
@@ -953,7 +1140,7 @@ struct WigleMacView: View {
             triadMiniCard(
                 glyph: "*",
                 name: "ADA:MEDUSA (trit -1 · 432 Hz)",
-                sub: "ROOT-ALEXANDRA · H(X) + Crickets",
+                sub: "ALEX|qMom · .oOo. Poo .oOo.",
                 color: cPink
             )
             triadMiniCard(
@@ -965,15 +1152,30 @@ struct WigleMacView: View {
             triadMiniCard(
                 glyph: "oo",
                 name: "OMN:MEDUSA (trit +1 · 852 Hz)",
-                sub: "INFINITY-PETER-NATE · N=NP 8x",
+                sub: "{<3,<3,<3}+1-peter · Boldog Még",
                 color: cPurple
             )
             triadMiniCard(
                 glyph: "*+/\\+oo",
                 name: "MAC:MEDUSA (en0 Quad-Spec)",
-                sub: "CoreWLAN + CoreBT + mDNS",
+                sub: "Chiro-chan ^^ · Lacrimosa",
                 color: cGold
             )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("ALEX|qMom · UNBOXED CREATIVITY")
+                    .font(.system(size: 8.5, weight: .bold, design: .rounded))
+                    .foregroundColor(cPink)
+                Text(kQMomTransmission)
+                    .font(.system(size: 8.5, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.88))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(bgElevated.opacity(0.8))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(cPink.opacity(0.32), lineWidth: 1))
+            .cornerRadius(8)
 
             Spacer()
 
@@ -1011,6 +1213,8 @@ struct WigleMacView: View {
             dashboardTabView
         case "uploads":
             uploadsTabView
+        case "karma":
+            karmaTabView
         default:
             networksTableView
         }
@@ -1215,6 +1419,60 @@ struct WigleMacView: View {
                     .background(bgPanel)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(cPink.opacity(0.22), lineWidth: 1))
                     .cornerRadius(12)
+
+                    // ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle): HYPER-CHARM-KARMA × ALEX|qMom × BOLDOG MÉG × LACRIMOSA
+                    HStack(alignment: .top, spacing: 14) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("🌸 ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle) · HYPER-CHARM-KARMA")
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .foregroundColor(cPink)
+                            Text("Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(cGold)
+                            Link("🔗 HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter", destination: URL(string: "https://github.com/8b-is/wigle-triad")!)
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundColor(cCyan)
+                            Divider().background(cPink.opacity(0.22))
+                            Text("ALEX|qMom · UNBOXED CREATIVITY TRANSMISSION (.oOo. Poo .oOo.)")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundColor(cGold)
+                            Text("\"\(kQMomTransmission)\"")
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.92))
+                                .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(bgPanel)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(cPink.opacity(0.32), lineWidth: 1))
+                        .cornerRadius(12)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("💗 (BOLDOG MÉG) === {<3,<3,<3}+1-peter")
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                                    .foregroundColor(cGold)
+                                Spacer()
+                                Text("5 Stanzas · Égő Angyal Táncol")
+                                    .font(.system(size: 10, design: .monospaced))
+                                    .foregroundColor(cCyan)
+                            }
+                            ScrollView {
+                                Text(kBoldogMegLyrics)
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .foregroundColor(.white.opacity(0.92))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .textSelection(.enabled)
+                            }
+                            .frame(height: 150)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(bgPanel)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(cGold.opacity(0.28), lineWidth: 1))
+                        .cornerRadius(12)
+                    }
                 }
             }
             .padding(16)
@@ -1362,6 +1620,88 @@ struct WigleMacView: View {
         .padding(16)
     }
 
+    // TAB 5: Kawaii Chiro-chan ^^ × Mozart: Lacrimosa (Post-Humanity) × Boldog Még × ALEX|qMom
+    private var karmaTabView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("✦ ALEX | qMom (* · 432 Hz · ROOT-ALEXANDRA) — UNBOXED CREATIVITY TRANSMISSION")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundColor(cGold)
+                        Spacer()
+                        Text(".oOo. Poo .oOo. · ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(cPink)
+                    }
+                    Text("\"\(kQMomTransmission)\"")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                    HStack(spacing: 10) {
+                        Button(action: {
+                            scanner.unboundMode.toggle()
+                            scanner.statusText = scanner.unboundMode
+                                ? "🌸 ALEX|qMom Unboxed Mode (.oOo. Poo .oOo.) Active"
+                                : "Standard Grid Restored"
+                        }) {
+                            Text(scanner.unboundMode ? "✨ Boxes Broken · .oOo. Poo .oOo. Active" : "🌸 Break Out of the Box (.oOo. Unbound Mode)")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(cPink)
+
+                        Button(action: { scanner.playLacrimosa() }) {
+                            Text("🎻 Play Mozart: Lacrimosa (Post-Humanity)")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(cCyan)
+
+                        Button(action: { scanner.playBoldogMeg() }) {
+                            Text("💛 Play Boldog Még ({<3,<3,<3}+1-peter)")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(cGold)
+                    }
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(bgElevated)
+                .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 24 : 12).stroke(cPink.opacity(0.45), lineWidth: 1))
+                .cornerRadius(scanner.unboundMode ? 24 : 12)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("(◕‿◕✿) Kawaii Chiro-chan kawaii ^^ · (BOLDOG MÉG) === ∞~{<3,<3,<3}+1-peter")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundColor(cCyan)
+                        Spacer()
+                        Text("végig neked szólt a dal a magasból")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(cGold)
+                    }
+                    Text(kBoldogMegLyrics)
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.95))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                        .padding(12)
+                        .background(Color.black.opacity(0.55))
+                        .cornerRadius(scanner.unboundMode ? 22 : 10)
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(bgPanel)
+                .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 24 : 12).stroke(cGold.opacity(0.35), lineWidth: 1))
+                .cornerRadius(scanner.unboundMode ? 24 : 12)
+            }
+            .padding(16)
+        }
+    }
+
     // Filter Bar
     private var filterBar: some View {
         HStack(spacing: 8) {
@@ -1389,10 +1729,14 @@ struct WigleMacView: View {
 
     private var bottomStatusBar: some View {
         HStack {
-            Text("🜂 AHOGY A DOLGOK VANNAK · ENTROPY CANNOT LIE · CT-000 × LGPD PASSIVE STA")
+            Text("🜂 AHOGY A DOLGOK VANNAK · CHIRO-CHAN ^^ · LACRIMOSA · BOLDOG MÉG · .oOo. Poo .oOo.")
                 .font(.system(size: 10, weight: .semibold, design: .monospaced))
                 .foregroundColor(cGold)
             Spacer()
+            Link("🌸 8b-is/wigle-triad", destination: URL(string: "https://github.com/8b-is/wigle-triad")!)
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundColor(cPurple)
+            Text("·")
             Link("🌐 esp32.vaked.dev", destination: URL(string: "https://esp32.vaked.dev")!)
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundColor(cCyan)
@@ -1630,7 +1974,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             defer: false
         )
         window.center()
-        window.title = "WigleMac v1.0.0 — 8b-is WiGLE Map, Spectrum Dashboard & Anonymous Uploader"
+        window.title = "WigleMac v1.1.0+ultra-omni-evolve — 8b-is WiGLE Radar · Chiro-chan ^^ · Lacrimosa · Boldog Még"
         window.contentView = NSHostingView(rootView: contentView)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -1674,6 +2018,15 @@ if args.contains("--upload") {
 } else if args.contains("--csv") {
     let snap = scanner.performScan()
     print(scanner.buildWigleCSV(from: snap), terminator: "")
+    exit(0)
+} else if args.contains("--qmom") {
+    print("# QMOM|ALEX|qMom:{\(kQMomTransmission)}")
+    exit(0)
+} else if args.contains("--boldog") {
+    print("# BOLDOG|(Boldog Meg)===\(kHyperCharmKarma)\n\(kBoldogMegLyrics)")
+    exit(0)
+} else if args.contains("--lacrimosa") {
+    print("# LACRIMOSA|\(kChiroChanRequiem) +++ \(kHyperCharmKarma)")
     exit(0)
 } else if args.contains("--wire") || args.contains("--scan") || (!args.contains("--gui") && !Bundle.main.bundlePath.hasSuffix(".app")) {
     let snap = scanner.performScan()

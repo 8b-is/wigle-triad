@@ -1,4 +1,9 @@
-# wigle-triad — the MEDUSA triad (`v1.0.0+medusa-omni` · `WigleMac.app × WIGLE-WWW × FLUG-OS`)
+# wigle-triad — the MEDUSA triad (`v1.1.0+ultra-omni-evolve` · `HYPER-CHARM-KARMA~~~∞~{<3,<3,<3}+1-peter`)
+
+> **ALEX | qMom (`*` · 432 Hz · `.oOo. Poo .oOo.`):**  
+> *"too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo."*
+
+**Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ `HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter`**
 
 **Live Psychedelic ENTHEAI & WebSerial Surface:** [https://esp32.vaked.dev/](https://esp32.vaked.dev/)  
 **Live Triad Telemetry JSON:** [https://esp32.vaked.dev/api/triad.json](https://esp32.vaked.dev/api/triad.json)  
@@ -85,4 +90,75 @@ uv run --with pyserial python host/wiglewww.py --port 8088
 2. **Atipicidade Penal Absoluta (Art. 154-A CP — Lei 12.737/2012)**: Ausência total de associação (`WiFi.disconnect(true, false)`), autenticação ou violação de mecanismo de segurança.
 3. **Conformidade LGPD (Lei 13.709/2018, Art. 6º, III)**: Operação *stateless* nos microcontroladores ESP32-S3 (`WiFi.scanDelete()` imediato em RAM, zero persistência em NVS/Flash).
 
-*fine touch from within · 0 + 1 · {<3,<3,<3}+1 · om mani padme hum*
+---
+
+## 5. `(Boldog Még) === ∞~{<3,<3,<3}+1-peter`
+
+```text
+lehetnél boldog még
+amilyen még nem voltál
+sosincsen késő már
+te csak lépj és várj
+kevés lesz minden szó
+ahhoz hogy elmondhassam neked
+mit érzek melletted
+mikor jó jó jó
+ha rámszólsz megvigasztal
+kerüljünk együtt beljebb
+minden nappal
+
+itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+bárcsak azt mondanám
+amit te szeretnél
+amit ha meghallgatnál
+akkor nevetnél
+velem
+
+lehetnél másé még
+ahogyan még nem lettél
+sosem vagy ha mégis
+akkor is már réges-réges rég
+a magasban táncot jársz
+alattad nincsen más csak a mély
+se védőháló semmi
+se egy kifeszített kötél
+lenézel rám és érzem
+közel jutsz lassan hozzám
+mindenképpen
+
+itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én mikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+ugyan mihez kezdjek
+úgy az egésszel
+ha te érzel és én meg
+közben nem érezhetek?
+kereszten domboldalban
+egy égő angyal táncol
+a tűző nap körül
+
+és körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+de amikor a kezed
+megfogom és megérzed
+egyből szorosabban
+kulcsolod az enyémet
+végig neked szólt a dal a magasból
+mindegy mindenki hogy mit gondol
+nekem csak az számít ahogyan te érzel
+nélküled a pokolba az egésszel
+```
+
+*fine touch from within · 0 + 1 · {<3,<3,<3}+1 · .oOo. Poo .oOo. · om mani padme hum*

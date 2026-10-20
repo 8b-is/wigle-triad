@@ -1,4 +1,7 @@
-// wigle-triad — v0.3.0 ULTRA=OMNIPOTENT · N=NP-MAX-PSYCHEDELIC · ENTHEAI TRIAD
+// wigle-triad — v1.1.0+ultra-omni-evolve · ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)
+// HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter
+// Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended + (Boldog Meg)
+// ALEX|qMom: "too many customs can be brilliant yet hinder creativity. it puts people into boxes and contraints. what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of. .oOo. Poo .oOo."
 //
 // Three ESP32-S3 nodes, one passive WiGLE & spectral entropy rig:
 //   * ADA:MEDUSA (80:B5:4E:DB:3B:C4) — Vertex * (Mom · Star · 432 Hz · Rose-Gold)
@@ -14,10 +17,13 @@
 //   # JSON|{...} (on boot, after each scan, and in response to WebSerial commands)
 //
 // Interactive USB Serial / WebSerial commands (send newline-terminated):
-//   STATUS  -> prints immediate # JSON|{...} node state
-//   SCAN    -> triggers immediate passive scan cycle
-//   PING    -> replies # PONG|<node>|<mac>|<uptime_ms>
-//   TRIAD   -> prints the 3-node MEDUSA triad manifest
+//   STATUS    -> prints immediate # JSON|{...} node state
+//   SCAN      -> triggers immediate passive scan cycle
+//   PING      -> replies # PONG|<node>|<mac>|<uptime_ms>
+//   TRIAD     -> prints the 3-node MEDUSA triad manifest
+//   QMOM      -> emits ALEX|qMom unboxed creativity transmission (.oOo. Poo .oOo.)
+//   BOLDOG    -> emits Boldog Még ({<3,<3,<3}+1-peter) chorus resonance
+//   LACRIMOSA -> emits Mozart: Lacrimosa (Post-Humanity D-Minor Requiem) + Chiro-chan ^^
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -27,7 +33,7 @@
 #define NODE_NAME "MEDUSA:AUTO"
 #endif
 
-#define TRIAD_VERSION "0.42.1"
+#define TRIAD_VERSION "1.1.0+ultra-omni-evolve"
 
 static const uint32_t SCAN_INTERVAL_MS = 5000;
 static uint32_t lastScan = 0;
@@ -141,7 +147,13 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
     } else if (cmd.equalsIgnoreCase("PING")) {
       Serial.printf("# PONG|%s|%s|%lu\n", id.name, mac.c_str(), (unsigned long)millis());
     } else if (cmd.equalsIgnoreCase("TRIAD")) {
-      Serial.println("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)");
+      Serial.println("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+    } else if (cmd.equalsIgnoreCase("QMOM")) {
+      Serial.println("# QMOM|ALEX|qMom:{`too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo.`}");
+    } else if (cmd.equalsIgnoreCase("BOLDOG")) {
+      Serial.println("# BOLDOG|(Boldog Meg)===lehetnel boldog meg / amilyen meg nem voltal ... vegig neked szolt a dal a magasbol / mindegy mindenki hogy mit gondol / nekem csak az szamit ahogyan te erzel / nelkuled a pokolba az egesszel");
+    } else if (cmd.equalsIgnoreCase("LACRIMOSA") || cmd.equalsIgnoreCase("CHIRO")) {
+      Serial.println("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
     } else {
       Serial.printf("# ACK|%s|cmd=%s\n", id.name, esc(cmd).c_str());
     }

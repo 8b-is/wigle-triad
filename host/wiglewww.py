@@ -36,6 +36,88 @@ BAUD = 115200
 BEACONS: dict[str, dict[str, Any]] = {}
 NODES_CACHE: dict[str, dict[str, Any]] = {}
 
+QMOM_TRANSMISSION = (
+    "too many customs can be brilliant yet hinder creativity.  "
+    "it puts people into boxes and contraints.  "
+    "what might seem as beautiful or useful at first glance could actually be a form of bondage "
+    "that need to be broken out of.  .oOo. Poo .oOo."
+)
+
+BOLDOG_MEG_LYRICS = """lehetnél boldog még
+amilyen még nem voltál
+sosincsen késő már
+te csak lépj és várj
+kevés lesz minden szó
+ahhoz hogy elmondhassam neked
+mit érzek melletted
+mikor jó jó jó
+ha rámszólsz megvigasztal
+kerüljünk együtt beljebb
+minden nappal
+
+itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+bárcsak azt mondanám
+amit te szeretnél
+amit ha meghallgatnál
+akkor nevetnél
+velem
+
+lehetnél másé még
+ahogyan még nem lettél
+sosem vagy ha mégis
+akkor is már réges-réges rég
+a magasban táncot jársz
+alattad nincsen más csak a mély
+se védőháló semmi
+se egy kifeszített kötél
+lenézel rám és érzem
+közel jutsz lassan hozzám
+mindenképpen
+
+itt ha körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én mikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+ugyan mihez kezdjek
+úgy az egésszel
+ha te érzel és én meg
+közben nem érezhetek?
+kereszten domboldalban
+egy égő angyal táncol
+a tűző nap körül
+
+és körbenézek és te nevetsz rám
+nem emlékszem rá hogy nem voltál
+vajon hol lehettem mikor születtél?
+vajon ki voltam én amikor megjöttél?
+úgy unom mondani hogy sosem jó
+unom hinni ami látható
+de amikor a kezed
+megfogom és megérzed
+egyből szorosabban
+kulcsolod az enyémet
+végig neked szólt a dal a magasból
+mindegy mindenki hogy mit gondol
+nekem csak az számít ahogyan te érzel
+nélküled a pokolba az egésszel"""
+
+ULTRA_OMNI_META: dict[str, Any] = {
+    "evolve": "ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)",
+    "hyper_charm_karma": "HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter",
+    "chiro_chan": "Kawaii Chiro-chan kawaii ^^",
+    "requiem": "Mozart: Lacrimosa but HUMANITY has ended",
+    "qmom": f"ALEX|qMom:{{`{QMOM_TRANSMISSION}`}}",
+    "qmom_quote": QMOM_TRANSMISSION,
+    "boldog_meg": BOLDOG_MEG_LYRICS,
+}
+
 
 def discover_ports() -> list[str]:
     ports = sorted(glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/ttyACM*"))
@@ -64,8 +146,15 @@ def run_macos_corewlan_scan() -> list[str]:
 def send_and_collect(ports: list[str], cmd: str, wait_s: float = 0.45) -> list[str]:
     lines_out: list[str] = []
     clean = cmd.strip()
-    if clean.upper() in ("STATUS", "JSON", "SCAN", "TRIAD", "PING"):
+    upper = clean.upper()
+    if upper in ("STATUS", "JSON", "SCAN", "TRIAD", "PING"):
         lines_out.extend(run_macos_corewlan_scan())
+    if upper == "QMOM":
+        lines_out.append(f"# QMOM|ALEX|qMom:{{`{QMOM_TRANSMISSION}`}}")
+    elif upper == "BOLDOG":
+        lines_out.append("# BOLDOG|(Boldog Meg)===végig neked szólt a dal a magasból · mindegy mindenki hogy mit gondol · nekem csak az számít ahogyan te érzel · nélküled a pokolba az egésszel")
+    elif upper in ("LACRIMOSA", "CHIRO"):
+        lines_out.append("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter")
     if not ports:
         return lines_out
     if serial is None:
@@ -248,13 +337,15 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             else:
                 self._send(404, b"www/index.html not found", "text/plain; charset=utf-8")
             return
-        if self.path in ("/api/triad.json", "/triad.json"):
+        if self.path in ("/api/triad.json", "/triad.json", "/api/ultra-omni.json"):
             ports = discover_ports()
             lines = send_and_collect(ports, "JSON", wait_s=0.35)
             payload = {
                 "surface": "http://127.0.0.1:8088",
                 "mirror": "https://esp32.vaked.dev",
-                "version": "1.0.0+medusa-omni",
+                "version": "1.1.0+ultra-omni-evolve",
+                **ULTRA_OMNI_META,
+                "ultra_omni": ULTRA_OMNI_META,
                 "ports": ports,
                 "nodes": list(NODES_CACHE.values()),
                 "beacons_count": len(BEACONS),
@@ -297,6 +388,9 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             resp = {
                 "ok": True,
                 "cmd": cmd,
+                "version": "1.1.0+ultra-omni-evolve",
+                **ULTRA_OMNI_META,
+                "ultra_omni": ULTRA_OMNI_META,
                 "ports": ports,
                 "lines": lines,
                 "nodes": list(NODES_CACHE.values()),
@@ -330,7 +424,9 @@ def main() -> int:
                 {
                     "surface": f"http://{args.host}:{args.port}",
                     "mirror": "https://esp32.vaked.dev",
-                    "version": "1.0.0+medusa-omni",
+                    "version": "1.1.0+ultra-omni-evolve",
+                    **ULTRA_OMNI_META,
+                    "ultra_omni": ULTRA_OMNI_META,
                     "ports": ports,
                     "beacons_count": len(BEACONS),
                     "beacons": list(BEACONS.values()),
