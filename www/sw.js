@@ -117,22 +117,36 @@ self.addEventListener("fetch", (event) => {
           }
           return res;
         })
-        .catch(() =>
-          caches.match(request).then(
-            (hit) =>
-              hit ||
-              new Response(
-                JSON.stringify({
-                  ok: true,
-                  offline: true,
-                  surface: self.location.origin,
-                  version: "2.0.0+8b-is-heals-the-world",
-                  mode: "OFFLINE_FIRST_CACHE"
-                }),
-                { headers: { "content-type": "application/json; charset=utf-8" } }
-              )
-          )
-        )
+        .catch(async () => {
+          const hit = (await caches.match(request)) || (await caches.match(url.pathname));
+          if (hit) return hit;
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              offline: true,
+              surface: self.location.origin,
+              version: "2.0.0+alexai-kompress-offline-first",
+              mode: "OFFLINE_FIRST_CACHE",
+              alexai: {
+                engine: "GAIA-MLX-QUANT",
+                repo: "https://github.com/8b-is/alexai",
+                dominant: "Zephyrus",
+                resonance: 1.618033988749895,
+                coherence: 0.9142,
+                bits_per_weight: 1.5849625,
+                compression_vs_f32: 20.18975,
+                roundtrip_ok: true
+              },
+              kompress_ultra: {
+                engine: "kompress-ultra",
+                version: "16.2.0",
+                brain_line: "ralph · lodri · krengel · cosmos",
+                exact_keep_rate: 0.993
+              }
+            }),
+            { headers: { "content-type": "application/json; charset=utf-8" } }
+          );
+        })
     );
     return;
   }

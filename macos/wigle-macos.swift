@@ -144,6 +144,7 @@ struct AlexAIFoldSummary: Codable {
     let weather: Double
     let resonance: Double
     let coherence: Double
+    let dominant: String
     let bits_per_weight: Double
     let compression_vs_f32: Double
     let packed_hex: String
@@ -160,6 +161,7 @@ struct KompressUltraSummary: Codable {
     let compressed_bytes: Int
     let compression_ratio: Double
     let savings_pct: Double
+    let lossless_roundtrip_ok: Bool
     let ditto_lines: [String]
 }
 
@@ -231,7 +233,7 @@ enum AlexAINativeEngine {
         let a = seed &+ 0x6d2b79f5
         var t = (a ^ (a >> 15)) &* (a | 1)
         t ^= t &+ ((t ^ (t >> 7)) &* (t | 61))
-        let rand0 = Double(t ^ (t >> 14)) / 4294967296.0
+        let rand0 = Double(((t ^ (t >> 14)) >> 8) & 0xFFFFFF) / 16777216.0
 
         let weather = max(0.0, min(1.0, weatherRest + (rand0 - 0.5) * 0.4))
         let lenFactor = min(Double(cleanPrompt.utf8.count) / 4096.0, 0.35)
@@ -239,6 +241,7 @@ enum AlexAINativeEngine {
         let entropy = max(0.0, min(1.0, entropyRest + lenFactor - 0.15 + rfFactor))
         let spread = abs(entropy - entropyRest) * 0.6 + abs(weather - weatherRest) * 0.4
         let coherence = max(0.0, min(1.0, 1.0 - spread))
+        let dominant = abs(entropy - entropyRest) >= abs(weather - weatherRest) ? "entropy" : "weather"
 
         var trits = beacons.map(\.trit)
         while trits.count < 30 { trits.append(1) }
@@ -257,6 +260,7 @@ enum AlexAINativeEngine {
             weather: (weather * 10000).rounded() / 10000,
             resonance: phi,
             coherence: (coherence * 10000).rounded() / 10000,
+            dominant: dominant,
             bits_per_weight: bitsPerWeight,
             compression_vs_f32: compressionVsF32,
             packed_hex: hex,
@@ -270,14 +274,22 @@ enum KompressUltraNativeEngine {
     static let brainLine = "ralph · lodri · krengel · cosmos"
     static let exactKeepRate = 0.993
 
+    private static func escapeTok(_ s: String) -> String {
+        s.replacingOccurrences(of: "\\", with: "\\x5c")
+         .replacingOccurrences(of: "|", with: "\\x7c")
+         .replacingOccurrences(of: "″", with: "\\x22\\x22")
+    }
+
     static func compress(beacons: [ScannedAP], csvString: String) -> KompressUltraSummary {
         let canonicalLines: [String] = beacons.map { ap in
             let pfx = (ap.band == "BLE" || ap.band == "BT") ? "B" : ((ap.band == "AirPlay" || ap.radioType == "AIRPLAY") ? "A" : "W")
-            let authShort = ap.auth
-                .replacingOccurrences(of: "WPA2-PSK-CCMP][ESS", with: "W2")
-                .replacingOccurrences(of: "WPA3-SAE-CCMP][ESS", with: "W3")
-                .replacingOccurrences(of: "AIRPLAY-RAOP][ESS", with: "RAOP")
-            return "\(pfx)|\(ap.node)|\(ap.bssid)|\(ap.ssid)|\(authShort)|\(ap.channel)|\(ap.rssi)|\(ap.band)|\(ap.tritLabel)"
+            let authShort = escapeTok(
+                ap.auth
+                    .replacingOccurrences(of: "WPA2-PSK-CCMP][ESS", with: "W2")
+                    .replacingOccurrences(of: "WPA3-SAE-CCMP][ESS", with: "W3")
+                    .replacingOccurrences(of: "AIRPLAY-RAOP][ESS", with: "RAOP")
+            )
+            return "\(pfx)|\(escapeTok(ap.node))|\(escapeTok(ap.bssid))|\(escapeTok(ap.ssid))|\(authShort)|\(ap.channel)|\(ap.rssi)|\(escapeTok(ap.band))|\(escapeTok(ap.tritLabel))"
         }
 
         var prevTokens: [String] = []
@@ -298,6 +310,18 @@ enum KompressUltraNativeEngine {
             prevTokens = toks
         }
 
+        var restoredPrev: [String] = []
+        var restoredLines: [String] = []
+        for dline in dittoLines {
+            let dtoks = dline.components(separatedBy: "|")
+            let rtoks = dtoks.enumerated().map { idx, tk -> String in
+                (tk == "″" && idx < restoredPrev.count) ? restoredPrev[idx] : tk
+            }
+            restoredLines.append(rtoks.joined(separator: "|"))
+            restoredPrev = rtoks
+        }
+        let roundtripOk = (restoredLines == canonicalLines)
+
         let jsonBytes = (try? JSONEncoder().encode(beacons).count) ?? 0
         let rawBytes = max(1, csvString.utf8.count + jsonBytes)
         let header = "# KU-v\(version) [BrainLine: \(brainLine) | keep=\(exactKeepRate)]"
@@ -317,6 +341,7 @@ enum KompressUltraNativeEngine {
             compressed_bytes: compBytes,
             compression_ratio: ratio,
             savings_pct: savingsPct,
+            lossless_roundtrip_ok: roundtripOk,
             ditto_lines: dittoLines
         )
     }
@@ -1484,6 +1509,7 @@ struct WigleMacView: View {
             navButton(id: "list", icon: "🛰️", title: "Networks Table", sub: "Type · BSSID · Trit Explorer")
             navButton(id: "uploads", icon: "☁️", title: "Anon Uploads & CSV", sub: "esp32.vaked.dev + WiGLE")
             navButton(id: "karma", icon: "🌸", title: "Chiro × Boldog Még", sub: "Lacrimosa + ALEX|qMom")
+            navButton(id: "alexai", icon: "🧠", title: "AlexAI × Kompress-Ultra", sub: "GAIA b1.58 · Ditto ″")
 
             Divider().background(cPink.opacity(0.22)).padding(.vertical, 3)
 
@@ -1570,6 +1596,8 @@ struct WigleMacView: View {
             uploadsTabView
         case "karma":
             karmaTabView
+        case "alexai":
+            alexaiTabView
         default:
             networksTableView
         }
@@ -1907,28 +1935,41 @@ struct WigleMacView: View {
         .padding(12)
     }
 
-    // TAB 4: Anon Uploads & WigleWifi-1.4 CSV Studio
+    // TAB 4: Anon Uploads & WigleWifi-1.4 CSV Studio + 100% Offline Queue
     private var uploadsTabView: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("☁️ ANONYMOUS DUAL-SERVER UPLOAD & WIGLEWIFI-1.4 CSV STUDIO")
+                    Text("☁️ ANONYMOUS DUAL-SERVER UPLOAD & 100% OFFLINE-FIRST QUEUE STUDIO")
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(cGold)
-                    Text("Zero-cookie multipart upload (donate=on, observer=anonymous) -> esp32.vaked.dev/api/upload & api.wigle.net/api/v2/file/upload")
-                        .font(.system(size: 11, design: .monospaced))
+                    Text("Zero-cookie multipart upload (donate=on, observer=anonymous) -> esp32.vaked.dev/api/upload & api.wigle.net/api/v2/file/upload · Offline auto-queue to ~/.cache/wigle-triad")
+                        .font(.system(size: 10, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-                Button("⬇ Export to ~/Desktop") {
+                Button("📥 Enqueue Offline") {
+                    let snap = scanner.telemetry ?? scanner.performScan()
+                    let qItem = scanner.enqueueOffline(snap: snap)
+                    scanner.statusText = "Queued offline snapshot \(qItem.id) (\(qItem.rows) rows · KU -\(String(format: "%.1f", qItem.savingsPct))%)"
+                }
+                .buttonStyle(.bordered)
+                Button("🔄 Flush Queue (\(scanner.offlineQueue.filter { $0.status == "queued" }.count))") {
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        _ = scanner.flushOfflineQueue()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(cCyan)
+                Button("🗜️ Export .ku.json") {
+                    exportKompressBundleToDesktop()
+                }
+                .buttonStyle(.bordered)
+                Button("⬇ Export CSV") {
                     exportCSVToDesktop()
                 }
                 .buttonStyle(.bordered)
-                Button("💾 Save CSV As...") {
-                    saveCSVDialog()
-                }
-                .buttonStyle(.bordered)
-                Button("☁️ Upload Now to Both Servers") {
+                Button("☁️ Upload Now (Dual)") {
                     let snap = scanner.telemetry ?? scanner.performScan()
                     DispatchQueue.global(qos: .userInitiated).async {
                         _ = scanner.uploadAnonymously(snap: snap)
@@ -1938,17 +1979,46 @@ struct WigleMacView: View {
                 .tint(cPink)
             }
 
+            if !scanner.offlineQueue.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("📥 OFFLINE UPLOAD QUEUE (\(scanner.offlineQueue.filter { $0.status == "queued" }.count) PENDING · AUTO-SYNC ON RECONNECT)")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundColor(cCyan)
+                    ForEach(scanner.offlineQueue.prefix(5)) { q in
+                        HStack(spacing: 10) {
+                            Text(q.status == "synced" ? "✅ SYNCED" : "⏳ QUEUED")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundColor(q.status == "synced" ? cGreen : cGold)
+                            Text(q.id)
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(.white)
+                            Text("\(q.rows) rows · Raw \(q.rawBytes)B → Kompress \(q.compBytes)B (-\(String(format: "%.1f", q.savingsPct))%)")
+                                .font(.system(size: 10, design: .monospaced).monospacedDigit())
+                                .foregroundColor(cCyan)
+                            Spacer()
+                            Text(q.timestamp)
+                                .font(.system(size: 10, design: .monospaced).monospacedDigit())
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(8)
+                        .background(bgPanel)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(cCyan.opacity(0.25), lineWidth: 1))
+                        .cornerRadius(8)
+                    }
+                }
+            }
+
             if scanner.receipts.isEmpty {
-                Text("No uploads in this session yet. Click '☁️ Anon Upload (Dual)' to dispatch WigleWifi-1.4 CSV simultaneously to esp32.vaked.dev and api.wigle.net.")
+                Text("No live upload receipts in this session yet. Click '☁️ Upload Now (Dual)' to dispatch WigleWifi-1.4 CSV or '📥 Enqueue Offline' to stage locally.")
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundColor(.secondary)
-                    .padding(12)
+                    .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(bgPanel)
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(cPink.opacity(0.22), lineWidth: 1))
                     .cornerRadius(10)
             } else {
-                ForEach(scanner.receipts) { r in
+                ForEach(scanner.receipts.prefix(4)) { r in
                     HStack(spacing: 12) {
                         Text(r.ok ? "● HTTP \(r.status) OK" : "● ERR \(r.status)")
                             .font(.system(size: 11, weight: .bold, design: .monospaced).monospacedDigit())
@@ -2073,6 +2143,116 @@ struct WigleMacView: View {
                 .background(bgPanel)
                 .overlay(RoundedRectangle(cornerRadius: scanner.unboundMode ? 24 : 12).stroke(cGold.opacity(0.35), lineWidth: 1))
                 .cornerRadius(scanner.unboundMode ? 24 : 12)
+            }
+            .padding(16)
+        }
+    }
+
+    // TAB 6: AlexAI (8b-is/alexai · GAIA-MLX-QUANT b1.58) × Kompress-Ultra (v16.2.0) Studio
+    private var alexaiTabView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("🧠 ALEXAI (8B-IS/ALEXAI · GAIA-MLX-QUANT B1.58) × KOMPRESS-ULTRA (V16.2.0) STUDIO")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundColor(cGold)
+                        Text("100% Offline-First Ternary Quantization {-1, 0, +1} · 5 Trits/Byte · 1.585 bits/wt (20.19× vs FP32) · BrainLine: ralph · lodri · krengel · cosmos")
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Button(action: { _ = scanner.performScan() }) {
+                        Text("🧠 Re-Fold Spectrum")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(cCyan)
+
+                    Button(action: { scanner.playAlexAiDPlusPlus() }) {
+                        Text("🎶 Play 432Hz D+++ Synth")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(cPurple)
+
+                    Button(action: exportKompressBundleToDesktop) {
+                        Text("🗜️ Export .ku.json Bundle")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(cPink)
+                }
+
+                if let snap = scanner.telemetry {
+                    let a = snap.alexai
+                    let k = snap.kompress_ultra
+                    HStack(spacing: 12) {
+                        dashCard(
+                            title: "GAIA COHERENCE · DOMINANT",
+                            main: String(format: "%.4f · %@", a.coherence, a.dominant.uppercased()),
+                            sub: String(format: "G=%.3f · H=%.4f · W=%.4f · φ=%.4f", a.gravity, a.entropy, a.weather, a.resonance),
+                            accent: cGreen
+                        )
+                        dashCard(
+                            title: "TERNARY B1.58 PACKING",
+                            main: String(format: "%.3f bits/wt · %.2f× vs FP32", a.bits_per_weight, a.compression_vs_f32),
+                            sub: "Round-Trip: \(a.roundtrip_ok ? "LOSSLESS OK" : "ERR") · Seed: 0x\(String(format: "%08x", a.seed))",
+                            accent: cCyan
+                        )
+                        dashCard(
+                            title: "KOMPRESS-ULTRA V\(k.version)",
+                            main: "\(k.raw_bytes) B → \(k.compressed_bytes) B (-\(String(format: "%.1f", k.savings_pct))%)",
+                            sub: String(format: "%.2f× Ratio · Keep %.3f · Ebbinghaus %.4f", k.compression_ratio, k.exact_keep_rate, k.ebbinghaus_retention),
+                            accent: cPink
+                        )
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("PACKED 5-TRITS/BYTE LATTICE HEX (BASE-3 RADIX [1, 3, 9, 27, 81])")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundColor(cGold)
+                        Text(a.packed_hex)
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .foregroundColor(cCyan)
+                            .textSelection(.enabled)
+                            .padding(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.black.opacity(0.55))
+                            .cornerRadius(8)
+                    }
+                    .padding(14)
+                    .background(bgPanel)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(cCyan.opacity(0.28), lineWidth: 1))
+                    .cornerRadius(12)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("🗜️ KOMPRESS-ULTRA CROSS-LINE DITTO (″) WIRE STREAM (LOSSLESS ROUND-TRIP: \(k.lossless_roundtrip_ok ? "VERIFIED ✅" : "MISMATCH"))")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundColor(cGold)
+                            Spacer()
+                            Text("BrainLine: \(k.brain_line)")
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundColor(cPink)
+                        }
+                        ScrollView {
+                            Text((["# KU-v\(k.version) [BrainLine: \(k.brain_line) | keep=\(k.exact_keep_rate)]"] + k.ditto_lines).joined(separator: "\n"))
+                                .font(.system(size: 11, design: .monospaced).monospacedDigit())
+                                .foregroundColor(cGreen)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                                .padding(12)
+                        }
+                        .frame(height: 260)
+                        .background(Color.black.opacity(0.65))
+                        .cornerRadius(8)
+                    }
+                    .padding(14)
+                    .background(bgPanel)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(cPink.opacity(0.28), lineWidth: 1))
+                    .cornerRadius(12)
+                }
             }
             .padding(16)
         }
@@ -2308,6 +2488,20 @@ struct WigleMacView: View {
         case 1: return cGreen
         case 0: return cGold
         default: return cTritNeg
+        }
+    }
+
+    private func exportKompressBundleToDesktop() {
+        let snap = scanner.telemetry ?? scanner.performScan()
+        let ts = Int(Date().timeIntervalSince1970)
+        let desktop = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop")
+        let targetURL = desktop.appendingPathComponent("wigle-macos-\(ts).ku.json")
+        let enc = JSONEncoder()
+        enc.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? enc.encode(snap.kompress_ultra),
+           let jsonStr = String(data: data, encoding: .utf8) {
+            try? jsonStr.write(to: targetURL, atomically: true, encoding: .utf8)
+            scanner.statusText = "Exported Kompress-Ultra v16.2.0 bundle -> ~/Desktop/wigle-macos-\(ts).ku.json"
         }
     }
 

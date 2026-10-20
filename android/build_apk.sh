@@ -14,6 +14,8 @@ mkdir -p "$BUILD/gen" "$BUILD/obj" "$BUILD/dex" "$BUILD/assets" "$ROOT/dist"
 cp "$ROOT/www/index.html" "$BUILD/assets/index.html"
 cp "$ROOT/www/sw.js" "$BUILD/assets/sw.js"
 cp "$ROOT/www/manifest.webmanifest" "$BUILD/assets/manifest.webmanifest"
+cp "$ROOT/www/favicon.svg" "$BUILD/assets/favicon.svg"
+cp "$ROOT/www/og.svg" "$BUILD/assets/og.svg"
 
 echo "[android] Linking AndroidManifest.xml + assets with aapt2..."
 "$BT/aapt2" link \

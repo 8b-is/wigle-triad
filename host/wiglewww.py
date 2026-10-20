@@ -42,6 +42,8 @@ ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 WWW_INDEX = ROOT_DIR / "www" / "index.html"
 WWW_SW = ROOT_DIR / "www" / "sw.js"
 WWW_MANIFEST = ROOT_DIR / "www" / "manifest.webmanifest"
+WWW_FAVICON = ROOT_DIR / "www" / "favicon.svg"
+WWW_OG = ROOT_DIR / "www" / "og.svg"
 MACOS_BIN = ROOT_DIR / "macos" / "bin" / "wigle-macos"
 BAUD = 115200
 
@@ -226,6 +228,17 @@ def unpack_ternary(packed: list[int], length: int) -> list[int]:
     return out
 
 
+def _escape_wire_tok(val: Any) -> str:
+    return (
+        str(val or "")
+        .replace("\\", "\\x5c")
+        .replace("|", "\\x7c")
+        .replace("″", "\\x22\\x22")
+        .replace("\r", " ")
+        .replace("\n", " ")
+    )
+
+
 def compute_alexai_and_kompress(prompt_str: str | None = None) -> dict[str, Any]:
     prompt = (
         prompt_str.strip()
@@ -236,7 +249,7 @@ def compute_alexai_and_kompress(prompt_str: str | None = None) -> dict[str, Any]
     a = (seed + 0x6D2B79F5) & 0xFFFFFFFF
     t = ((a ^ (a >> 15)) * (a | 1)) & 0xFFFFFFFF
     t ^= (t + (((t ^ (t >> 7)) * (t | 61)) & 0xFFFFFFFF)) & 0xFFFFFFFF
-    rand0 = ((t ^ (t >> 14)) & 0xFFFFFFFF) / 4294967296.0
+    rand0 = (((t ^ (t >> 14)) >> 8) & 0xFFFFFF) / 16777216.0
 
     beacons_list = sorted(BEACONS.values(), key=lambda x: int(x.get("rssi", -90)), reverse=True)
     tot = max(1, len(beacons_list))
@@ -258,6 +271,21 @@ def compute_alexai_and_kompress(prompt_str: str | None = None) -> dict[str, Any]
     spread = abs(entropy - 0.62) * 0.6 + abs(weather - 0.5) * 0.4
     coherence = max(0.0, min(1.0, 1.0 - spread))
 
+    layer_deltas = [
+        ("gravity", "Ananke", abs(gravity - 1.0)),
+        ("entropy", "Chaos", abs(entropy - 0.62)),
+        ("weather", "Zephyrus", abs(weather - 0.5)),
+        ("resonance", "Aphrodite", 0.0),
+    ]
+    dominant_key, dominant_layer, _ = max(layer_deltas, key=lambda x: x[2])
+
+    sampling = {
+        "temperature": round(max(0.05, min(1.2, 0.15 + entropy * 1.1)), 4),
+        "top_p": round(max(0.5, min(0.98, 0.5 + coherence * 0.48)), 4),
+        "top_k": int(max(20.0, min(80.0, 20.0 + (1.0 - coherence) * 60.0)) + 0.5),
+        "seed": seed,
+    }
+
     trits = [1 if int(b.get("rssi", -80)) >= -68 else (0 if int(b.get("rssi", -80)) >= -80 else -1) for b in beacons_list]
     while len(trits) < 30:
         trits.append(1)
@@ -270,26 +298,37 @@ def compute_alexai_and_kompress(prompt_str: str | None = None) -> dict[str, Any]
     for b in beacons_list:
         rtype = str(b.get("type", "WIFI"))
         pfx = "B" if rtype in ("BLE", "BT") else ("A" if rtype == "AIRPLAY" else "W")
-        auth_short = (
+        auth_short = _escape_wire_tok(
             str(b.get("auth", ""))
             .replace("WPA2-PSK-CCMP][ESS", "W2")
             .replace("WPA3-SAE-CCMP][ESS", "W3")
             .replace("AIRPLAY-RAOP][ESS", "RAOP")
         )
         canonical_lines.append(
-            f"{pfx}|MAC:MEDUSA|{b.get('bssid','')}|{b.get('ssid','')}|{auth_short}|{b.get('ch',0)}|{b.get('rssi',-80)}|{b.get('band','2.4GHz')}"
+            f"{pfx}|MAC:MEDUSA|{_escape_wire_tok(b.get('bssid',''))}|{_escape_wire_tok(b.get('ssid',''))}|{auth_short}|{b.get('ch',0)}|{b.get('rssi',-80)}|{_escape_wire_tok(b.get('band','2.4GHz'))}"
         )
 
     prev_toks: list[str] = []
     ditto_lines: list[str] = []
+    ditto_tokens_saved = 0
     for line in canonical_lines:
         toks = line.split("|")
         if prev_toks:
             dedup = ["″" if (i < len(prev_toks) and tk == prev_toks[i] and len(tk) > 1) else tk for i, tk in enumerate(toks)]
+            ditto_tokens_saved += sum(1 for tk in dedup if tk == "″")
             ditto_lines.append("|".join(dedup))
         else:
             ditto_lines.append(line)
         prev_toks = toks
+
+    restored_lines: list[str] = []
+    restore_prev: list[str] = []
+    for dline in ditto_lines:
+        dtoks = dline.split("|")
+        rtoks = [restore_prev[i] if (tk == "″" and i < len(restore_prev)) else tk for i, tk in enumerate(dtoks)]
+        restored_lines.append("|".join(rtoks))
+        restore_prev = rtoks
+    lossless_roundtrip_ok = restored_lines == canonical_lines
 
     csv_str = build_wigle_csv()
     raw_bytes = max(1, len(csv_str.encode("utf-8")) + len(json.dumps(beacons_list).encode("utf-8")))
@@ -309,6 +348,9 @@ def compute_alexai_and_kompress(prompt_str: str | None = None) -> dict[str, Any]
             "weather": round(weather, 4),
             "resonance": PHI,
             "coherence": round(coherence, 4),
+            "dominant": dominant_key,
+            "dominant_layer": dominant_layer,
+            "sampling": sampling,
             "bits_per_weight": BITS_PER_WEIGHT,
             "compression_vs_f32": COMPRESSION_VS_F32,
             "packed_hex": packed_hex,
@@ -324,6 +366,8 @@ def compute_alexai_and_kompress(prompt_str: str | None = None) -> dict[str, Any]
             "compressed_bytes": comp_bytes,
             "compression_ratio": ratio,
             "savings_pct": savings_pct,
+            "ditto_tokens_saved": ditto_tokens_saved,
+            "lossless_roundtrip_ok": lossless_roundtrip_ok,
             "ditto_lines": ditto_lines,
         },
     }
@@ -620,6 +664,18 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
                 self._send(200, WWW_MANIFEST.read_bytes(), "application/manifest+json; charset=utf-8")
             else:
                 self._send(404, b"{}", "application/manifest+json; charset=utf-8")
+            return
+        if p == "/favicon.svg":
+            if WWW_FAVICON.exists():
+                self._send(200, WWW_FAVICON.read_bytes(), "image/svg+xml; charset=utf-8")
+            else:
+                self._send(404, b"<svg xmlns='http://www.w3.org/2000/svg'/>", "image/svg+xml; charset=utf-8")
+            return
+        if p == "/og.svg":
+            if WWW_OG.exists():
+                self._send(200, WWW_OG.read_bytes(), "image/svg+xml; charset=utf-8")
+            else:
+                self._send(404, b"<svg xmlns='http://www.w3.org/2000/svg'/>", "image/svg+xml; charset=utf-8")
             return
         if p in ("/api/alexai", "/api/kompress"):
             if not BEACONS:

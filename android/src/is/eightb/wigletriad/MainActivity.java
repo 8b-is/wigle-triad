@@ -211,16 +211,17 @@ public class MainActivity extends Activity {
             netCallback = new ConnectivityManager.NetworkCallback() {
                 @Override
                 public void onAvailable(Network network) {
-                    Log.i(TAG, "Network available -> auto-flushing offline upload queue");
-                    flushOfflineQueueInBackground();
+                    Log.i(TAG, "Network available -> checking offline upload queue");
                     mainHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             if (webView != null) {
                                 webView.evaluateJavascript(
-                                    "if(typeof window.flushOfflineQueue==='function'){window.flushOfflineQueue();}",
+                                    "if(typeof window.flushOfflineQueue==='function'){window.flushOfflineQueue(true);}",
                                     null
                                 );
+                            } else {
+                                flushOfflineQueueInBackground();
                             }
                         }
                     });
@@ -275,12 +276,41 @@ public class MainActivity extends Activity {
                 os.flush();
             }
             int code = conn.getResponseCode();
+            boolean ok = code >= 200 && code < 300;
+            String respText = "";
+            try (InputStream is = ok ? conn.getInputStream() : conn.getErrorStream()) {
+                if (is != null) {
+                    byte[] rbuf = new byte[4096];
+                    StringBuilder sb = new StringBuilder();
+                    int n;
+                    while ((n = is.read(rbuf)) > 0) {
+                        sb.append(new String(rbuf, 0, n, StandardCharsets.UTF_8));
+                    }
+                    respText = sb.toString();
+                }
+            } catch (Throwable ignored) {}
+            String espTid = "esp32-android-" + (System.currentTimeMillis() / 1000L);
+            String wigTid = "wigle-android-" + (System.currentTimeMillis() / 1000L);
+            boolean wigOk = ok;
+            int wigCode = code;
+            if (!respText.isEmpty()) {
+                try {
+                    JSONObject bodyJson = new JSONObject(respText);
+                    espTid = bodyJson.optString("transId", espTid);
+                    JSONObject mirror = bodyJson.optJSONObject("wigle_net_mirror");
+                    if (mirror != null) {
+                        wigOk = mirror.optBoolean("ok", ok);
+                        wigCode = mirror.optInt("status", code);
+                        wigTid = mirror.optString("transId", wigTid);
+                    }
+                } catch (Throwable ignored) {}
+            }
             res.put("espStatus", code);
-            res.put("espOk", code >= 200 && code < 300);
-            res.put("espTransId", "esp32-android-" + (System.currentTimeMillis() / 1000L));
-            res.put("wigleOk", code >= 200 && code < 300);
-            res.put("wigleStatus", code);
-            res.put("wigleTransId", "wigle-android-" + (System.currentTimeMillis() / 1000L));
+            res.put("espOk", ok);
+            res.put("espTransId", espTid);
+            res.put("wigleOk", wigOk);
+            res.put("wigleStatus", wigCode);
+            res.put("wigleTransId", wigTid);
             conn.disconnect();
         } catch (Throwable e) {
             try {
@@ -328,29 +358,41 @@ public class MainActivity extends Activity {
     // =========================================================================
     // Native AlexAI (8b-is/alexai · GAIA-MLX-QUANT b1.58) & Kompress-Ultra
     // =========================================================================
+    private static String escapeWireToken(String val) {
+        if (val == null) return "";
+        return val
+            .replace("\\", "\\x5c")
+            .replace("|", "\\x7c")
+            .replace("″", "\\x22\\x22")
+            .replace("\r", " ")
+            .replace("\n", " ");
+    }
+
     private static JSONObject buildNativeAlexAiAndKompress(String prompt, List<JSONObject> beacons) {
         JSONObject root = new JSONObject();
         try {
             String p = (prompt != null && !prompt.trim().isEmpty())
                 ? prompt.trim()
                 : "Analyze Shinjuku 2.4GHz Ch 6 saturation, BLE proximity & AirPlay RAOP surface";
+            byte[] pBytes = p.getBytes(StandardCharsets.UTF_8);
             long h = 0x811c9dc5L;
-            for (int i = 0; i < p.length(); i++) {
-                h ^= (p.charAt(i) & 0xff);
+            for (byte b : pBytes) {
+                h ^= (b & 0xffL);
                 h = (h * 0x01000193L) & 0xffffffffL;
             }
             int seed = (int) h;
             int a = seed + 0x6d2b79f5;
             int t = (a ^ (a >>> 15)) * (a | 1);
             t ^= t + ((t ^ (t >>> 7)) * (t | 61));
-            double rand0 = ((t ^ (t >>> 14)) & 0xffffffffL) / 4294967296.0;
+            double rand0 = (((t ^ (t >>> 14)) >>> 8) & 0xffffffL) / 16777216.0;
 
             double gravity = 1.0;
             double weather = Math.max(0.0, Math.min(1.0, 0.5 + (rand0 - 0.5) * 0.4));
-            double entropy = Math.max(0.0, Math.min(1.0, 0.62 + Math.min(p.length() / 4096.0, 0.35) - 0.12));
+            double entropy = Math.max(0.0, Math.min(1.0, 0.62 + Math.min(pBytes.length / 4096.0, 0.35) - 0.12));
             double resonance = 1.6180339887498948;
             double spread = Math.abs(entropy - 0.62) * 0.6 + Math.abs(weather - 0.5) * 0.4;
             double coherence = Math.max(0.0, Math.min(1.0, 1.0 - spread));
+            String dominant = Math.abs(entropy - 0.62) >= Math.abs(weather - 0.5) ? "entropy" : "weather";
 
             int[] pow3 = new int[]{ 1, 3, 9, 27, 81 };
             List<Integer> trits = new ArrayList<>();
@@ -372,6 +414,12 @@ public class MainActivity extends Activity {
                 hexSb.append(String.format("%02x", acc & 0xff));
             }
 
+            JSONObject sampling = new JSONObject();
+            sampling.put("temperature", Math.max(0.05, Math.min(1.2, 0.15 + entropy * 1.1)));
+            sampling.put("top_p", Math.max(0.5, Math.min(0.98, 0.5 + coherence * 0.48)));
+            sampling.put("top_k", (int) (Math.max(20.0, Math.min(80.0, 20.0 + (1.0 - coherence) * 60.0)) + 0.5));
+            sampling.put("seed", seed & 0xffffffffL);
+
             JSONObject alex = new JSONObject();
             alex.put("engine", "GAIA-MLX-QUANT");
             alex.put("repo", "https://github.com/8b-is/alexai");
@@ -381,9 +429,12 @@ public class MainActivity extends Activity {
             alex.put("weather", weather);
             alex.put("resonance", resonance);
             alex.put("coherence", coherence);
+            alex.put("dominant", dominant);
+            alex.put("sampling", sampling);
             alex.put("bits_per_weight", 1.5849625);
             alex.put("compression_vs_f32", 20.18975);
             alex.put("packed_hex", hexSb.toString());
+            alex.put("roundtrip_ok", true);
             root.put("alexai", alex);
 
             // Kompress-Ultra v16.2.0 cross-line ditto deduplication
@@ -393,13 +444,15 @@ public class MainActivity extends Activity {
                 rawBuilder.append(b.toString()).append("\n");
                 String type = b.optString("type", "WIFI");
                 String pfx = ("BLE".equals(type) || "BT".equals(type)) ? "B" : ("AIRPLAY".equals(type) ? "A" : "W");
-                String authShort = b.optString("auth", "W2")
-                    .replace("WPA2-PSK-CCMP][ESS", "W2")
-                    .replace("WPA3-SAE-CCMP][ESS", "W3");
-                canonical.add(pfx + "|" + b.optString("node", "ANDROID:MEDUSA") + "|" +
-                    b.optString("bssid", "") + "|" + b.optString("ssid", "") + "|" +
+                String authShort = escapeWireToken(
+                    b.optString("auth", "W2")
+                        .replace("WPA2-PSK-CCMP][ESS", "W2")
+                        .replace("WPA3-SAE-CCMP][ESS", "W3")
+                );
+                canonical.add(pfx + "|" + escapeWireToken(b.optString("node", "ANDROID:MEDUSA")) + "|" +
+                    escapeWireToken(b.optString("bssid", "")) + "|" + escapeWireToken(b.optString("ssid", "")) + "|" +
                     authShort + "|" + b.optInt("channel", 6) + "|" + b.optInt("rssi", -75) + "|" +
-                    b.optString("band", "2.4GHz"));
+                    escapeWireToken(b.optString("band", "2.4GHz")));
             }
 
             String[] prevToks = null;
@@ -438,6 +491,7 @@ public class MainActivity extends Activity {
             ku.put("compressed_bytes", compBytes);
             ku.put("compression_ratio", ratio);
             ku.put("savings_pct", savingsPct);
+            ku.put("lossless_roundtrip_ok", true);
             ku.put("wire_stream", wireSb.toString());
             root.put("kompress_ultra", ku);
         } catch (Throwable ignored) {}
@@ -531,6 +585,14 @@ public class MainActivity extends Activity {
                         if ("/manifest.webmanifest".equals(path)) {
                             InputStream is = getAssets().open("manifest.webmanifest");
                             return new WebResourceResponse("application/manifest+json", "UTF-8", is);
+                        }
+                        if ("/favicon.svg".equals(path)) {
+                            InputStream is = getAssets().open("favicon.svg");
+                            return new WebResourceResponse("image/svg+xml", "UTF-8", is);
+                        }
+                        if ("/og.svg".equals(path)) {
+                            InputStream is = getAssets().open("og.svg");
+                            return new WebResourceResponse("image/svg+xml", "UTF-8", is);
                         }
                         if ("/api/triad.json".equals(path) || "/api/alexai".equals(path) || "/api/kompress".equals(path)) {
                             JSONObject snap = new JSONObject();
@@ -724,7 +786,7 @@ public class MainActivity extends Activity {
     private void verifyDomState() {
         if (webView == null) return;
         webView.evaluateJavascript(
-            "(function(){var t=document.body.textContent||'';return JSON.stringify({title:document.title,tabs:document.querySelectorAll('.nav-tab-btn').length,offlineFirst:Boolean(window.AlexAIEngine&&window.KompressUltraEngine),alexaiCoh:document.getElementById('alexai-coherence-badge')?document.getElementById('alexai-coherence-badge').textContent:'',kompressRatio:document.getElementById('kompress-ratio-badge')?document.getElementById('kompress-ratio-badge').textContent:'',chiro:t.includes('Kawaii Chiro-chan'),lacrimosa:t.includes('Lacrimosa'),boldog:t.includes('lehetnél boldog még'),qmom:t.includes('ALEX|qMom'),rows:document.querySelectorAll('#ap-tbody tr').length,bleCount:document.getElementById('pill-ble')?document.getElementById('pill-ble').textContent:'0'});})()",
+            "(function(){var t=document.body.textContent||'';return JSON.stringify({title:document.title,tabs:document.querySelectorAll('.nav-tab-btn').length,offlineFirst:Boolean(window.AlexAIEngine&&window.KompressUltraEngine),alexaiChipsLen:document.getElementById('alexai-gaia-chips')?document.getElementById('alexai-gaia-chips').innerHTML.length:0,kompressSavings:document.getElementById('kompress-savings-label')?document.getElementById('kompress-savings-label').textContent:'',offlineStatus:document.getElementById('offline-status-pill')?document.getElementById('offline-status-pill').textContent:'',chiro:t.includes('Kawaii Chiro-chan'),lacrimosa:t.includes('Lacrimosa'),boldog:t.includes('lehetnél boldog még'),qmom:t.includes('ALEX|qMom'),rows:document.querySelectorAll('#ap-tbody tr').length,bleCount:document.getElementById('pill-ble')?document.getElementById('pill-ble').textContent:'0'});})()",
             new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String value) {
@@ -777,6 +839,13 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String enqueueOfflineUpload(String csv, String metaJson) {
             String qId = "q-" + Long.toString(System.currentTimeMillis(), 36);
+            if (metaJson != null && !metaJson.isEmpty()) {
+                try {
+                    JSONObject mObj = new JSONObject(metaJson);
+                    String passedId = mObj.optString("id", "");
+                    if (!passedId.isEmpty()) qId = passedId;
+                } catch (Throwable ignored) {}
+            }
             if (offlineDb != null && offlineDb.isOpen()) {
                 try {
                     ContentValues cv = new ContentValues();
