@@ -1665,7 +1665,10 @@ nélküled a pokolba az egésszel</div>
   }
 
   function switchTab(tabId) {
+    let applied = false;
     const apply = () => {
+      if (applied) return;
+      applied = true;
       activeTab = tabId;
       document.querySelectorAll(".nav-tab-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.tabTarget === tabId);
@@ -1676,15 +1679,18 @@ nélküled a pokolba az egésszel</div>
     };
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const scopeEl = document.getElementById("main-workstation");
-    if (!reduced && scopeEl && typeof scopeEl.startViewTransition === "function") {
-      const vt = scopeEl.startViewTransition(apply);
-      if (vt && vt.ready) vt.ready.catch(() => {});
-    } else if (!reduced && document.startViewTransition) {
-      const vt = document.startViewTransition(apply);
-      if (vt && vt.ready) vt.ready.catch(() => {});
-    } else {
-      apply();
+    if (!reduced && document.visibilityState === "visible" && !window.AndroidWigleBridge) {
+      if (scopeEl && typeof scopeEl.startViewTransition === "function") {
+        const vt = scopeEl.startViewTransition(apply);
+        if (vt && vt.ready) vt.ready.catch(apply);
+        return;
+      } else if (document.startViewTransition) {
+        const vt = document.startViewTransition(apply);
+        if (vt && vt.ready) vt.ready.catch(apply);
+        return;
+      }
     }
+    apply();
   }
 
   document.querySelectorAll(".nav-tab-btn").forEach(btn => {
@@ -2135,7 +2141,37 @@ nélküled a pokolba az egésszel</div>
     renderAll();
   }
 
-  fetch("/api/triad.json").then(r => r.ok ? r.json() : null).then(j => {
+  const REMOTE_API_ORIGIN = (location.protocol === "file:" || !location.hostname)
+    ? "https://esp32.vaked.dev"
+    : "";
+
+  function pollAndroidWigleBridge() {
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.scanWifiJson === "function") {
+      try {
+        const rawJson = window.AndroidWigleBridge.scanWifiJson();
+        const arr = JSON.parse(rawJson || "[]");
+        if (Array.isArray(arr) && arr.length > 0) {
+          ingestBeaconArray(arr, "ANDROID:MEDUSA");
+          const wifiN = arr.filter(x => x && x.type === "WIFI").length;
+          const btN = arr.length - wifiN;
+          logLine(`# [ANDROID:MEDUSA] Ingested ${arr.length} endpoints (${wifiN} Wi-Fi, ${btN} BLE/BT) via Android Radios`);
+          renderAll();
+        }
+      } catch {}
+    }
+  }
+  window.pollAndroidWigleBridge = pollAndroidWigleBridge;
+  window.switchTab = switchTab;
+
+  if (window.AndroidWigleBridge) {
+    try {
+      const ver = typeof window.AndroidWigleBridge.getVersion === "function" ? window.AndroidWigleBridge.getVersion() : "v2.0.0+ultra-omni-evolve";
+      logLine(`# [ANDROID:MEDUSA] Native Bridge Online · ${ver}`);
+    } catch {}
+    pollAndroidWigleBridge();
+  }
+
+  fetch(`${REMOTE_API_ORIGIN}/api/triad.json`).then(r => r.ok ? r.json() : null).then(j => {
     if (j) applyStatusJson(j);
   }).catch(() => {});
 
@@ -2221,16 +2257,7 @@ nélküled a pokolba az egésszel</div>
   async function sendSerialCommand(cmdStr) {
     const clean = cmdStr.trim();
     const upper = clean.toUpperCase();
-    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.scanWifiJson === "function") {
-      try {
-        const rawJson = window.AndroidWigleBridge.scanWifiJson();
-        const arr = JSON.parse(rawJson || "[]");
-        if (Array.isArray(arr) && arr.length > 0) {
-          ingestBeaconArray(arr, "ANDROID:MEDUSA");
-          logLine(`# [ANDROID:MEDUSA] Ingested ${arr.length} Wi-Fi endpoints via Android WifiManager`);
-        }
-      } catch {}
-    }
+    pollAndroidWigleBridge();
     if (activePorts.length === 0) {
       if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
         try {
@@ -2250,7 +2277,7 @@ nélküled a pokolba az egésszel</div>
         } catch {}
       } else {
         try {
-          const r = await fetch("/api/triad.json");
+          const r = await fetch(`${REMOTE_API_ORIGIN}/api/triad.json`);
           if (r.ok) {
             const j = await r.json();
             applyStatusJson(j);
@@ -2298,13 +2325,27 @@ nélküled a pokolba az egésszel</div>
   function triggerCSVDownload() {
     const csv = buildWigleCSVString();
     const ts = Math.floor(Date.now() / 1000);
+    const filename = `wigle-macos-${ts}.csv`;
+    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.exportCsv === "function") {
+      try {
+        const savedPath = window.AndroidWigleBridge.exportCsv(filename, csv);
+        logLine(`# [ANDROID:MEDUSA] Exported ${beacons.size} endpoints in sanitized WigleWifi-1.4 CSV format -> ${savedPath}`);
+        document.getElementById("header-status-text").textContent =
+          `Saved WigleWifi-1.4 CSV (${beacons.size} rows) -> ${savedPath}`;
+        return savedPath;
+      } catch (err) {
+        logLine(`! Android CSV export error: ${err.message}`);
+      }
+    }
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `wigle-macos-${ts}.csv`;
+    a.download = filename;
     a.click();
-    logLine(`# Exported ${beacons.size} endpoints in sanitized WigleWifi-1.4 CSV format (wigle-macos-${ts}.csv)`);
+    logLine(`# Exported ${beacons.size} endpoints in sanitized WigleWifi-1.4 CSV format (${filename})`);
+    return filename;
   }
+  window.triggerCSVDownload = triggerCSVDownload;
   document.getElementById("btn-export-csv").addEventListener("click", triggerCSVDownload);
   document.getElementById("btn-export-studio").addEventListener("click", triggerCSVDownload);
 
@@ -2346,23 +2387,28 @@ nélküled a pokolba az egésszel</div>
       fd.append("file", new Blob([csv], { type: "text/csv" }), `wigle-triad-${Date.now()}.csv`);
 
       const [res, directWigle] = await Promise.all([
-        fetch("/api/upload?mirror=wigle", {
+        fetch(`${REMOTE_API_ORIGIN}/api/upload?mirror=wigle`, {
           method: "POST",
           headers: { "content-type": "text/csv; charset=utf-8" },
           body: csv
-        }),
+        }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null),
         fetch("https://api.wigle.net/api/v2/file/upload", {
           method: "POST",
           headers: { "Accept": "application/json" },
           body: fd
         }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null)
       ]);
-      const data = await res.json();
-      const espTid = data?.esp32_vaked_dev?.transId || data?.transId || `esp32-${Date.now()}`;
+      const data = res?.json || {};
+      const espOk = Boolean(res && res.ok);
+      const espStatus = res?.status || 0;
+      const espTid = espOk ? (data?.esp32_vaked_dev?.transId || data?.transId || `esp32-${Date.now()}`) : "offline-err";
       const directTid = directWigle?.json?.results?.transids?.[0]?.transId;
-      const wigTid = directTid || data?.wigle_net?.transId || `wigle-${Date.now()}`;
-      const wigOk = directTid ? true : (data?.wigle_net?.ok !== false);
-      const wigStatus = directTid ? (directWigle.status || 200) : (data?.wigle_net?.status || 200);
+      const relayOk = Boolean(espOk && data?.wigle_net && data.wigle_net.ok !== false);
+      const wigOk = Boolean(directTid || (directWigle && directWigle.ok) || relayOk);
+      const wigStatus = directTid
+        ? (directWigle.status || 200)
+        : (relayOk ? (data?.wigle_net?.status || 200) : (directWigle?.status || data?.wigle_net?.status || 0));
+      const wigTid = directTid || (relayOk ? (data?.wigle_net?.transId || `wigle-${Date.now()}`) : "offline-err");
       const wigObs = directWigle?.json?.observer || data?.wigle_net?.observer || "anonymous";
       const rows = data?.ingested || beacons.size;
 
@@ -2378,8 +2424,8 @@ nélküled a pokolba az egésszel</div>
         },
         {
           target: "esp32.vaked.dev",
-          ok: true,
-          status: res.status || 200,
+          ok: espOk,
+          status: espStatus,
           transId: espTid,
           rows,
           observer: "anonymous",
@@ -2387,11 +2433,19 @@ nélküled a pokolba az egésszel</div>
         }
       );
       renderReceipts();
-      logLine(`# [ANON DUAL UPLOAD OK] esp32.vaked.dev transId=${espTid} | api.wigle.net transId=${wigTid} (${rows} rows)`);
-      document.getElementById("header-status-text").textContent =
-        `Uploaded anonymously -> esp32.vaked.dev (${espTid}) | api.wigle.net (${wigTid})`;
-      btnTop.textContent = `✅ Uploaded (${wigTid})`;
-      btnStudio.textContent = `✅ Dual Upload Complete (${espTid} · ${wigTid})`;
+      if (espOk || wigOk) {
+        logLine(`# [ANON DUAL UPLOAD OK] esp32.vaked.dev transId=${espTid} (${espStatus}) | api.wigle.net transId=${wigTid} (${wigStatus}) (${rows} rows)`);
+        document.getElementById("header-status-text").textContent =
+          `Uploaded anonymously -> esp32.vaked.dev (${espTid}) | api.wigle.net (${wigTid})`;
+        btnTop.textContent = `✅ Uploaded (${wigOk ? wigTid : espTid})`;
+        btnStudio.textContent = `✅ Dual Upload Complete (${espTid} · ${wigTid})`;
+      } else {
+        logLine(`! [ANON DUAL UPLOAD ERR] Network unreachable (esp32.vaked.dev status=${espStatus}, api.wigle.net status=${wigStatus})`);
+        document.getElementById("header-status-text").textContent =
+          `Upload failed (offline / network unreachable) · ${rows} rows ready in CSV preview`;
+        btnTop.textContent = "⚠️ Offline (Retry Upload)";
+        btnStudio.textContent = "⚠️ Upload Failed (Offline — Click to Retry)";
+      }
     } catch (err) {
       logLine(`! Anonymous upload error: ${err.message}`);
       btnTop.textContent = "☁️ Anon Upload (Dual)";
@@ -2401,6 +2455,7 @@ nélküled a pokolba az egésszel</div>
       btnStudio.disabled = false;
     }
   }
+  window.runDualAnonymousUpload = runDualAnonymousUpload;
 
   document.getElementById("btn-upload-wigle").addEventListener("click", runDualAnonymousUpload);
   document.getElementById("btn-upload-studio").addEventListener("click", runDualAnonymousUpload);
