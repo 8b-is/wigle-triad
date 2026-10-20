@@ -1,4 +1,4 @@
-# wigle-triad — the MEDUSA triad (`v0.8.0+medusa-omni` · `WIGLE-WWW × FLUG-OS`)
+# wigle-triad — the MEDUSA triad (`v1.0.0+medusa-omni` · `WigleMac.app × WIGLE-WWW × FLUG-OS`)
 
 **Live Psychedelic ENTHEAI & WebSerial Surface:** [https://esp32.vaked.dev/](https://esp32.vaked.dev/)  
 **Live Triad Telemetry JSON:** [https://esp32.vaked.dev/api/triad.json](https://esp32.vaked.dev/api/triad.json)  
@@ -42,15 +42,21 @@ Send newline-terminated commands over USB serial or directly from [https://esp32
 
 ---
 
-## 3. Wigle for macOS (`MAC:MEDUSA` · Quad-Spectrum `CoreWLAN + BLE/BT + AirPlay` + Anonymous Dual Upload)
+## 3. Wigle for macOS (`WigleMac.app v1.0.0` · `MAC:MEDUSA` · MapKit + Dashboard + Quad-Spectrum + Anon Dual Upload)
 
-On Apple Silicon macOS (`aarch64-darwin`), `macos/wigle-macos.swift` turns the MacBook Pro into a quad-spectrum (`2.4 GHz + 5 GHz Wi-Fi + Bluetooth BLE/Classic + AirPlay/RAOP/Companion-Link mDNS`) passive **WiGLE v1.4 + N=NP + MarineSense** node (`MAC:MEDUSA`) with 4-tier BSSID resolution and **1-click / 1-command anonymous dual upload** (`donate=on`, `observer=anonymous`) to **both** `https://esp32.vaked.dev/api/upload` and `https://api.wigle.net/api/v2/file/upload`:
+On Apple Silicon macOS (`aarch64-darwin`), `macos/wigle-macos.swift` (`macos/WigleMac.app`) turns the MacBook Pro into a native **WiGLE.net × 8b-is Ultralovegod** desktop radar & menu bar app (`MAC:MEDUSA`):
+
+- **🗺️ Tab 1 — Live Radar Map (`MapKit` `.hybridFlyover`)**: Color-coded pins (`#00FF66` 2.4 GHz Wi-Fi, `#00E5C9` 5 GHz Wi-Fi, `#FFD700` AirPlay/RAOP, `#FF6AC1` BLE/BT) with RSSI-distance projection + live split-view network feed.
+- **📊 Tab 2 — Dashboard & Spectrum**: WiGLE telemetry pills, Passive RF, MarineSense `O(1)` Hydro, Shannon Entropy & `N=NP` balanced-ternary cards, 15-channel occupancy bar chart, and top-10 SNR waterfall.
+- **🛰️ Tab 3 — Networks Table**: Full WiGLE explorer with instant search and band filters (`ALL`, `2.4G`, `5G`, `BLE/BT`, `AIRPLAY`).
+- **☁️ Tab 4 — Anon Uploads & CSV**: 1-click anonymous dual-server upload (`donate=on`, `observer=anonymous`) to **both** `https://esp32.vaked.dev/api/upload` and `https://api.wigle.net/api/v2/file/upload`, transaction receipt ledger (`transId`), and live `WigleWifi-1.4` CSV preview.
+- **⚡ `agy` Ultra UI/UX Kickstart Prompt**: [`macos/AGY_ULTRA_UI_UX_PROMPT.md`](macos/AGY_ULTRA_UI_UX_PROMPT.md)
 
 ```bash
-# Build macOS CLI wrapper + native SwiftUI app bundle (macos/WigleMac.app):
+# Build macOS CLI wrapper + native SwiftUI/MapKit app bundle (macos/WigleMac.app):
 ./macos/build_app.sh
 
-# 1. Native macOS SwiftUI Window + Menu Bar App (📡 WigleMac):
+# 1. Native macOS SwiftUI + MapKit Window + Menu Bar App (📡 WigleMac):
 open macos/WigleMac.app
 # or:
 ./macos/bin/wigle-macos --gui
