@@ -417,10 +417,14 @@ def send_and_collect(ports: list[str], cmd: str, wait_s: float = 0.45) -> list[s
         ak = compute_alexai_and_kompress()
         a = ak["alexai"]
         lines_out.append(f"# ALEXAI|GAIA-MLX-QUANT|coherence={a['coherence']}|bits={a['bits_per_weight']}|ratio={a['compression_vs_f32']}x|hex=[{a['packed_hex']}]")
-    elif upper == "KOMPRESS":
+    elif upper == "KOMPRESS" or upper in ("ENTROPY", "KUNISADA", "KUNIYOSHI", "OMNI"):
         ak = compute_alexai_and_kompress()
         k = ak["kompress_ultra"]
-        lines_out.append(f"# KOMPRESS|v{k['version']}|raw={k['raw_bytes']}B|comp={k['compressed_bytes']}B|ratio={k['compression_ratio']}x|savings=-{k['savings_pct']}%")
+        lines_out.append(
+            f"# KOMPRESS|OMNI-CHAN|<<<<oOo>>>>|KUNISADA_KUNIYOSHI|010001000|"
+            f"v{k['version']}|raw={k['raw_bytes']}B|comp={k['compressed_bytes']}B|"
+            f"ratio={k['compression_ratio']}x|savings=-{k['savings_pct']}%"
+        )
     if not ports:
         return lines_out
     if serial is None:
@@ -428,11 +432,12 @@ def send_and_collect(ports: list[str], cmd: str, wait_s: float = 0.45) -> list[s
         return lines_out
     for port in ports:
         try:
-            with serial.Serial(port, BAUD, timeout=0.15) as ser:
+            wire_cmd = "STATUS\n" if upper in ("JSON", "STATUS") else f"{clean}\nSTATUS\n"
+            with serial.Serial(port, BAUD, timeout=0.2, dsrdtr=False, rtscts=False) as ser:
                 ser.reset_input_buffer()
-                ser.write((clean + "\n").encode("utf-8"))
+                ser.write(wire_cmd.encode("utf-8"))
                 ser.flush()
-                deadline = time.monotonic() + wait_s
+                deadline = time.monotonic() + max(wait_s, 0.75)
                 while time.monotonic() < deadline:
                     raw = ser.readline()
                     if not raw:
@@ -446,6 +451,39 @@ def send_and_collect(ports: list[str], cmd: str, wait_s: float = 0.45) -> list[s
             lines_out.append(f"# ERR|{port}|{exc}")
     save_offline_state()
     return lines_out
+
+
+_BAYE_META = {
+    "ADA": ("ADA:MEDUSA", "*", "STAR-ALEXANDRA", "80:B5:4E:DB:3B:C4", 432, -1),
+    "VAK": ("VAK:MEDUSA", "/\\", "PILLAR-CHRIS", "80:B5:4E:F2:02:B0", 528, 0),
+    "OMN": ("OMN:MEDUSA", "oo", "INFINITY-PETER-NATE", "80:B5:4E:F2:02:B4", 852, 1),
+}
+_PORT_NODE_MAP: dict[str, str] = {}
+
+
+def _ensure_baye_node(port: str, short_id: str | None = None) -> dict[str, Any]:
+    if short_id and short_id in _BAYE_META:
+        _PORT_NODE_MAP[port] = short_id
+    sid = _PORT_NODE_MAP.get(port, "ADA" if "2101" in port else "OMN")
+    name, vertex, arch, mac, freq, trit = _BAYE_META.get(sid, _BAYE_META["ADA"])
+    node = NODES_CACHE.get(name)
+    if not isinstance(node, dict):
+        node = {
+            "node": name,
+            "medusa_node": name,
+            "vertex": vertex,
+            "archetype": arch,
+            "mac": mac,
+            "freq_hz": freq,
+            "trit": trit,
+            "version": "baye-rust-0.2+wigle-triad",
+            "mode": "BAYE_RUST_PASSIVE_MARINE_MEMNET",
+            "port": port,
+        }
+        NODES_CACHE[name] = node
+    node["port"] = port
+    node["seen"] = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return node
 
 
 def ingest_line(port: str, line: str) -> None:
@@ -466,6 +504,61 @@ def ingest_line(port: str, line: str) -> None:
             NODES_CACHE[node_key] = obj
         except Exception:
             pass
+    elif line.startswith("[MEMNET] "):
+        parts = line.split()
+        if len(parts) >= 2:
+            node = _ensure_baye_node(port, parts[1].strip())
+            for tok in parts[2:]:
+                if "=" in tok:
+                    k, v = tok.split("=", 1)
+                    node[f"memnet_{k}"] = int(v) if v.isdigit() else v
+    elif line.startswith("[USB] STATUS "):
+        node = _ensure_baye_node(port)
+        for tok in line[13:].split():
+            if "=" in tok:
+                k, v = tok.split("=", 1)
+                if k == "uptime_ms" and v.isdigit():
+                    node["uptime_ms"] = int(v)
+                elif k == "energy":
+                    try:
+                        node["audio_rms"] = float(v)
+                    except ValueError:
+                        pass
+                else:
+                    node[k] = v
+    elif line.startswith("[Main] "):
+        node = _ensure_baye_node(port)
+        for tok in line[7:].split():
+            if "=" in tok:
+                k, v = tok.split("=", 1)
+                if k == "rf" and v.isdigit():
+                    node["networks"] = int(v)
+                elif k == "batt":
+                    node["battery"] = v
+                elif k == "sal":
+                    try:
+                        node["marine_salience"] = float(v)
+                    except ValueError:
+                        pass
+                elif k == "heap" and v.endswith("KB") and v[:-2].isdigit():
+                    node["free_heap"] = int(v[:-2]) * 1024
+    elif line.startswith("[Marine] "):
+        node = _ensure_baye_node(port)
+        node["omni_chan"] = "<<<<oOo>>>>"
+        node["pulse"] = "010001000"
+        node["kunisada_kuniyoshi"] = "Utagawa Kunisada x Utagawa Kuniyoshi"
+        for tok in line[9:].split():
+            if "=" in tok:
+                k, v = tok.split("=", 1)
+                try:
+                    node[f"marine_{k}"] = int(v) if v.isdigit() else float(v)
+                except ValueError:
+                    node[f"marine_{k}"] = v
+    elif line.startswith("M8N|"):
+        node = _ensure_baye_node(port)
+        node["omni_chan"] = "<<<<oOo>>>>"
+        node["pulse"] = "010001000"
+        node["last_m8n_hex"] = line[4:].strip()[:196]
     elif line.startswith(("W|", "B|", "A|")):
         prefix = line[0]
         parts = line.split("|")
