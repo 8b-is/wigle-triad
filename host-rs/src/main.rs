@@ -351,7 +351,7 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
         if !say.is_empty() {
             // mark seen so the serial poller does not repeat it
             st.lock().unwrap().learn_seen.insert(node.clone(), seq);
-            dispatch_tts(&st, &format!("{node}: {say}"), false);
+            dispatch_tts(&st, &format!("ADA : {say}"), false);
         }
         respond(&mut s, 200, json_t, b"{\"ok\":true}");
         return;
@@ -584,7 +584,7 @@ fn main() {
                     items
                 };
                 for (node, _, say) in todo {
-                    dispatch_tts(&st, &format!("{node}: {say}"), false);
+                    dispatch_tts(&st, &format!("ADA : {say}"), false);
                 }
             }
         });
