@@ -15,7 +15,7 @@ mod alexai;
 use std::collections::BTreeMap;
 use std::fs;
 use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream, ToSocketAddrs};
+use std::net::{TcpListener, TcpStream, ToSocketAddrs, UdpSocket};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
@@ -42,6 +42,7 @@ struct State {
     engine: Option<(Instant, Value)>,
     learn: BTreeMap<String, Value>,
     learn_seen: BTreeMap<String, u64>,
+    lan_ip: Option<String>,
 }
 
 type Shared = Arc<Mutex<State>>;
@@ -299,7 +300,7 @@ fn query(q: &str, key: &str) -> Option<String> {
     q.split('&').find_map(|kv| kv.strip_prefix(&format!("{key}=")).map(|v| v.to_string()))
 }
 
-fn handle(mut s: TcpStream, st: Shared, www: PathBuf) {
+fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String>) {
     let _ = s.set_read_timeout(Some(Duration::from_secs(5)));
     let mut buf = Vec::new();
     let mut chunk = [0u8; 4096];
@@ -331,6 +332,29 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf) {
     let (path, q) = target.split_once('?').unwrap_or((target, ""));
     let jbody = |v: Value| serde_json::to_vec_pretty(&v).unwrap();
     let json_t = "application/json; charset=utf-8";
+
+    // LAN-facing listener: ONLY POST /board/say with the per-run token. Everything else is 404.
+    if let Some(tok) = &board_token {
+        let given = head.lines().find_map(|l| {
+            let (k, v) = l.split_once(':')?;
+            k.eq_ignore_ascii_case("x-triad-token").then(|| v.trim().to_string())
+        });
+        if method != "POST" || path != "/board/say" || given.as_deref() != Some(tok.as_str()) {
+            respond(&mut s, 404, "text/plain", b"Not Found");
+            return;
+        }
+        let v = serde_json::from_slice::<Value>(&body).unwrap_or(json!({}));
+        let node = v["node"].as_str().unwrap_or("ESP32").chars().take(24).collect::<String>();
+        let say: String = v["say"].as_str().unwrap_or("").chars().take(200).collect();
+        let seq = v["seq"].as_u64().unwrap_or(0);
+        if !say.is_empty() {
+            // mark seen so the serial poller does not repeat it
+            st.lock().unwrap().learn_seen.insert(node.clone(), seq);
+            dispatch_tts(&st, &format!("{node}: {say}"), false);
+        }
+        respond(&mut s, 200, json_t, b"{\"ok\":true}");
+        return;
+    }
 
     match (method, path) {
         ("OPTIONS", _) => respond(&mut s, 204, "text/plain", b""),
@@ -471,9 +495,39 @@ fn main() {
     }));
     let www = root_dir().join("www");
 
+    // Per-run shared secret for the board -> Mac push (never written to disk or git; sent to boards over USB serial).
+    let board_token: String = {
+        let mut b = [0u8; 16];
+        let _ = fs::File::open("/dev/urandom").and_then(|mut f| f.read_exact(&mut b));
+        b.iter().map(|x| format!("{x:02x}")).collect()
+    };
+    const BOARD_PORT: u16 = 8089;
+    {
+        // Mac's LAN address (default route), reported to the boards so they can POST learned sentences.
+        let lan_ip = UdpSocket::bind("0.0.0.0:0").ok()
+            .and_then(|u| { u.connect("192.168.43.1:80").ok()?; u.local_addr().ok() })
+            .map(|a| a.ip().to_string());
+        let (st2, tok2) = (st.clone(), board_token.clone());
+        match TcpListener::bind(("0.0.0.0", BOARD_PORT)) {
+            Ok(l) => {
+                println!("[wiglewww-rs] board push listener 0.0.0.0:{BOARD_PORT} (POST /board/say, token required) lan={lan_ip:?}");
+                thread::spawn(move || {
+                    for conn in l.incoming().flatten() {
+                        let (st, tok) = (st2.clone(), tok2.clone());
+                        let www = PathBuf::new();
+                        thread::spawn(move || handle(conn, st, www, Some(tok)));
+                    }
+                });
+            }
+            Err(e) => eprintln!("[wiglewww-rs] board listener failed: {e}"),
+        }
+        st.lock().unwrap().lan_ip = lan_ip;
+    }
+
     // Learning loop: give each board the wall clock (hour-of-day bucket), read what it learned, and speak
     // anything new with Kokoro on this Mac (the board also speaks it on-chip, with its own cooldown).
     {
+        let tok = board_token.clone();
         let st = st.clone();
         thread::spawn(move || {
             let tz = Command::new("date").arg("+%z").output().ok()
@@ -491,7 +545,8 @@ fn main() {
                     continue;
                 }
                 let epoch = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
-                send_all(&st, &format!("TIME {epoch} {tz}\nLEARN"), Duration::from_millis(600));
+                let host_cmd = st.lock().unwrap().lan_ip.clone().map(|ip| format!("\nHOST {ip} 8089 {tok}")).unwrap_or_default();
+                send_all(&st, &format!("TIME {epoch} {tz}{host_cmd}\nLEARN"), Duration::from_millis(600));
                 let todo: Vec<(String, u64, String)> = {
                     let mut g = st.lock().unwrap();
                     let items: Vec<(String, u64, String)> = g.learn.iter()
@@ -533,6 +588,6 @@ fn main() {
     println!("[wiglewww-rs] http://{host}:{port} · www={} · ports={:?}", www.display(), discover_ports());
     for conn in l.incoming().flatten() {
         let (st, www) = (st.clone(), www.clone());
-        thread::spawn(move || handle(conn, st, www));
+        thread::spawn(move || handle(conn, st, www, None));
     }
 }
