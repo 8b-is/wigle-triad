@@ -55,7 +55,12 @@ fn discover_ports() -> Vec<String> {
         .map(|d| {
             d.filter_map(|e| e.ok())
                 .map(|e| e.file_name().to_string_lossy().to_string())
-                .filter(|n| n.starts_with("cu.usbmodem") || n.starts_with("ttyACM"))
+                .filter(|n| {
+                    // ESP32-S3 CDC enumerates as cu.usbmodem<digits>; skip phones/modems (usbmodemR5CW…).
+                    n.strip_prefix("cu.usbmodem")
+                        .map_or(false, |s| !s.is_empty() && s.chars().all(|c| c.is_ascii_digit()))
+                        || n.starts_with("ttyACM")
+                })
                 .map(|n| format!("/dev/{n}"))
                 .collect()
         })
@@ -69,7 +74,8 @@ fn serial_exchange(port: &str, cmd: &str, wait: Duration) -> std::io::Result<Vec
     let _ = Command::new("stty")
         .args(["-f", port, "115200", "raw", "-echo", "min", "0", "time", "2"])
         .status();
-    let mut f = fs::OpenOptions::new().read(true).write(true).open(port)?;
+    use std::os::unix::fs::OpenOptionsExt;
+    let mut f = fs::OpenOptions::new().read(true).write(true).custom_flags(0x0004 /* O_NONBLOCK */).open(port)?;
     f.write_all(cmd.as_bytes())?;
     f.write_all(b"\n")?;
     f.flush()?;
@@ -77,8 +83,9 @@ fn serial_exchange(port: &str, cmd: &str, wait: Duration) -> std::io::Result<Vec
     let (mut buf, mut lines, mut chunk) = (Vec::new(), Vec::new(), [0u8; 512]);
     while Instant::now() < end {
         match f.read(&mut chunk) {
-            Ok(0) => {}
+            Ok(0) => thread::sleep(Duration::from_millis(20)),
             Ok(n) => buf.extend_from_slice(&chunk[..n]),
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => thread::sleep(Duration::from_millis(20)),
             Err(_) => break,
         }
         while let Some(i) = buf.iter().position(|&b| b == b'\n') {
@@ -356,6 +363,26 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf) {
             });
             respond(&mut s, 200, json_t, &jbody(v));
         }
+        ("GET", "/api/wupz") => {
+            // Ask every board for a WUPZ frame and verify its fold against host wupz-core.
+            let lines = send_all(&st, "WUPZ 4242", Duration::from_millis(700));
+            let mut results = vec![];
+            for l in lines.iter().filter(|l| l.starts_with("# WUPZ|")) {
+                if let Ok(v) = serde_json::from_str::<Value>(&l[7..]) {
+                    let hex = v["frame"].as_str().unwrap_or("");
+                    let bytes: Vec<u8> = (0..hex.len() / 2).filter_map(|i| u8::from_str_radix(&hex[i * 2..i * 2 + 2], 16).ok()).collect();
+                    let host_fold = format!("0x{:016x}", wupz_core::fold::xor_fold(&bytes));
+                    let host_pop = wupz_core::fold::popcount(&bytes);
+                    results.push(json!({
+                        "node": v["node"], "board_xor_fold": v["xor_fold"], "host_xor_fold": host_fold,
+                        "board_popcount": v["popcount"], "host_popcount": host_pop,
+                        "match": v["xor_fold"] == json!(host_fold) && v["popcount"].as_u64() == Some(host_pop),
+                        "backend": wupz_core::fold::backend(),
+                    }));
+                }
+            }
+            respond(&mut s, 200, json_t, &jbody(json!({"ok": true, "results": results, "raw": lines})));
+        }
         ("GET", "/api/alexai") | ("GET", "/api/kompress") => {
             let beacons: Vec<Value> = st.lock().unwrap().beacons.values().cloned().collect();
             let mut v = alexai::compute(query(q, "prompt").map(|p| p.replace('+', " ")).as_deref(), &beacons);
@@ -405,6 +432,13 @@ fn main() {
                 let cmd = it.next().unwrap_or_else(|| "STATUS".into());
                 let st: Shared = Arc::new(Mutex::new(State::default()));
                 for l in send_all(&st, &cmd, Duration::from_millis(1500)) {
+                    println!("{l}");
+                }
+                return;
+            }
+            "--wupz" => {
+                let st: Shared = Arc::new(Mutex::new(State::default()));
+                for l in send_all(&st, "WUPZ 4242", Duration::from_millis(1200)) {
                     println!("{l}");
                 }
                 return;
