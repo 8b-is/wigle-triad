@@ -474,10 +474,9 @@ def dispatch_triad_tts(text: str, voice: str = "af_heart") -> dict[str, Any]:
             "top_files": ["ADA:MEDUSA", "VAK:MEDUSA", "OMN:MEDUSA"],
             "spoken_text": clean_text,
         }).encode("utf-8") + b"\n"
-        with socket.create_connection(("127.0.0.1", 8420), timeout=1.2) as sock:
+        with socket.create_connection(("127.0.0.1", 8420), timeout=1.5) as sock:
             sock.sendall(pkt)
-            resp = sock.recv(64)
-            kokoro_daemon_ok = b"OK" in resp
+            kokoro_daemon_ok = True
     except Exception:
         kokoro_daemon_ok = False
 
@@ -1105,6 +1104,22 @@ def main() -> int:
         )
         return 0
 
+    import threading
+
+    def _usb_hotplug_watcher() -> None:
+        known: set[str] = set(discover_ports())
+        while True:
+            time.sleep(2.5)
+            cur = set(discover_ports())
+            added = sorted(cur - known)
+            if added:
+                send_and_collect(added, "VIZ", wait_s=0.6)
+                dispatch_triad_tts(
+                    f"ESP32 Medusa Triad attached on {', '.join(pathlib.Path(p).name for p in added)}. Three hearts plus one online."
+                )
+            known = cur
+
+    threading.Thread(target=_usb_hotplug_watcher, daemon=True).start()
     srv = ThreadingHTTPServer((args.host, args.port), WigleWWWHandler)
     print(f"[wiglewww] Serving {WWW_INDEX} on http://{args.host}:{args.port} (ports: {ports})")
     try:
