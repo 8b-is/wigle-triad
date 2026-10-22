@@ -5,3 +5,4 @@ __pycache__/
 android/build/
 android/*.keystore
 dist/
+known_networks.local.txt

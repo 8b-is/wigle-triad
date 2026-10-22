@@ -12,7 +12,7 @@
 use eight_b_is_music::{triad_feed, MultiBluetoothTopology, DEFAULT_QUANT65K_PLUS_LAYERS};
 use serde_json::{json, Value};
 mod alexai;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream, ToSocketAddrs, UdpSocket};
@@ -34,6 +34,7 @@ const KLUVER: [&str; 4] = [
 
 #[derive(Default)]
 struct State {
+    known: HashSet<String>,
     nodes: BTreeMap<String, Value>,
     beacons: BTreeMap<String, Value>,
     viz_idx: usize,
@@ -386,13 +387,19 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
             let ak = alexai::compute(None, &st.lock().unwrap().beacons.values().cloned().collect::<Vec<_>>());
             let viz = viz_json(&st);
             let g = st.lock().unwrap();
+            let beacons: Vec<Value> = g.beacons.values().cloned().map(|mut b| {
+                let mac = b["bssid"].as_str().unwrap_or("").to_string();
+                let novel = !g.known.contains(&mac);
+                b["novel"] = json!(novel);
+                b
+            }).collect();
             let v = json!({
                 "surface": "http://127.0.0.1:8088", "mirror": "https://esp32.vaked.dev",
-                "version": "3.0.0+rust-wupz-8b-is", "triad_hearts": "{<3,<3,<3}+1",
+                "version": "3.1.0+rust-wupz-novelty", "triad_hearts": "{<3,<3,<3}+1",
                 "offline_queue_count": alexai::queue_count(), "alexai": ak["alexai"], "kompress_ultra": ak["kompress_ultra"],
                 "runtime": "rust (no python)", "viz_enthea": viz, "wupz_seal": wupz_seal(&g),
                 "ports": ports, "nodes": g.nodes.values().collect::<Vec<_>>(),
-                "beacons_count": g.beacons.len(), "beacons": g.beacons.values().collect::<Vec<_>>(),
+                "beacons_count": g.beacons.len(), "known_count": g.known.len(), "beacons": beacons,
                 "raw_lines": lines,
             });
             respond(&mut s, 200, json_t, &jbody(v));
@@ -458,6 +465,22 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
     }
 }
 
+fn load_known(st: &mut State) {
+    let path = std::env::var("WIGLE_KNOWN")
+        .unwrap_or_else(|_| root_dir().join("known_networks.local.txt").to_string_lossy().into_owned());
+    let Ok(text) = std::fs::read_to_string(&path) else {
+        eprintln!("[wiglewww-rs] known set: {path} not found, novelty off");
+        return;
+    };
+    let before = st.known.len();
+    for line in text.lines() {
+        let t = line.trim();
+        if t.is_empty() || t.starts_with('#') { continue; }
+        st.known.insert(t.split(',').next().unwrap_or(t).trim().to_uppercase());
+    }
+    eprintln!("[wiglewww-rs] known set: {} bssids from {path}", st.known.len() - before);
+}
+
 fn main() {
     let mut port = 8088u16;
     let mut host = "127.0.0.1".to_string();
@@ -488,11 +511,13 @@ fn main() {
             _ => {}
         }
     }
-    let st: Shared = Arc::new(Mutex::new(State {
+    let mut st0 = State {
         last_tts: "{<3,<3,<3}+1 · ADA * 432Hz · VAK /\\ 528Hz · OMN oo 852Hz · Viz Enthea 963Hz".into(),
         tts_count: 1,
         ..Default::default()
-    }));
+    };
+    load_known(&mut st0);
+    let st: Shared = Arc::new(Mutex::new(st0));
     let www = root_dir().join("www");
 
     // Per-run shared secret for the board -> Mac push (never written to disk or git; sent to boards over USB serial).
