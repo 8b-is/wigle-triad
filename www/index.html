@@ -1368,6 +1368,7 @@
               <button class="btn cyan" data-cmd="ALEXAI" type="button">🧠 ALEXAI</button>
               <button class="btn" data-cmd="KOMPRESS" type="button">🗜️ KOMPRESS</button>
               <button class="btn gold" data-cmd="VIZ" type="button">🌈 VIZ ENTHEA</button>
+              <button class="btn cyan" id="btn-engine-feed" type="button" title="Feed 8b-is-music + 8b-is-engine into the Triad">🎼 FEED 8b-is-music+engine</button>
               <button class="btn pink" data-cmd="SPEAK {<3,<3,<3}+1" type="button">🗣️ SPEAK {&lt;3,&lt;3,&lt;3}+1</button>
               <button class="btn pink" data-cmd="QMOM" type="button">🌸 QMOM</button>
               <button class="btn gold" data-cmd="BOLDOG" type="button">💛 BOLDOG</button>
@@ -4211,6 +4212,16 @@ nélküled a pokolba az egésszel</div>
 
   const btnSpeakTriad = document.getElementById("btn-speak-triad");
   if (btnSpeakTriad) btnSpeakTriad.addEventListener("click", () => speakTriadNow());
+  const btnEngineFeed = document.getElementById("btn-engine-feed");
+  if (btnEngineFeed) btnEngineFeed.addEventListener("click", async () => {
+    try {
+      const r = await fetch("http://127.0.0.1:8088/api/engine?fresh=1&push=1");
+      const j = await r.json();
+      const m = (j.feed && j.feed.music) || {};
+      appendSerialLog(`# ENGINE|8b-is-music+8b-is-engine|${m.quant65k_layers}L|${m.qt}|${m.spherepop_chord}|pushed=${(j.pushed||[]).length}`);
+      if (triadVizBus) triadVizBus.postMessage({ type: "triad_viz_sync", hearts: "{<3,<3,<3}+1", engine: j.feed, ts: Date.now() });
+    } catch (e) { appendSerialLog("# ERR|engine feed needs wiglewww on 127.0.0.1:8088"); }
+  });
 
   if (triadVizBus) {
     setInterval(() => {

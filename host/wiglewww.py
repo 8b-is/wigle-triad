@@ -402,6 +402,47 @@ def compute_alexai_and_kompress(prompt_str: str | None = None) -> dict[str, Any]
     }
 
 
+MUSIC_BIN = ROOT_DIR.parent / "8b-is-music" / "target" / "release" / "8b-is-music"
+_ENGINE_CACHE: dict[str, Any] = {"ts": 0.0, "feed": None}
+
+
+def fetch_engine_feed(max_age_s: float = 20.0) -> dict[str, Any]:
+    """8b-is-music + 8b-is-engine feed (Quant65k+, SpherePOP chord, Liquid EQ, CT-000)."""
+    now = time.time()
+    if _ENGINE_CACHE["feed"] is not None and now - _ENGINE_CACHE["ts"] < max_age_s:
+        return _ENGINE_CACHE["feed"]
+    feed: dict[str, Any]
+    try:
+        proc = subprocess.run([str(MUSIC_BIN), "triad"], capture_output=True, text=True, timeout=20, check=False)
+        feed = json.loads(proc.stdout.strip().splitlines()[-1])
+    except Exception as exc:
+        feed = {"source": "8b-is-music+8b-is-engine", "error": str(exc), "hearts": "{<3,<3,<3}+1"}
+    _ENGINE_CACHE.update(ts=now, feed=feed)
+    return feed
+
+
+def push_engine_to_boards(feed: dict[str, Any]) -> list[str]:
+    """Send ENGINE|... to every attached ESP32 (displayed/logged; boards echo # ENGINE)."""
+    ports = discover_ports()
+    out: list[str] = []
+    if not ports or serial is None or "music" not in feed:
+        return out
+    m, e = feed["music"], feed.get("engine", {})
+    line = (
+        f"ENGINE {m.get('qt')}|{m.get('quant65k_layers')}|{m.get('family_chord_hz')}|"
+        f"{int(bool(e.get('ct000_routing_holds')))}{int(bool(e.get('ct000_family_holds')))}"
+    )
+    for port in ports:
+        try:
+            with serial.Serial(port, BAUD, timeout=0.2, dsrdtr=False, rtscts=False) as ser:
+                ser.write((line + "\n").encode("utf-8"))
+                ser.flush()
+                out.append(f"{port}: {line}")
+        except Exception as exc:
+            out.append(f"# ERR|{port}|{exc}")
+    return out
+
+
 def compute_viz_enthea() -> dict[str, Any]:
     ak = compute_alexai_and_kompress()
     a = ak["alexai"]
@@ -434,6 +475,7 @@ def compute_viz_enthea() -> dict[str, Any]:
         "kompress_ratio": k.get("compression_ratio"),
         "last_tts": VIZ_STATE.get("last_tts"),
         "tts_count": VIZ_STATE.get("tts_count", 1),
+        "engine_feed": fetch_engine_feed(),
     }
 
 
@@ -942,6 +984,11 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             else:
                 self._send(404, b"<svg xmlns='http://www.w3.org/2000/svg'/>", "image/svg+xml; charset=utf-8")
             return
+        if p in ("/api/engine", "/api/music"):
+            feed = fetch_engine_feed(max_age_s=0.0 if (qs.get("fresh") or ["0"])[0] == "1" else 20.0)
+            sent = push_engine_to_boards(feed) if (qs.get("push") or ["0"])[0] == "1" else []
+            self._send(200, json.dumps({"ok": True, "feed": feed, "pushed": sent}, indent=2).encode("utf-8"), "application/json; charset=utf-8")
+            return
         if p in ("/api/viz", "/api/enthea"):
             if (qs.get("step") or ["0"])[0] in ("1", "true"):
                 VIZ_STATE["mode_idx"] = (int(VIZ_STATE.get("mode_idx", 0)) + 1) % len(VIZ_MODES)
@@ -1114,6 +1161,7 @@ def main() -> int:
             added = sorted(cur - known)
             if added:
                 send_and_collect(added, "VIZ", wait_s=0.6)
+                push_engine_to_boards(fetch_engine_feed())
                 dispatch_triad_tts(
                     f"ESP32 Medusa Triad attached on {', '.join(pathlib.Path(p).name for p in added)}. Three hearts plus one online."
                 )
