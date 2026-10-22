@@ -40,6 +40,8 @@ struct State {
     last_tts: String,
     tts_count: u64,
     engine: Option<(Instant, Value)>,
+    learn: BTreeMap<String, Value>,
+    learn_seen: BTreeMap<String, u64>,
 }
 
 type Shared = Arc<Mutex<State>>;
@@ -100,7 +102,15 @@ fn serial_exchange(port: &str, cmd: &str, wait: Duration) -> std::io::Result<Vec
 }
 
 fn ingest(st: &mut State, port: &str, line: &str) {
-    if let Some(j) = line.strip_prefix("# JSON|") {
+    if let Some(j) = line.strip_prefix("# LEARN|") {
+        if let Ok(v) = serde_json::from_str::<Value>(j) {
+            let k = v["node"].as_str().unwrap_or(port).to_string();
+            let newer = v["seq"].as_u64() >= st.learn.get(&k).and_then(|o| o["seq"].as_u64());
+            if newer || v["status"].is_null() {
+                st.learn.insert(k, v);
+            }
+        }
+    } else if let Some(j) = line.strip_prefix("# JSON|") {
         if let Ok(mut v) = serde_json::from_str::<Value>(j) {
             v["port"] = json!(port);
             let k = v["medusa_node"].as_str().or(v["node"].as_str()).unwrap_or(port).to_string();
@@ -233,7 +243,7 @@ fn tcp_ok(addr: &str, payload: Option<&[u8]>, expect_http: bool) -> bool {
     true
 }
 
-fn dispatch_tts(st: &Shared, text: &str) -> Value {
+fn dispatch_tts(st: &Shared, text: &str, to_boards: bool) -> Value {
     let text = if text.trim().is_empty() {
         "{<3,<3,<3}+1 · Three hearts plus one, resonant across ESP32 Triad and Viz Enthea."
     } else {
@@ -245,7 +255,7 @@ fn dispatch_tts(st: &Shared, text: &str) -> Value {
         s.tts_count += 1;
     }
     let short: String = text.chars().take(56).collect();
-    let serial = send_all(st, &format!("SPEAK {short}"), Duration::from_millis(400));
+    let serial = if to_boards { send_all(st, &format!("SPEAK {short}"), Duration::from_millis(400)) } else { vec![] };
     let pkt = json!({
         "repo_name": "esp32-triad-viz", "branch": "main", "short_hash": "triad+1",
         "author": "MEDUSA Triad {<3,<3,<3}+1", "subject": text, "body": "", "files_changed": 3,
@@ -363,6 +373,10 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf) {
             });
             respond(&mut s, 200, json_t, &jbody(v));
         }
+        ("GET", "/api/learn") => {
+            let g = st.lock().unwrap();
+            respond(&mut s, 200, json_t, &jbody(json!({"ok": true, "nodes": g.learn.values().collect::<Vec<_>>()})));
+        }
         ("GET", "/api/wupz") => {
             // Ask every board for a WUPZ frame and verify its fold against host wupz-core.
             let lines = send_all(&st, "WUPZ 4242", Duration::from_millis(700));
@@ -395,7 +409,7 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf) {
         }
         ("POST", "/api/tts") | ("POST", "/api/speak") => {
             let t = serde_json::from_slice::<Value>(&body).ok().and_then(|v| v["text"].as_str().map(String::from)).unwrap_or_default();
-            respond(&mut s, 200, json_t, &jbody(dispatch_tts(&st, &t)));
+            respond(&mut s, 200, json_t, &jbody(dispatch_tts(&st, &t, true)));
         }
         ("POST", "/api/upload") => {
             let raw = String::from_utf8_lossy(&body).to_string();
@@ -457,6 +471,45 @@ fn main() {
     }));
     let www = root_dir().join("www");
 
+    // Learning loop: give each board the wall clock (hour-of-day bucket), read what it learned, and speak
+    // anything new with Kokoro on this Mac (the board also speaks it on-chip, with its own cooldown).
+    {
+        let st = st.clone();
+        thread::spawn(move || {
+            let tz = Command::new("date").arg("+%z").output().ok()
+                .and_then(|o| String::from_utf8(o.stdout).ok())
+                .map(|s| {
+                    let s = s.trim();
+                    let sign = if s.starts_with('-') { -1 } else { 1 };
+                    let (h, m) = (s.get(1..3).and_then(|x| x.parse::<i64>().ok()).unwrap_or(0), s.get(3..5).and_then(|x| x.parse::<i64>().ok()).unwrap_or(0));
+                    sign * (h * 3600 + m * 60)
+                })
+                .unwrap_or(0);
+            loop {
+                thread::sleep(Duration::from_secs(6));
+                if discover_ports().is_empty() {
+                    continue;
+                }
+                let epoch = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+                send_all(&st, &format!("TIME {epoch} {tz}\nLEARN"), Duration::from_millis(600));
+                let todo: Vec<(String, u64, String)> = {
+                    let mut g = st.lock().unwrap();
+                    let items: Vec<(String, u64, String)> = g.learn.iter()
+                        .filter_map(|(k, v)| Some((k.clone(), v["seq"].as_u64()?, v["say"].as_str()?.to_string())))
+                        .filter(|(k, seq, say)| !say.is_empty() && *seq > g.learn_seen.get(k).copied().unwrap_or(0))
+                        .collect();
+                    for (k, seq, _) in &items {
+                        g.learn_seen.insert(k.clone(), *seq);
+                    }
+                    items
+                };
+                for (node, _, say) in todo {
+                    dispatch_tts(&st, &format!("{node}: {say}"), false);
+                }
+            }
+        });
+    }
+
     // USB hotplug watcher: announce + push the 8b-is feed to newly attached boards.
     {
         let st = st.clone();
@@ -469,7 +522,7 @@ fn main() {
                     send_all(&st, "VIZ", Duration::from_millis(600));
                     let f = engine_feed(&st, true);
                     push_engine(&st, &f);
-                    dispatch_tts(&st, "ESP32 Medusa Triad attached. Three hearts plus one online.");
+                    dispatch_tts(&st, "ESP32 Medusa Triad attached. Three hearts plus one online.", true);
                 }
                 known = cur;
             }
