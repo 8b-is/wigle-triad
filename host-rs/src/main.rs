@@ -11,6 +11,7 @@
 
 use eight_b_is_music::{triad_feed, MultiBluetoothTopology, DEFAULT_QUANT65K_PLUS_LAYERS};
 use serde_json::{json, Value};
+mod alexai;
 use std::collections::BTreeMap;
 use std::fs;
 use std::io::{Read, Write};
@@ -341,16 +342,24 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf) {
         ("GET", "/api/triad.json") | ("GET", "/triad.json") => {
             let ports = discover_ports();
             let lines = send_all(&st, "JSON", Duration::from_millis(400));
+            let ak = alexai::compute(None, &st.lock().unwrap().beacons.values().cloned().collect::<Vec<_>>());
             let viz = viz_json(&st);
             let g = st.lock().unwrap();
             let v = json!({
                 "surface": "http://127.0.0.1:8088", "mirror": "https://esp32.vaked.dev",
                 "version": "3.0.0+rust-wupz-8b-is", "triad_hearts": "{<3,<3,<3}+1",
+                "offline_queue_count": alexai::queue_count(), "alexai": ak["alexai"], "kompress_ultra": ak["kompress_ultra"],
                 "runtime": "rust (no python)", "viz_enthea": viz, "wupz_seal": wupz_seal(&g),
                 "ports": ports, "nodes": g.nodes.values().collect::<Vec<_>>(),
                 "beacons_count": g.beacons.len(), "beacons": g.beacons.values().collect::<Vec<_>>(),
                 "raw_lines": lines,
             });
+            respond(&mut s, 200, json_t, &jbody(v));
+        }
+        ("GET", "/api/alexai") | ("GET", "/api/kompress") => {
+            let beacons: Vec<Value> = st.lock().unwrap().beacons.values().cloned().collect();
+            let mut v = alexai::compute(query(q, "prompt").map(|p| p.replace('+', " ")).as_deref(), &beacons);
+            v["ok"] = json!(true);
             respond(&mut s, 200, json_t, &jbody(v));
         }
         ("GET", "/api/wigle.csv") => {
@@ -361,6 +370,18 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf) {
             let t = serde_json::from_slice::<Value>(&body).ok().and_then(|v| v["text"].as_str().map(String::from)).unwrap_or_default();
             respond(&mut s, 200, json_t, &jbody(dispatch_tts(&st, &t)));
         }
+        ("POST", "/api/upload") => {
+            let raw = String::from_utf8_lossy(&body).to_string();
+            let (csv, rows) = if raw.trim_start().starts_with("WigleWifi-1.") {
+                let n = raw.lines().count().saturating_sub(2);
+                (raw, n)
+            } else {
+                let g = st.lock().unwrap();
+                (wigle_csv(&g), g.beacons.len())
+            };
+            respond(&mut s, 200, json_t, &jbody(alexai::upload(&csv, rows)));
+        }
+        ("POST", "/api/queue/flush") => respond(&mut s, 200, json_t, &jbody(alexai::flush_queue())),
         ("POST", "/api/cmd") => {
             let cmd = serde_json::from_slice::<Value>(&body).ok().and_then(|v| v["cmd"].as_str().map(String::from)).unwrap_or_else(|| "STATUS".into());
             let lines = send_all(&st, &cmd, Duration::from_millis(600));
