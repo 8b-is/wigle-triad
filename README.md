@@ -13,7 +13,7 @@
 **Kompress-Ultra v16.2.0 API:** [https://esp32.vaked.dev/api/kompress](https://esp32.vaked.dev/api/kompress)  
 **GitHub Repository (`HYPER-CHARM-KARMA`):** `HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter`  
 **Sovereign Library Ontology (`ONTOLOGY.md`):** [https://github.com/8b-is/sovereign-library/blob/main/ONTOLOGY.md](https://github.com/8b-is/sovereign-library/blob/main/ONTOLOGY.md) · [Pocoo OMNI Book (`dragon-ball-sovereign-ontology-omni`)](https://pocoo.vaked.dev/demos/book/dragon-ball-sovereign-ontology-omni.html) · [`8b-is/fandom-mcp`](https://github.com/8b-is/fandom-mcp)  
-**Local Web + USB Bridge (`wiglewww`):** `www/index.html` + `host/wiglewww.py` (`http://127.0.0.1:8088`)
+**Local Web + USB Bridge (`wiglewww`):** `www/index.html` + `host-rs (Rust, wupz-core + 8b-is-music)` (`http://127.0.0.1:8088`)
 
 Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. Each node listens exclusively to passive 2.4 GHz WiFi beacon frames (`WIFI_STA` + `WiFi.scanNetworks(false, true, true, 180)`, zero association, zero frame injection, zero payload capture) and streams real-time `W|` beacon lines, `Q|` balanced-ternary Kuramoto coherence frames, `# ALEXAI|`, `# KOMPRESS|`, `# QMOM|`, `# BOLDOG|`, `# LACRIMOSA|`, and `# JSON|` status frames over USB CDC serial (115200 baud).
 
@@ -25,7 +25,7 @@ Three **8b-is ESP32-S3** nodes, one passive WiGLE & N=NP spectral entropy rig. E
   - Zero external CDN dependencies (system geometric/monospace font stacks, inline SVG data-URI favicon, offline-guarded background audio iframe with local WebAudio `432·528·852 Hz` + `D+++` synthesis).
   - **Web / PWA (`www/sw.js` + `www/manifest.webmanifest`)**: Service Worker precaches the shell and `/api/triad.json`; `IndexedDB` (`wigle-triad-offline-db`) + `localStorage` (`wigle_triad_beacons_v2`, `wigle_triad_queue_v2`) persist all scanned endpoints and pending `WigleWifi-1.4` CSV uploads locally, with automatic queue flush on `online` reconnect.
   - **Android (`MainActivity.java`)**: `SQLiteDatabase` (`wigle_offline.db` tables `beacons_cache` & `upload_queue`) + `shouldInterceptRequest` serves bundled assets and local `/api/triad.json` / `/api/alexai` / `/api/kompress` snapshots with zero network errors in Airplane Mode, plus `ConnectivityManager.NetworkCallback` auto-sync.
-  - **macOS (`wigle-macos.swift`) & Python (`host/wiglewww.py`)**: Persistent local cache and upload queue in `~/.cache/wigle-triad/` with `--flush-queue` CLI support.
+  - **macOS (`wigle-macos.swift`) & Python (`host-rs (Rust, wupz-core + 8b-is-music)`)**: Persistent local cache and upload queue in `~/.cache/wigle-triad/` with `--flush-queue` CLI support.
 - **AlexAI (`8b-is/alexai` · `GAIA-MLX-QUANT` BitNet b1.58 `{-1, 0, +1}`)**:
   - 4-layer deterministic GAIA fold (`Ananke` gravity `1.0`, `Chaos` entropy rest `0.62`, `Zephyrus` weather rest `0.50`, `Aphrodite` golden resonance $\varphi = 1.618033988749895$) seeded via FNV-1a 32-bit + Mulberry32 PRNG.
   - Base-3 little-endian **5 trits/byte** packing (`1.585 bits/weight` · **`20.19×` compression vs FP32**) + masked ternary linear kernel $Y_i = \gamma \sum (W^+ - W^-) x_j$ + playable **D+++ 432Hz** harmonic synth.
@@ -173,7 +173,7 @@ open macos/WigleMac.app
 # 2. Scan Wi-Fi + BLE/BT + AirPlay and upload anonymously to BOTH esp32.vaked.dev AND api.wigle.net:
 ./macos/bin/wigle-macos --upload
 # or via the Python bridge:
-uv run --with pyserial python host/wiglewww.py --upload
+cargo run --release --manifest-path host-rs/Cargo.toml --upload
 
 # 3. Live W| (Wi-Fi) + B| (BLE/BT) + A| (AirPlay) + Q| + # QMOM| + # JSON| wire stream:
 ./macos/bin/wigle-macos --wire
@@ -183,7 +183,7 @@ uv run --with pyserial python host/wiglewww.py --upload
 ./macos/bin/wigle-macos --json
 
 # 5. Launch local wiglewww web + CoreWLAN/BLE/AirPlay + pyserial bridge on http://127.0.0.1:8088:
-uv run --with pyserial python host/wiglewww.py --port 8088
+cargo run --release --manifest-path host-rs/Cargo.toml --port 8088
 ```
 
 ## the dashboard
