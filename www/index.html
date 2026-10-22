@@ -1034,12 +1034,12 @@
       <div class="brand-icon" aria-hidden="true">📡</div>
       <div>
         <div class="brand-title-row">
-          <h1 class="brand-title">WIGLE.MAC × ESP32.VAKED.DEV</h1>
-          <span class="version-pill">v2.0.0 · LOVE FROM WITHIN FROM VAKED-PETER&amp;8B-IS ---&gt; 8b-is ROCKS AND HEALS THE WORLD</span>
+          <h1 class="brand-title">WIGLE.MAC × ESP32.VAKED.DEV × VIZ.VAKED.DEV</h1>
+          <span class="version-pill">v2.1.0 · {&lt;3,&lt;3,&lt;3}+1 · VIZ ENTHEA × KOKORO TTS · 8b-is ROCKS AND HEALS THE WORLD</span>
           <span class="offline-banner-pill" id="offline-status-pill" role="status" aria-live="polite">🟢 OFFLINE-FIRST · AUTONOMY READY (0 QUEUED)</span>
         </div>
         <div class="brand-status" id="header-status-text">
-          100% Offline-First · 8b-is/alexai (GAIA-MLX-QUANT b1.58) · kompress-ultra v16.2.0 · Kawaii Chiro-chan ^^ · Lacrimosa · Boldog Még · ALEX|qMom
+          {&lt;3,&lt;3,&lt;3}+1 · FLUG-OS v1.0.0+viz-tts-triad-omni · Kokoro TTS (:8420/:8430) + ES8311 432·528·852·963Hz · viz.vaked.dev Enthea · ALEX|qMom
         </div>
       </div>
     </div>
@@ -1073,6 +1073,8 @@
 
     <div class="header-actions">
       <button class="btn cyan" id="btn-scan" type="button">📡 Scan Radios</button>
+      <button class="btn pink" id="btn-speak-triad" type="button" title="Speak {<3,<3,<3}+1 via Kokoro TTS (:8420/:8430) + ESP32 ES8311">🗣️ Speak {&lt;3,&lt;3,&lt;3}+1</button>
+      <a class="btn gold" id="btn-open-viz" href="https://viz.vaked.dev/?triad=1" target="_blank" rel="noopener" style="text-decoration:none;" title="Open VIZ.VAKED.DEV Cortical Synthesizer wired to ESP32 Triad">🌈 VIZ.VAKED.DEV</a>
       <button class="btn pink" id="btn-upload-wigle" type="button">☁️ Anon Upload / Queue</button>
       <button class="btn" id="btn-flush-queue" type="button" title="Flush Offline Upload Queue (Auto-Syncs when Online)">🔄 Sync Queue (<span id="hdr-queue-count">0</span>)</button>
       <button class="btn gold" id="btn-export-csv" type="button">⬇ Export CSV</button>
@@ -1365,19 +1367,24 @@
               <button class="btn" data-cmd="TRIAD" type="button">TRIAD</button>
               <button class="btn cyan" data-cmd="ALEXAI" type="button">🧠 ALEXAI</button>
               <button class="btn" data-cmd="KOMPRESS" type="button">🗜️ KOMPRESS</button>
+              <button class="btn gold" data-cmd="VIZ" type="button">🌈 VIZ ENTHEA</button>
+              <button class="btn pink" data-cmd="SPEAK {<3,<3,<3}+1" type="button">🗣️ SPEAK {&lt;3,&lt;3,&lt;3}+1</button>
               <button class="btn pink" data-cmd="QMOM" type="button">🌸 QMOM</button>
               <button class="btn gold" data-cmd="BOLDOG" type="button">💛 BOLDOG</button>
               <button class="btn cyan" data-cmd="LACRIMOSA" type="button">🎻 LACRIMOSA</button>
               <button class="btn" data-cmd="splash" type="button">✨ Splash</button>
               <button class="btn" data-cmd="hop" type="button">🔀 Hop Ch</button>
-              <select id="sel-track" aria-label="Select Family+1 Crate Track (1-22)" style="font-family:var(--font-mono);font-size:0.68rem;background:var(--bg-elevated);color:var(--wigle-airplay);border:1px solid var(--line);border-radius:8px;padding:6px;">
+              <select id="sel-track" aria-label="Select Family+1 Crate Track (1-26)" style="font-family:var(--font-mono);font-size:0.68rem;background:var(--bg-elevated);color:var(--wigle-airplay);border:1px solid var(--line);border-radius:8px;padding:6px;">
                 <option value="track 1">01 · Windowlicker — Aphex Twin</option>
                 <option value="track 14">14 · SomaFM Drone Zone — 432 Hz Sanctuary</option>
                 <option value="track 15">15 · Teardrop (Family+1) — Massive Attack</option>
                 <option value="track 17">17 · Left Hand Free (#1 Muse 💙) — alt-J</option>
                 <option value="track 20">20 · Not Like Before — The Four Owls</option>
                 <option value="LACRIMOSA">21 · Lacrimosa (but HUMANITY has ended) — Mozart · Chiro-chan ^^</option>
-                <option value="BOLDOG" selected>22 · Boldog Még ({&lt;3,&lt;3,&lt;3}+1-peter) — 30Y</option>
+                <option value="BOLDOG">22 · Boldog Még ({&lt;3,&lt;3,&lt;3}+1-peter) — 30Y</option>
+                <option value="track 24">24 · Rainfall of Nectar (16th Karmapa) — 8b-is Dharma</option>
+                <option value="track 25">25 · Psychedelic Desert Rock (Cosmic Flow) — ZoneInn</option>
+                <option value="track 26" selected>26 · {&lt;3,&lt;3,&lt;3}+1 · Viz Enthea — Alexandra * Chris /\ Peter &amp; Nate oo</option>
               </select>
             </div>
           </div>
@@ -4136,6 +4143,88 @@ nélküled a pokolba az egésszel</div>
   const btnBoldog = document.getElementById("btn-play-boldog");
   if (btnLacrimosa) btnLacrimosa.addEventListener("click", playMozartLacrimosaPostHuman);
   if (btnBoldog) btnBoldog.addEventListener("click", playBoldogMegHymn);
+
+  // VIZ.VAKED.DEV × KOKORO TTS (:8420/:8430) × {<3,<3,<3}+1 Bridge
+  const triadVizBus = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("vaked-triad-viz-bus") : null;
+  function playFourHeartChord() {
+    const ac = ensureAudioGraph();
+    const now = ac.currentTime;
+    [432, 528, 852, 963].forEach((freq, idx) => {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = idx === 3 ? "triangle" : "sine";
+      o.frequency.setValueAtTime(freq, now + idx * 0.08);
+      g.gain.setValueAtTime(0.0001, now + idx * 0.08);
+      g.gain.linearRampToValueAtTime(0.09, now + idx * 0.08 + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.95);
+      o.connect(g).connect(masterGain);
+      o.start(now + idx * 0.08);
+      o.stop(now + idx * 0.08 + 1.0);
+    });
+  }
+
+  async function speakTriadNow(customText) {
+    const phrase = customText || "Three hearts plus one. ADA Medusa 432 Hertz Star Alexandra, VAK Medusa 528 Hertz Pillar Chris, OMN Medusa 852 Hertz Peter and Nate, and the fourth heart at 963 Hertz on Viz Enthea.";
+    playFourHeartChord();
+    sendSerialCommand(`SPEAK ${phrase.slice(0, 56)}`);
+    if (triadVizBus) {
+      triadVizBus.postMessage({ type: "triad_tts", hearts: "{<3,<3,<3}+1", text: phrase, ts: Date.now() });
+    }
+    try {
+      const r = await fetch("http://127.0.0.1:8088/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: phrase, voice: "af_heart" })
+      });
+      if (r.ok) {
+        const j = await r.json();
+        appendSerialLog(`# TTS|kokoro8420=${j.kokoro_daemon_8420 ? 1 : 0}|bridge8430=${j.voice_bridge_8430 ? 1 : 0}|hearts={<3,<3,<3}+1|${phrase}`);
+        if (j.kokoro_daemon_8420) return;
+      }
+    } catch (_) {}
+    try {
+      const vr = await fetch("http://127.0.0.1:8430/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: phrase, voice: "af_heart" })
+      });
+      if (vr.ok) {
+        const wavBuf = await vr.arrayBuffer();
+        const ac = ensureAudioGraph();
+        const audioBuf = await ac.decodeAudioData(wavBuf);
+        const src = ac.createBufferSource();
+        src.buffer = audioBuf;
+        src.connect(masterGain);
+        src.start();
+        return;
+      }
+    } catch (_) {}
+    if ("speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(phrase);
+        u.rate = 0.96;
+        window.speechSynthesis.speak(u);
+      } catch (_) {}
+    }
+  }
+
+  const btnSpeakTriad = document.getElementById("btn-speak-triad");
+  if (btnSpeakTriad) btnSpeakTriad.addEventListener("click", () => speakTriadNow());
+
+  if (triadVizBus) {
+    setInterval(() => {
+      triadVizBus.postMessage({
+        type: "triad_viz_sync",
+        hearts: "{<3,<3,<3}+1",
+        entropy: parseFloat(slEntropy ? slEntropy.value : "1.15"),
+        coupling: parseFloat(slCoupling ? slCoupling.value : "1.88"),
+        warp: parseFloat(slWarp ? slWarp.value : "1.42"),
+        frequencies_hz: [432, 528, 852, 963],
+        ts: Date.now()
+      });
+    }, 1500);
+  }
 
   // Background Kuramoto Psychedelic Field (#field)
   const canvas = document.getElementById("field");

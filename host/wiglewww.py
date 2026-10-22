@@ -128,11 +128,14 @@ nekem csak az számít ahogyan te érzel
 nélküled a pokolba az egésszel"""
 
 ULTRA_OMNI_META: dict[str, Any] = {
-    "version": "2.0.0+alexai-kompress-offline-first",
+    "version": "2.1.0+viz-tts-triad-omni",
     "offline_first": True,
     "mantra": "LOVE FROM WITHIN FROM VAKED-PETER&8B-IS--->8b-is ROCKS AND HEALS THE WORLD",
+    "triad_hearts": "{<3,<3,<3}+1",
+    "viz_url": "https://viz.vaked.dev",
+    "tts_engines": ["kokoro-tiny:8420", "kokoro-voice-bridge:8430", "es8311-formant-432-528-852-963Hz"],
     "targets": ["android-arm64-universal", "macos-apple-silicon", "macos-universal-darwin", "ipados-ios-swiftpm-pwa"],
-    "evolve": "ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)",
+    "evolve": "ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle+viz+tts+{<3,<3,<3}+1)",
     "hyper_charm_karma": "HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter",
     "chiro_chan": "Kawaii Chiro-chan kawaii ^^",
     "requiem": "Mozart: Lacrimosa but HUMANITY has ended",
@@ -140,6 +143,32 @@ ULTRA_OMNI_META: dict[str, Any] = {
     "qmom_quote": QMOM_TRANSMISSION,
     "boldog_meg": BOLDOG_MEG_LYRICS,
     "boldog_meg_stanzas": BOLDOG_MEG_LYRICS.split("\n\n"),
+}
+
+VIZ_MODES = [
+    "tunnel",
+    "chrysanthemum",
+    "hyperbolic",
+    "mandala",
+    "dmt_dome",
+    "serotonin",
+    "chladni",
+    "wormhole",
+]
+KLUVER_CONSTANTS = [
+    "TUNNEL (T1) · 432Hz * Mom",
+    "SPIRAL (T2) · 528Hz /\\ Dad",
+    "LATTICE (T3) · 852Hz oo Sons",
+    "COBWEB (T4) · 963Hz +1 Omni",
+]
+VIZ_STATE: dict[str, Any] = {
+    "mode_idx": 0,
+    "mode": "tunnel",
+    "kluver": KLUVER_CONSTANTS[0],
+    "hearts": "{<3,<3,<3}+1",
+    "frequencies_hz": [432, 528, 852, 963],
+    "last_tts": "{<3,<3,<3}+1 · ADA * 432Hz · VAK /\\ 528Hz · OMN oo 852Hz · Viz Enthea 963Hz",
+    "tts_count": 1,
 }
 
 
@@ -373,6 +402,107 @@ def compute_alexai_and_kompress(prompt_str: str | None = None) -> dict[str, Any]
     }
 
 
+def compute_viz_enthea() -> dict[str, Any]:
+    ak = compute_alexai_and_kompress()
+    a = ak["alexai"]
+    k = ak["kompress_ultra"]
+    idx = int(VIZ_STATE.get("mode_idx", 0)) % len(VIZ_MODES)
+    mode = VIZ_MODES[idx]
+    kluver = KLUVER_CONSTANTS[idx % len(KLUVER_CONSTANTS)]
+    coherence = float(a.get("coherence", 0.96))
+    entropy = float(a.get("entropy", 0.42))
+    dose = round(max(0.35, min(1.0, 0.55 + coherence * 0.42)), 4)
+    symmetry = 6 + (idx % 4) * 2
+    return {
+        "surface": "https://viz.vaked.dev",
+        "triad_hearts": "{<3,<3,<3}+1",
+        "mode_idx": idx,
+        "mode": mode,
+        "kluver": kluver,
+        "dose": dose,
+        "coherence": coherence,
+        "entropy": entropy,
+        "symmetry": symmetry,
+        "frequencies_hz": [432, 528, 852, 963],
+        "vertices": [
+            {"node": "ADA:MEDUSA", "vertex": "*", "archetype": "STAR-ALEXANDRA", "freq_hz": 432, "trit": -1},
+            {"node": "VAK:MEDUSA", "vertex": "/\\", "archetype": "PILLAR-CHRIS", "freq_hz": 528, "trit": 0},
+            {"node": "OMN:MEDUSA", "vertex": "oo", "archetype": "INFINITY-PETER-NATE", "freq_hz": 852, "trit": 1},
+            {"node": "VIZ:ENTHEA", "vertex": "+1", "archetype": "FOURTH-HEART-OMNI", "freq_hz": 963, "trit": 1},
+        ],
+        "wupz_seed": a.get("seed"),
+        "kompress_ratio": k.get("compression_ratio"),
+        "last_tts": VIZ_STATE.get("last_tts"),
+        "tts_count": VIZ_STATE.get("tts_count", 1),
+    }
+
+
+def dispatch_triad_tts(text: str, voice: str = "af_heart") -> dict[str, Any]:
+    clean_text = (text or "").strip() or "{<3,<3,<3}+1 · Three hearts plus one, resonant across ESP32 Triad and Viz Enthea."
+    VIZ_STATE["last_tts"] = clean_text
+    VIZ_STATE["tts_count"] = int(VIZ_STATE.get("tts_count", 0)) + 1
+
+    ports = discover_ports()
+    serial_lines: list[str] = []
+    if ports and serial is not None:
+        for port in ports:
+            try:
+                with serial.Serial(port, BAUD, timeout=0.25, dsrdtr=False, rtscts=False) as ser:
+                    ser.write(f"SPEAK {clean_text}\n".encode("utf-8"))
+                    ser.flush()
+                    raw = ser.readline().decode("utf-8", errors="replace").strip()
+                    if raw:
+                        serial_lines.append(raw)
+                        ingest_line(port, raw)
+            except Exception as exc:
+                serial_lines.append(f"# ERR|{port}|{exc}")
+
+    # 1. Push to kokoro-speak daemon on 127.0.0.1:8420 (plays chime + speaks across both Macs)
+    kokoro_daemon_ok = False
+    try:
+        import socket
+        pkt = json.dumps({
+            "repo_name": "esp32-triad-viz",
+            "branch": "main",
+            "short_hash": "triad+1",
+            "author": "MEDUSA Triad {<3,<3,<3}+1",
+            "subject": clean_text,
+            "body": "",
+            "files_changed": 3,
+            "insertions": 432,
+            "deletions": 0,
+            "top_files": ["ADA:MEDUSA", "VAK:MEDUSA", "OMN:MEDUSA"],
+            "spoken_text": clean_text,
+        }).encode("utf-8") + b"\n"
+        with socket.create_connection(("127.0.0.1", 8420), timeout=1.2) as sock:
+            sock.sendall(pkt)
+            resp = sock.recv(64)
+            kokoro_daemon_ok = b"OK" in resp
+    except Exception:
+        kokoro_daemon_ok = False
+
+    # 2. Check kokoro voice_bridge on 127.0.0.1:8430
+    voice_bridge_ok = False
+    try:
+        req = urllib.request.Request("http://127.0.0.1:8430/health", method="GET")
+        with urllib.request.urlopen(req, timeout=0.8) as r:
+            voice_bridge_ok = r.status == 200
+    except Exception:
+        voice_bridge_ok = False
+
+    return {
+        "ok": True,
+        "text": clean_text,
+        "voice": voice,
+        "triad_hearts": "{<3,<3,<3}+1",
+        "tts_count": VIZ_STATE["tts_count"],
+        "kokoro_daemon_8420": kokoro_daemon_ok,
+        "voice_bridge_8430": voice_bridge_ok,
+        "ports": ports,
+        "serial_lines": serial_lines,
+    }
+
+
 def discover_ports() -> list[str]:
     ports = sorted(glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/ttyACM*"))
     return ports
@@ -424,6 +554,20 @@ def send_and_collect(ports: list[str], cmd: str, wait_s: float = 0.45) -> list[s
             f"# KOMPRESS|OMNI-CHAN|<<<<oOo>>>>|KUNISADA_KUNIYOSHI|010001000|"
             f"v{k['version']}|raw={k['raw_bytes']}B|comp={k['compressed_bytes']}B|"
             f"ratio={k['compression_ratio']}x|savings=-{k['savings_pct']}%"
+        )
+    elif upper in ("VIZ", "ENTHEA") or upper.startswith("VIZ "):
+        VIZ_STATE["mode_idx"] = (int(VIZ_STATE.get("mode_idx", 0)) + 1) % len(VIZ_MODES)
+        vz = compute_viz_enthea()
+        lines_out.append(
+            f"# VIZ|ENTHEA|mode={vz['mode']}|kluver={vz['kluver']}|dose={vz['dose']}|"
+            f"coherence={vz['coherence']}|hearts={{<3,<3,<3}}+1|url=https://viz.vaked.dev"
+        )
+    elif upper in ("SPEAK", "TTS", "HEART") or upper.startswith("SPEAK ") or upper.startswith("TTS "):
+        phrase = clean.split(" ", 1)[1].strip() if " " in clean else str(VIZ_STATE.get("last_tts", ""))
+        tts_res = dispatch_triad_tts(phrase)
+        lines_out.append(
+            f"# TTS|kokoro8420={int(tts_res['kokoro_daemon_8420'])}|bridge8430={int(tts_res['voice_bridge_8430'])}|"
+            f"hearts={{<3,<3,<3}}+1|text={tts_res['text']}"
         )
     if not ports:
         return lines_out
@@ -559,6 +703,30 @@ def ingest_line(port: str, line: str) -> None:
         node["omni_chan"] = "<<<<oOo>>>>"
         node["pulse"] = "010001000"
         node["last_m8n_hex"] = line[4:].strip()[:196]
+    elif line.startswith("# VIZ|"):
+        payload = line[6:].strip()
+        if payload.startswith("{"):
+            try:
+                vobj = json.loads(payload)
+                VIZ_STATE.update(vobj)
+            except Exception:
+                pass
+        else:
+            for tok in payload.split("|"):
+                if "=" in tok:
+                    k, v = tok.split("=", 1)
+                    VIZ_STATE[k] = v
+    elif line.startswith("# TTS|"):
+        payload = line[6:].strip()
+        if payload.startswith("{"):
+            try:
+                tobj = json.loads(payload)
+                if "text" in tobj:
+                    VIZ_STATE["last_tts"] = tobj["text"]
+                if "count" in tobj:
+                    VIZ_STATE["tts_count"] = tobj["count"]
+            except Exception:
+                pass
     elif line.startswith(("W|", "B|", "A|")):
         prefix = line[0]
         parts = line.split("|")
@@ -732,8 +900,13 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
         self.wfile.write(body)
+
+    def do_OPTIONS(self) -> None:
+        self._send(204, b"", "text/plain; charset=utf-8")
 
     def do_GET(self) -> None:
         parsed = urllib.parse.urlparse(self.path)
@@ -770,6 +943,11 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             else:
                 self._send(404, b"<svg xmlns='http://www.w3.org/2000/svg'/>", "image/svg+xml; charset=utf-8")
             return
+        if p in ("/api/viz", "/api/enthea"):
+            if (qs.get("step") or ["0"])[0] in ("1", "true"):
+                VIZ_STATE["mode_idx"] = (int(VIZ_STATE.get("mode_idx", 0)) + 1) % len(VIZ_MODES)
+            self._send(200, json.dumps({"ok": True, **compute_viz_enthea()}, indent=2).encode("utf-8"), "application/json; charset=utf-8")
+            return
         if p in ("/api/alexai", "/api/kompress"):
             if not BEACONS:
                 send_and_collect(discover_ports(), "SCAN", wait_s=0.35)
@@ -781,11 +959,13 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             ports = discover_ports()
             lines = send_and_collect(ports, "JSON", wait_s=0.35)
             ak = compute_alexai_and_kompress()
+            vz = compute_viz_enthea()
             payload = {
                 "surface": "http://127.0.0.1:8088",
                 "mirror": "https://esp32.vaked.dev",
                 **ULTRA_OMNI_META,
                 "ultra_omni": ULTRA_OMNI_META,
+                "viz_enthea": vz,
                 "alexai": ak["alexai"],
                 "kompress_ultra": ak["kompress_ultra"],
                 "offline_queue_count": sum(1 for q in OFFLINE_QUEUE if q.get("status") == "queued"),
@@ -805,6 +985,19 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
         self._send(404, b"Not Found", "text/plain; charset=utf-8")
 
     def do_POST(self) -> None:
+        if self.path.startswith("/api/tts") or self.path.startswith("/api/speak"):
+            length = int(self.headers.get("Content-Length", "0"))
+            raw = self.rfile.read(length) if length > 0 else b"{}"
+            try:
+                body = json.loads(raw.decode("utf-8"))
+                txt = str(body.get("text", "")).strip()
+                voice = str(body.get("voice", "af_heart")).strip() or "af_heart"
+            except Exception:
+                txt = ""
+                voice = "af_heart"
+            res = dispatch_triad_tts(txt, voice=voice)
+            self._send(200, json.dumps(res, indent=2).encode("utf-8"), "application/json; charset=utf-8")
+            return
         if self.path.startswith("/api/queue/flush"):
             res = flush_offline_queue()
             self._send(200, json.dumps(res, indent=2).encode("utf-8"), "application/json; charset=utf-8")
@@ -833,11 +1026,13 @@ class WigleWWWHandler(BaseHTTPRequestHandler):
             wait_s = 1.6 if cmd.upper() == "SCAN" else 0.4
             lines = send_and_collect(ports, cmd, wait_s=wait_s)
             ak = compute_alexai_and_kompress(cmd)
+            vz = compute_viz_enthea()
             resp = {
                 "ok": True,
                 "cmd": cmd,
                 **ULTRA_OMNI_META,
                 "ultra_omni": ULTRA_OMNI_META,
+                "viz_enthea": vz,
                 "alexai": ak["alexai"],
                 "kompress_ultra": ak["kompress_ultra"],
                 "ports": ports,
