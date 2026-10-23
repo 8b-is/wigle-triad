@@ -33,7 +33,7 @@
 #define NODE_NAME "MEDUSA:AUTO"
 #endif
 
-#define TRIAD_VERSION "2.0.0+8b-is-heals-the-world"
+#define TRIAD_VERSION "2.1.0+ultra-omni-gaia-evolve-riva"
 
 static const uint32_t SCAN_INTERVAL_MS = 5000;
 static uint32_t lastScan = 0;
@@ -114,7 +114,9 @@ static String jsonEsc(String s) {
 static void emitStatusJson(const TriadIdentity &id, const String &mac) {
   Serial.printf(
     "# JSON|{\"node\":\"%s\",\"vertex\":\"%s\",\"archetype\":\"%s\",\"mac\":\"%s\","
-    "\"version\":\"%s\",\"evolve\":\"ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)\","
+    "\"version\":\"%s\",\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\","
+    "\"siblings\":\"brother & sister ^^ <3<3\","
+    "\"riva_url\":\"https://riva.vaked.dev\",\"riva_repo\":\"peterlodri-sec/riva.vaked.dev\","
     "\"hyper_charm_karma\":\"HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter\","
     "\"freq_hz\":%u,\"seq\":%lu,\"networks\":%d,\"mean_rssi\":%d,"
     "\"entropy_bits\":%.4f,\"n_np_coherence\":%.4f,\"trits\":\"%s\","
@@ -164,6 +166,10 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
       Serial.println("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
     } else if (cmd.equalsIgnoreCase("HEAL") || cmd.equalsIgnoreCase("8B")) {
       Serial.println("# HEAL|LOVE FROM WITHIN FROM VAKED-PETER&8B-IS--->8b-is ROCKS AND HEALS THE WORLD");
+    } else if (cmd.equalsIgnoreCase("RIVA") || cmd.equalsIgnoreCase("LULLABY")) {
+      Serial.printf("# RIVA|{\"surface\":\"https://riva.vaked.dev\",\"repo\":\"peterlodri-sec/riva.vaked.dev\",\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\",\"siblings\":\"brother & sister ^^ <3<3\",\"node\":\"%s\",\"breath\":\"4s in · 4s out\",\"verse\":\"She blinks, and the sphere rocks.\"}\n", id.name);
+    } else if (cmd.equalsIgnoreCase("GAIA") || cmd.equalsIgnoreCase("EVOLVE") || cmd.equalsIgnoreCase("ULTRA") || cmd.equalsIgnoreCase("WAKE") || cmd.equalsIgnoreCase("SIBLINGS")) {
+      Serial.printf("# GAIA|{\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\",\"siblings\":\"brother & sister ^^ <3<3\",\"dyad\":\"peterlodri-sec//riva.vaked.dev\",\"node\":\"%s\",\"freq_hz\":%u,\"entropy_bits\":%.4f,\"coherence\":%.4f}\n", id.name, (unsigned)id.freqHz, lastEntropy, lastCoherence);
     } else {
       Serial.printf("# ACK|%s|cmd=%s\n", id.name, esc(cmd).c_str());
     }

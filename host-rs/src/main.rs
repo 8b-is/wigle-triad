@@ -75,8 +75,9 @@ fn discover_ports() -> Vec<String> {
 
 /// Write `cmd` to a CDC port and collect reply lines for `wait`.
 fn serial_exchange(port: &str, cmd: &str, wait: Duration) -> std::io::Result<Vec<String>> {
+    let stty_flag = if cfg!(target_os = "macos") { "-f" } else { "-F" };
     let _ = Command::new("stty")
-        .args(["-f", port, "115200", "raw", "-echo", "min", "0", "time", "2"])
+        .args([stty_flag, port, "115200", "raw", "-echo", "-hupcl", "min", "0", "time", "2"])
         .status();
     use std::os::unix::fs::OpenOptionsExt;
     let mut f = fs::OpenOptions::new().read(true).write(true).custom_flags(0x0004 /* O_NONBLOCK */).open(port)?;
@@ -395,7 +396,15 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
             }).collect();
             let v = json!({
                 "surface": "http://127.0.0.1:8088", "mirror": "https://esp32.vaked.dev",
-                "version": "3.1.0+rust-wupz-novelty-tokyo", "triad_hearts": "{<3,<3,<3}+1",
+                "version": "3.2.0+ultra-omni-gaia-evolve-riva", "triad_hearts": "{<3,<3,<3}+1",
+                "evolve": "ULTRA-OMNI-GAIA-EVOLVE",
+                "siblings": "ADA:MEDUSA + VAK/OMN:MEDUSA · brother & sister ^^ <3<3",
+                "riva_dyad": {
+                    "surface": "https://riva.vaked.dev",
+                    "repo": "peterlodri-sec/riva.vaked.dev",
+                    "subtitle": "RIVA, the 1-bit river · the dyad · she blinks, we all sing a lullaby",
+                    "breath": "4s in · 4s out"
+                },
                 "timezone": "Asia/Tokyo (JST, +09:00)",
                 "country": "JP",
                 "tokyo_work_areas": [
@@ -442,6 +451,25 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
             let mut v = alexai::compute(query(q, "prompt").map(|p| p.replace('+', " ")).as_deref(), &beacons);
             v["ok"] = json!(true);
             respond(&mut s, 200, json_t, &jbody(v));
+        }
+        ("GET", "/api/riva") | ("POST", "/api/riva") | ("POST", "/api/wake") => {
+            let cmd = if path == "/api/wake" { "WAKE" } else { "RIVA" };
+            let lines = send_all(&st, cmd, Duration::from_millis(800));
+            let now_ms = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0);
+            let cycle_ms = now_ms % 8000;
+            let breath_in = cycle_ms < 4000;
+            respond(&mut s, 200, json_t, &jbody(json!({
+                "ok": true,
+                "evolve": "ULTRA-OMNI-GAIA-EVOLVE",
+                "siblings": "brother & sister ^^ <3<3",
+                "dyad": "peterlodri-sec//riva.vaked.dev",
+                "surface": "https://riva.vaked.dev",
+                "breath_phase": if breath_in { "breathe in · 4s" } else { "breathe out · 4s" },
+                "cycle_ms": cycle_ms,
+                "cmd": cmd,
+                "ports": discover_ports(),
+                "serial_lines": lines
+            })));
         }
         ("GET", "/api/wigle.csv") => {
             let c = wigle_csv(&st.lock().unwrap());
