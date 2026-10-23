@@ -395,7 +395,16 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
             }).collect();
             let v = json!({
                 "surface": "http://127.0.0.1:8088", "mirror": "https://esp32.vaked.dev",
-                "version": "3.1.0+rust-wupz-novelty", "triad_hearts": "{<3,<3,<3}+1",
+                "version": "3.1.0+rust-wupz-novelty-tokyo", "triad_hearts": "{<3,<3,<3}+1",
+                "timezone": "Asia/Tokyo (JST, +09:00)",
+                "country": "JP",
+                "tokyo_work_areas": [
+                    {"name": "Sony R&D · Shinagawa-Osaki-Minato Campus", "lat": 35.6200, "lon": 139.7285, "observations": 50987},
+                    {"name": "Ota-ku · Kamata / Omori Base", "lat": 35.5617, "lon": 139.7210, "observations": 41938},
+                    {"name": "Shinjuku · Shinjuku Gyoen Sanctuary", "lat": 35.6852, "lon": 139.7100, "observations": 18340},
+                    {"name": "Shibuya · Yoyogi / Crossing", "lat": 35.6580, "lon": 139.7016, "observations": 2871},
+                    {"name": "Minato-ku · Roppongi / Toranomon", "lat": 35.6655, "lon": 139.7378, "observations": 2711}
+                ],
                 "offline_queue_count": alexai::queue_count(), "alexai": ak["alexai"], "kompress_ultra": ak["kompress_ultra"],
                 "runtime": "rust (no python)", "viz_enthea": viz, "wupz_seal": wupz_seal(&g),
                 "ports": ports, "nodes": g.nodes.values().collect::<Vec<_>>(),
