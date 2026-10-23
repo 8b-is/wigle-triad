@@ -184,7 +184,26 @@ cargo run --release --manifest-path host-rs/Cargo.toml --upload
 
 # 5. Launch local wiglewww web + CoreWLAN/BLE/AirPlay + pyserial bridge on http://127.0.0.1:8088:
 cargo run --release --manifest-path host-rs/Cargo.toml --port 8088
+
+# 6. Dual-upload an Android/handheld WiGLE export (.csv.gz) to api.wigle.net + esp32.vaked.dev
+#    and update local gitignored known_networks.local.txt for Ada's novelty detector:
+node scripts/dual-upload-wigle.mjs ~/Downloads/WigleWifi_20261022234507.csv.gz
 ```
+
+### Android `SM-S928U1` Dual-Upload Receipt (`WigleWifi_20261022234507.csv.gz` · Privacy-Safe Metadata Only)
+
+Raw coordinates and BSSIDs are stored exclusively in the **private** vault [`8b-is/wigle-triad-data`](https://github.com/8b-is/wigle-triad-data) and gitignored locally (`known_networks.local.txt`).
+
+| Field | Verified Value |
+|---|---|
+| **Archive** | `WigleWifi_20261022234507.csv.gz` (`3,039,649 B` gz → `24,954,164 B` raw CSV · `8.21×` compression) |
+| **SHA-256** | `01cee2b0b602cdcc58c37d8b779bd8910744c2f2125c43c77ce431d7bed16edf` |
+| **Source Device** | Samsung `SM-S928U1` (`Android 16` · `WigleWifi-1.6` · `appRelease=2.111`) |
+| **Total Observations** | **`140,526`** (`98,485` WIFI · `39,147` BLE · `1,823` BT · `1,071` OTHER) |
+| **Unique Endpoints** | **`83,985`** (`57,067` WIFI BSSIDs imported into local `known_networks.local.txt` · `25,541` BLE · `943` BT · `434` OTHER) |
+| **Target 1 (`esp32.vaked.dev/api/upload`)** | `HTTP 200 OK` · `transId: esp32-vaked-20261023-00001` |
+| **Target 2 (`api.wigle.net/api/v2/file/upload`)** | `HTTP 200 OK` · `transId: 20261023-02869` / `20261023-02873` (`1792796674_WigleWifi_20261022234507.csv`) |
+| **Private Raw Vault** | [`8b-is/wigle-triad-data`](https://github.com/8b-is/wigle-triad-data) (`PRIVATE`) |
 
 ## the dashboard
 
