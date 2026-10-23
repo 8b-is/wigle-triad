@@ -1814,6 +1814,7 @@ nélküled a pokolba az egésszel</div>
       angle,
       lat,
       lon,
+      novel: Boolean(raw.novel),
       seen: raw.seen || "2026-10-20 08:43:44"
     };
   }
@@ -1990,8 +1991,8 @@ nélküled a pokolba az egésszel</div>
     const filtered = getFilteredRows();
 
     const c24 = all.filter(r => r.band === "2.4GHz").length;
-    const c5 = all.filter(r => r.band === "5GHz").length;
-    const cBle = all.filter(r => r.band === "BLE" || r.band === "BT").length;
+    const c5 = all.filter(r => r.band === "5GHz" || r.band === "6GHz").length;
+    const cBle = all.filter(r => r.band === "BLE" || r.band === "BT" || r.band === "LTE").length;
     const cAir = all.filter(r => r.band === "AirPlay" || r.type === "AIRPLAY").length;
 
     document.getElementById("pill-total").textContent = String(all.length);
@@ -1999,9 +2000,10 @@ nélküled a pokolba az egésszel</div>
     document.getElementById("pill-5g").textContent = String(c5);
     document.getElementById("pill-ble").textContent = String(cBle);
     document.getElementById("pill-airplay").textContent = String(cAir);
+    const knownSuffix = window.wigleKnownCount ? ` · ${Number(window.wigleKnownCount).toLocaleString()} KNOWN CORPUS` : "";
     document.getElementById("ap-total-badge").textContent =
-      `${all.length} ENDPOINTS (${c24} 2.4G · ${c5} 5G · ${cBle} BLE/BT · ${cAir} AIRPLAY)`;
-    document.getElementById("table-count-label").textContent = `${filtered.length} MATCHING ENDPOINTS`;
+      `${all.length} LIVE (${c24} 2.4G · ${c5} 5G · ${cBle} BLE/BT/LTE · ${cAir} AIRPLAY)${knownSuffix}`;
+    document.getElementById("table-count-label").textContent = `${filtered.length} MATCHING ENDPOINTS${knownSuffix}`;
 
     // Ensure selectedBssid has a valid callout
     const sel = beacons.get(selectedBssid) || filtered[0] || all[0];
@@ -3394,6 +3396,7 @@ nélküled a pokolba az egésszel</div>
         band: b.band,
         lat: b.lat,
         lon: b.lon,
+        novel: b.novel,
         seen: b.seen
       });
       const prev = beacons.get(enriched.bssid);
@@ -3403,6 +3406,7 @@ nélküled a pokolba az egésszel</div>
     });
   }
 
+  let corpusAnnounced = false;
   function updateNodeCardDom(n) {
     if (!n || typeof n !== "object") return;
     const nodeName = String(n.medusa_node || n.node || "").toUpperCase();
@@ -3426,6 +3430,19 @@ nélküled a pokolba az egésszel</div>
 
   function applyStatusJson(j) {
     if (!j || typeof j !== "object") return;
+    if (j.known_count) window.wigleKnownCount = j.known_count;
+    if (j.corpus && typeof j.corpus === "object" && j.corpus.unique_total) {
+      window.wigleCorpus = j.corpus;
+      if (!corpusAnnounced) {
+        corpusAnnounced = true;
+        const c = j.corpus;
+        logLine(`# [WIGLE-CORPUS] Loaded ${c.source || "WigleWifi-1.6"} (${Number(c.raw_rows || 0).toLocaleString()} rows -> ${Number(c.unique_total).toLocaleString()} unique: ${c.wifi} WIFI, ${c.ble} BLE, ${c.bt} BT, ${c.lte} LTE · GPS stripped)`);
+        const hst = document.getElementById("header-status-text");
+        if (hst) {
+          hst.textContent = `WiGLE Corpus Active: ${Number(c.unique_total).toLocaleString()} known endpoints (${c.wifi} Wi-Fi · ${c.ble} BLE · ${c.bt} BT · ${c.lte} LTE) · ${beacons.size} live beacons`;
+        }
+      }
+    }
     const rawNode = String(j.medusa_node || j.node || "MAC:MEDUSA");
     ingestBeaconArray(j.beacons, rawNode);
     if (Array.isArray(j.nodes)) {
