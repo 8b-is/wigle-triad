@@ -37,6 +37,7 @@ struct State {
     known: HashSet<String>,
     nodes: BTreeMap<String, Value>,
     beacons: BTreeMap<String, Value>,
+    corpus: Value,
     viz_idx: usize,
     last_tts: String,
     tts_count: u64,
@@ -384,16 +385,17 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
         }
         ("GET", "/api/triad.json") | ("GET", "/triad.json") => {
             let ports = discover_ports();
-            let lines = send_all(&st, "JSON", Duration::from_millis(400));
+            let lines = if ports.is_empty() { vec![] } else { send_all(&st, "SCAN", Duration::from_millis(450)) };
             let ak = alexai::compute(None, &st.lock().unwrap().beacons.values().cloned().collect::<Vec<_>>());
             let viz = viz_json(&st);
             let g = st.lock().unwrap();
-            let beacons: Vec<Value> = g.beacons.values().cloned().map(|mut b| {
+            let mut beacons: Vec<Value> = g.beacons.values().cloned().map(|mut b| {
                 let mac = b["bssid"].as_str().unwrap_or("").to_string();
                 let novel = !g.known.contains(&mac);
                 b["novel"] = json!(novel);
                 b
             }).collect();
+            beacons.sort_by_key(|b| -b["rssi"].as_i64().unwrap_or(-100));
             let v = json!({
                 "surface": "http://127.0.0.1:8088", "mirror": "https://esp32.vaked.dev",
                 "version": "3.2.0+ultra-omni-gaia-evolve-riva", "triad_hearts": "{<3,<3,<3}+1",
@@ -417,10 +419,44 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
                 "offline_queue_count": alexai::queue_count(), "alexai": ak["alexai"], "kompress_ultra": ak["kompress_ultra"],
                 "runtime": "rust (no python)", "viz_enthea": viz, "wupz_seal": wupz_seal(&g),
                 "ports": ports, "nodes": g.nodes.values().collect::<Vec<_>>(),
+                "corpus": g.corpus,
                 "beacons_count": g.beacons.len(), "known_count": g.known.len(), "beacons": beacons,
                 "raw_lines": lines,
             });
             respond(&mut s, 200, json_t, &jbody(v));
+        }
+        ("GET", "/api/beacons") => {
+            let tf = query(q, "type").map(|t| t.to_uppercase());
+            let qf = query(q, "q").map(|s| s.to_lowercase());
+            let lim = query(q, "limit").and_then(|n| n.parse::<usize>().ok()).unwrap_or(200);
+            let g = st.lock().unwrap();
+            let mut list: Vec<Value> = g.beacons.values().filter(|b| {
+                let tok = tf.as_ref().map_or(true, |t| b["type"].as_str().unwrap_or("WIFI").eq_ignore_ascii_case(t));
+                let qok = qf.as_ref().map_or(true, |needle| {
+                    b["ssid"].as_str().unwrap_or("").to_lowercase().contains(needle)
+                        || b["bssid"].as_str().unwrap_or("").to_lowercase().contains(needle)
+                });
+                tok && qok
+            }).cloned().collect();
+            list.sort_by_key(|b| -b["rssi"].as_i64().unwrap_or(-100));
+            list.truncate(lim);
+            respond(&mut s, 200, json_t, &jbody(json!({"ok": true, "count": list.len(), "corpus": g.corpus, "beacons": list})));
+        }
+        ("POST", "/api/import") => {
+            let p = serde_json::from_slice::<Value>(&body).ok()
+                .and_then(|v| v["path"].as_str().map(PathBuf::from))
+                .unwrap_or_else(|| PathBuf::from("/Users/lodripeter/Downloads/WigleWifi_20261022234507.csv.gz"));
+            let res = {
+                let mut g = st.lock().unwrap();
+                import_wigle_csv(&mut g, &p)
+            };
+            match res {
+                Ok(summary) => {
+                    let pushed = seed_boards_from_corpus(&st);
+                    respond(&mut s, 200, json_t, &jbody(json!({"ok": true, "imported": summary, "board_pushed": pushed})));
+                }
+                Err(e) => respond(&mut s, 400, json_t, &jbody(json!({"ok": false, "error": e}))),
+            }
         }
         ("GET", "/api/learn") => {
             let g = st.lock().unwrap();
@@ -502,30 +538,317 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
     }
 }
 
+fn import_wigle_csv(st: &mut State, path: &Path) -> Result<Value, String> {
+    if !path.exists() {
+        return Err(format!("file not found: {}", path.display()));
+    }
+    let text = if path.extension().and_then(|e| e.to_str()) == Some("gz") {
+        let out = Command::new("/usr/bin/gunzip")
+            .arg("-c")
+            .arg(path)
+            .output()
+            .map_err(|e| format!("gunzip failed: {e}"))?;
+        if !out.status.success() {
+            return Err(format!("gunzip exited {}", out.status));
+        }
+        String::from_utf8_lossy(&out.stdout).into_owned()
+    } else {
+        fs::read_to_string(path).map_err(|e| format!("read failed: {e}"))?
+    };
+
+    let mut lines = text.lines();
+    let mut format_ver = "WigleWifi-1.6".to_string();
+    let mut is_v16 = true;
+    for l in lines.by_ref() {
+        let t = l.trim();
+        if t.starts_with("WigleWifi-") {
+            format_ver = t.split(',').next().unwrap_or("WigleWifi-1.6").to_string();
+            is_v16 = !format_ver.starts_with("WigleWifi-1.4");
+        } else if t.starts_with("MAC,") {
+            is_v16 = t.contains(",Frequency,");
+            break;
+        }
+    }
+
+    #[derive(Clone)]
+    struct Rec {
+        bssid: String,
+        ssid: String,
+        auth: String,
+        seen: String,
+        ch: i64,
+        freq: u32,
+        rssi: i64,
+        rtype: String,
+        band: String,
+    }
+
+    let mut all: BTreeMap<String, Rec> = BTreeMap::new();
+    let mut raw_rows = 0u64;
+    for raw in lines {
+        let l = raw.trim();
+        if l.is_empty() {
+            continue;
+        }
+        let Some((mac_raw, rest)) = l.split_once(',') else { continue };
+        let bssid = mac_raw.trim().to_uppercase();
+        if bssid.len() < 6 {
+            continue;
+        }
+        // Parse fixed numeric/type tail from the right so commas inside SSIDs never break columns.
+        // Location columns (CurrentLatitude, CurrentLongitude, AltitudeMeters, AccuracyMeters) are ignored & dropped.
+        let (ssid, auth, seen, ch, freq, rssi_raw, rtype) = if is_v16 {
+            let r: Vec<&str> = rest.rsplitn(13, ',').collect();
+            if r.len() < 13 {
+                continue;
+            }
+            (
+                r[12].trim(),
+                r[11].trim(),
+                r[10].trim(),
+                r[9].trim().parse::<i64>().unwrap_or(0),
+                r[8].trim().parse::<u32>().unwrap_or(0),
+                r[7].trim().parse::<i64>().unwrap_or(-85),
+                r[0].trim().to_uppercase(),
+            )
+        } else {
+            let r: Vec<&str> = rest.rsplitn(10, ',').collect();
+            if r.len() < 10 {
+                continue;
+            }
+            (
+                r[9].trim(),
+                r[8].trim(),
+                r[7].trim(),
+                r[6].trim().parse::<i64>().unwrap_or(0),
+                0u32,
+                r[5].trim().parse::<i64>().unwrap_or(-85),
+                r[0].trim().to_uppercase(),
+            )
+        };
+        if !matches!(rtype.as_str(), "WIFI" | "BLE" | "BT" | "LTE") {
+            continue;
+        }
+        raw_rows += 1;
+        let rssi = if (-120..=-1).contains(&rssi_raw) { rssi_raw } else { -85 };
+        let band = match rtype.as_str() {
+            "BLE" => "BLE",
+            "BT" => "BT",
+            "LTE" => "LTE",
+            _ if freq >= 5925 || ch > 177 => "6GHz",
+            _ if freq >= 5000 || ch > 14 => "5GHz",
+            _ => "2.4GHz",
+        }
+        .to_string();
+
+        st.known.insert(bssid.clone());
+        match all.get_mut(&bssid) {
+            Some(prev) => {
+                if rssi > prev.rssi {
+                    prev.rssi = rssi;
+                    prev.ch = ch;
+                    if freq > 0 {
+                        prev.freq = freq;
+                    }
+                    prev.band = band;
+                }
+                if prev.ssid.is_empty() && !ssid.is_empty() {
+                    prev.ssid = ssid.to_string();
+                }
+                if seen > prev.seen.as_str() {
+                    prev.seen = seen.to_string();
+                }
+            }
+            None => {
+                all.insert(
+                    bssid.clone(),
+                    Rec {
+                        bssid,
+                        ssid: ssid.to_string(),
+                        auth: auth.trim_matches(|c| c == '[' || c == ']').to_string(),
+                        seen: seen.to_string(),
+                        ch,
+                        freq,
+                        rssi,
+                        rtype,
+                        band,
+                    },
+                );
+            }
+        }
+    }
+
+    let (mut wifi, mut ble, mut bt, mut lte, mut named) = (0usize, 0usize, 0usize, 0usize, 0usize);
+    for r in all.values() {
+        match r.rtype.as_str() {
+            "WIFI" => wifi += 1,
+            "BLE" => ble += 1,
+            "BT" => bt += 1,
+            "LTE" => lte += 1,
+            _ => {}
+        }
+        if !r.ssid.is_empty() {
+            named += 1;
+        }
+    }
+
+    let mut vec_all: Vec<&Rec> = all.values().collect();
+    vec_all.sort_by_key(|r| (r.ssid.is_empty(), -r.rssi));
+    let (mut c_wifi, mut c_ble, mut c_bt, mut c_lte) = (0usize, 0usize, 0usize, 0usize);
+    let mut selected = Vec::new();
+    for r in vec_all {
+        let cap = match r.rtype.as_str() {
+            "WIFI" => (&mut c_wifi, 220),
+            "BLE" => (&mut c_ble, 50),
+            "BT" => (&mut c_bt, 30),
+            "LTE" => (&mut c_lte, 20),
+            _ => continue,
+        };
+        if *cap.0 < cap.1 {
+            *cap.0 += 1;
+            let v = json!({
+                "bssid": r.bssid,
+                "ssid": r.ssid,
+                "auth": if r.auth.is_empty() { "OPEN".to_string() } else { r.auth.clone() },
+                "ch": r.ch,
+                "freq": r.freq,
+                "rssi": r.rssi,
+                "type": r.rtype,
+                "band": r.band,
+                "seen": r.seen,
+                "node": "WIGLE:SM-S928U1",
+                "novel": false,
+            });
+            st.beacons.insert(r.bssid.clone(), v.clone());
+            selected.push(v);
+        }
+    }
+
+    let fname = path.file_name().and_then(|s| s.to_str()).unwrap_or("wigle.csv.gz");
+    let summary = json!({
+        "source": fname,
+        "format": format_ver,
+        "raw_rows": raw_rows,
+        "unique_total": all.len(),
+        "wifi": wifi,
+        "ble": ble,
+        "bt": bt,
+        "lte": lte,
+        "named_ssids": named,
+        "seeded_beacons": selected.len(),
+        "gps_stripped": true,
+    });
+    st.corpus = summary.clone();
+
+    let known_path = root_dir().join("known_networks.local.txt");
+    let mut kbuf = format!("# {fname} — {} known endpoints (WIFI={wifi}, BLE={ble}, BT={bt}, LTE={lte}; local only, GPS stripped)\n", all.len());
+    for k in all.keys() {
+        kbuf.push_str(k);
+        kbuf.push('\n');
+    }
+    let _ = fs::write(&known_path, kbuf);
+
+    let cache_path = root_dir().join("imported_beacons.local.json");
+    let _ = fs::write(&cache_path, serde_json::to_vec_pretty(&json!({"corpus": summary, "beacons": selected})).unwrap_or_default());
+
+    eprintln!(
+        "[wiglewww-rs] imported {fname}: {raw_rows} rows -> {} unique (WIFI={wifi}, BLE={ble}, BT={bt}, LTE={lte}), seeded {} beacons",
+        all.len(),
+        selected.len()
+    );
+    Ok(summary)
+}
+
+fn seed_boards_from_corpus(st: &Shared) -> Vec<String> {
+    if discover_ports().is_empty() {
+        return vec![];
+    }
+    let (corpus_cmd, ap_cmds) = {
+        let g = st.lock().unwrap();
+        let c = &g.corpus;
+        let ccmd = format!(
+            "CORPUS {} {} {} {} {}",
+            c["unique_total"].as_u64().unwrap_or(g.known.len() as u64),
+            c["wifi"].as_u64().unwrap_or(0),
+            c["ble"].as_u64().unwrap_or(0),
+            c["bt"].as_u64().unwrap_or(0),
+            c["lte"].as_u64().unwrap_or(0),
+        );
+        let mut wifi_list: Vec<&Value> = g.beacons.values()
+            .filter(|b| b["type"].as_str().unwrap_or("WIFI") == "WIFI" && !b["ssid"].as_str().unwrap_or("").is_empty())
+            .collect();
+        wifi_list.sort_by_key(|b| -b["rssi"].as_i64().unwrap_or(-95));
+        let cmds: Vec<String> = wifi_list.into_iter().take(16).map(|b| {
+            let bssid = b["bssid"].as_str().unwrap_or("");
+            let ssid: String = b["ssid"].as_str().unwrap_or("").replace('|', "_").chars().take(28).collect();
+            let ch = b["ch"].as_i64().unwrap_or(1).clamp(1, 14);
+            let rssi = b["rssi"].as_i64().unwrap_or(-75);
+            format!("SEED {bssid}|{ssid}|{ch}|{rssi}")
+        }).collect();
+        (ccmd, cmds)
+    };
+    let mut out = send_all(st, &corpus_cmd, Duration::from_millis(350));
+    if !ap_cmds.is_empty() {
+        out.extend(send_all(st, &ap_cmds.join("\n"), Duration::from_millis(500)));
+    }
+    out
+}
+
 fn load_known(st: &mut State) {
     let path = std::env::var("WIGLE_KNOWN")
         .unwrap_or_else(|_| root_dir().join("known_networks.local.txt").to_string_lossy().into_owned());
-    let Ok(text) = std::fs::read_to_string(&path) else {
-        eprintln!("[wiglewww-rs] known set: {path} not found, novelty off");
-        return;
-    };
-    let before = st.known.len();
-    for line in text.lines() {
-        let t = line.trim();
-        if t.is_empty() || t.starts_with('#') { continue; }
-        st.known.insert(t.split(',').next().unwrap_or(t).trim().to_uppercase());
+    if let Ok(text) = std::fs::read_to_string(&path) {
+        let before = st.known.len();
+        for line in text.lines() {
+            let t = line.trim();
+            if t.is_empty() || t.starts_with('#') { continue; }
+            st.known.insert(t.split(',').next().unwrap_or(t).trim().to_uppercase());
+        }
+        eprintln!("[wiglewww-rs] known set: {} endpoints from {path}", st.known.len() - before);
     }
-    eprintln!("[wiglewww-rs] known set: {} bssids from {path}", st.known.len() - before);
+
+    let cache_path = root_dir().join("imported_beacons.local.json");
+    if let Ok(bytes) = fs::read(&cache_path) {
+        if let Ok(v) = serde_json::from_slice::<Value>(&bytes) {
+            st.corpus = v["corpus"].clone();
+            if let Some(arr) = v["beacons"].as_array() {
+                for b in arr {
+                    if let Some(mac) = b["bssid"].as_str() {
+                        st.beacons.insert(mac.to_uppercase(), b.clone());
+                    }
+                }
+            }
+            eprintln!("[wiglewww-rs] loaded {} seeded beacons from {}", st.beacons.len(), cache_path.display());
+            return;
+        }
+    }
+
+    let dl = PathBuf::from("/Users/lodripeter/Downloads/WigleWifi_20261022234507.csv.gz");
+    if dl.exists() {
+        let _ = import_wigle_csv(st, &dl);
+    }
 }
 
 fn main() {
     let mut port = 8088u16;
     let mut host = "127.0.0.1".to_string();
+    let mut import_arg: Option<PathBuf> = None;
     let mut it = std::env::args().skip(1);
     while let Some(a) = it.next() {
         match a.as_str() {
             "--port" => port = it.next().and_then(|v| v.parse().ok()).unwrap_or(8088),
             "--host" => host = it.next().unwrap_or(host),
+            "--import" => import_arg = it.next().map(PathBuf::from),
+            "--import-only" => {
+                let p = it.next().map(PathBuf::from)
+                    .unwrap_or_else(|| PathBuf::from("/Users/lodripeter/Downloads/WigleWifi_20261022234507.csv.gz"));
+                let mut st0 = State::default();
+                match import_wigle_csv(&mut st0, &p) {
+                    Ok(v) => println!("{}", serde_json::to_string_pretty(&v).unwrap()),
+                    Err(e) => { eprintln!("error: {e}"); std::process::exit(1); }
+                }
+                return;
+            }
             "--send" => {
                 let cmd = it.next().unwrap_or_else(|| "STATUS".into());
                 let st: Shared = Arc::new(Mutex::new(State::default()));
@@ -553,7 +876,11 @@ fn main() {
         tts_count: 1,
         ..Default::default()
     };
-    load_known(&mut st0);
+    if let Some(p) = &import_arg {
+        let _ = import_wigle_csv(&mut st0, p);
+    } else {
+        load_known(&mut st0);
+    }
     let st: Shared = Arc::new(Mutex::new(st0));
     let www = root_dir().join("www");
 
@@ -620,17 +947,18 @@ fn main() {
                     }
                     items
                 };
-                for (node, _, say) in todo {
+                for (_node, _, say) in todo {
                     dispatch_tts(&st, &format!("ADA : {say}"), false);
                 }
             }
         });
     }
 
-    // USB hotplug watcher: announce + push the 8b-is feed to newly attached boards.
+    // USB hotplug watcher: announce + push the 8b-is feed + WiGLE corpus to newly attached boards.
     {
         let st = st.clone();
         thread::spawn(move || {
+            let _ = seed_boards_from_corpus(&st);
             let mut known = discover_ports();
             loop {
                 thread::sleep(Duration::from_millis(2500));
@@ -639,6 +967,7 @@ fn main() {
                     send_all(&st, "VIZ", Duration::from_millis(600));
                     let f = engine_feed(&st, true);
                     push_engine(&st, &f);
+                    let _ = seed_boards_from_corpus(&st);
                     dispatch_tts(&st, "ESP32 Medusa Triad attached. Three hearts plus one online.", true);
                 }
                 known = cur;
