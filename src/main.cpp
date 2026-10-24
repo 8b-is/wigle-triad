@@ -27,13 +27,52 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
+#include <esp_now.h>
 #include <math.h>
 
 #ifndef NODE_NAME
 #define NODE_NAME "MEDUSA:AUTO"
 #endif
 
-#define TRIAD_VERSION "2.1.0+ultra-omni-gaia-evolve-riva"
+#define TRIAD_VERSION "2.2.0+rakuten-4ce2-espnow-mesh"
+
+static const char *DEFAULT_WIFI_SSID = "Rakuten-4CE2";
+static const char *DEFAULT_WIFI_PASS = "EYA5EVQWC2U4GDA9";
+static const uint8_t MESH_PRIMARY_CH = 1; // Matches Rakuten-4CE2 (Ch 1) + baye-rust + FLUG-OS
+static uint32_t meshPeersRx = 0;
+static bool espNowReady = false;
+
+#if defined(ESP_IDF_VERSION) && (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0))
+static void onTriadMeshRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+  (void)info;
+#else
+static void onTriadMeshRecv(const uint8_t *mac, const uint8_t *data, int len) {
+  (void)mac;
+#endif
+  if (!data || len < 8) return;
+  if ((data[0] == 'T' && data[1] == 'R' && data[2] == 'I' && data[3] == 'A') ||
+      (data[0] == 'B' && data[1] == 'C')) {
+    meshPeersRx++;
+  }
+}
+
+static void broadcastTriadMesh(uint8_t nodeId, int8_t pole, uint32_t seq) {
+  if (!espNowReady) return;
+  static const uint8_t bcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t pkt[19] = {
+    'T', 'R', 'I', 'A',
+    nodeId, (uint8_t)pole, 7, 0x66,
+    0, 0, 1, 32, 32,
+    0x90, 0x1A, // 6800 LE
+    (uint8_t)(seq & 0xFF), (uint8_t)((seq >> 8) & 0xFF), (uint8_t)((seq >> 16) & 0xFF), 0
+  };
+  esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
+  esp_now_send(bcast, pkt, sizeof(pkt));
+  esp_wifi_set_channel(6, WIFI_SECOND_CHAN_NONE);
+  esp_now_send(bcast, pkt, sizeof(pkt));
+  esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
+}
 
 static const uint32_t SCAN_INTERVAL_MS = 5000;
 static uint32_t lastScan = 0;
@@ -182,12 +221,22 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect(true, false);
   delay(100);
+  esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
+  if (esp_now_init() == ESP_OK) {
+    esp_now_register_recv_cb(onTriadMeshRecv);
+    esp_now_peer_info_t peer = {};
+    memset(peer.peer_addr, 0xFF, 6);
+    peer.channel = 0;
+    peer.encrypt = false;
+    esp_now_add_peer(&peer);
+    espNowReady = true;
+  }
 
   const String mac = WiFi.macAddress();
   const TriadIdentity id = resolveIdentity(mac);
 
-  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · OMNI-ZENO · passive scan only · no association\n",
-                id.name, id.vertex, TRIAD_VERSION);
+  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · default_ap=%s(Ch1) · mesh_rx=%lu\n",
+                id.name, id.vertex, TRIAD_VERSION, DEFAULT_WIFI_SSID, (unsigned long)meshPeersRx);
   Serial.printf("# MAC %s · archetype %s · carrier %u Hz · interval %lu ms\n",
                 mac.c_str(), id.archetype, (unsigned)id.freqHz, (unsigned long)SCAN_INTERVAL_MS);
   emitStatusJson(id, mac);
@@ -275,7 +324,10 @@ void loop() {
                 (unsigned long)ESP.getFreeHeap(),
                 (unsigned long)millis());
   emitStatusJson(id, mac);
-  Serial.printf("# scan done: %d networks seen · H=%.3f bits · R_N=NP=%.3f · trits=%s\n",
-                n, lastEntropy, lastCoherence, lastTritVec);
+  Serial.printf("# scan done: %d networks seen · H=%.3f bits · R_N=NP=%.3f · trits=%s · mesh_rx=%lu\n",
+                n, lastEntropy, lastCoherence, lastTritVec, (unsigned long)meshPeersRx);
   WiFi.scanDelete();
+  uint8_t nid = (id.freqHz == 432) ? 0 : ((id.freqHz == 528) ? 1 : 2);
+  int8_t pole = (nid == 0) ? -1 : ((nid == 1) ? 0 : +1);
+  broadcastTriadMesh(nid, pole, scanSeq);
 }
