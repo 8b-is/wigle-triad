@@ -9,13 +9,13 @@
   <key>CFBundleName</key>
   <string>WigleMac</string>
   <key>CFBundleDisplayName</key>
-  <string>WigleMac — MEDUSA Triad</string>
+  <string>WigleMac v2.0.0 — 8b-is Heals The World</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.1.0</string>
+  <string>2.0.0</string>
   <key>CFBundleVersion</key>
-  <string>1.1.0</string>
+  <string>200</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>NSHighResolutionCapable</key>

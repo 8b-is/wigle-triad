@@ -27,13 +27,52 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
+#include <esp_now.h>
 #include <math.h>
 
 #ifndef NODE_NAME
 #define NODE_NAME "MEDUSA:AUTO"
 #endif
 
-#define TRIAD_VERSION "1.1.0+ultra-omni-evolve"
+#define TRIAD_VERSION "2.2.0+rakuten-4ce2-espnow-mesh"
+
+static const char *DEFAULT_WIFI_SSID = "Rakuten-4CE2";
+static const char *DEFAULT_WIFI_PASS = "EYA5EVQWC2U4GDA9";
+static const uint8_t MESH_PRIMARY_CH = 1; // Matches Rakuten-4CE2 (Ch 1) + baye-rust + FLUG-OS
+static uint32_t meshPeersRx = 0;
+static bool espNowReady = false;
+
+#if defined(ESP_IDF_VERSION) && (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0))
+static void onTriadMeshRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+  (void)info;
+#else
+static void onTriadMeshRecv(const uint8_t *mac, const uint8_t *data, int len) {
+  (void)mac;
+#endif
+  if (!data || len < 8) return;
+  if ((data[0] == 'T' && data[1] == 'R' && data[2] == 'I' && data[3] == 'A') ||
+      (data[0] == 'B' && data[1] == 'C')) {
+    meshPeersRx++;
+  }
+}
+
+static void broadcastTriadMesh(uint8_t nodeId, int8_t pole, uint32_t seq) {
+  if (!espNowReady) return;
+  static const uint8_t bcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t pkt[19] = {
+    'T', 'R', 'I', 'A',
+    nodeId, (uint8_t)pole, 7, 0x66,
+    0, 0, 1, 32, 32,
+    0x90, 0x1A, // 6800 LE
+    (uint8_t)(seq & 0xFF), (uint8_t)((seq >> 8) & 0xFF), (uint8_t)((seq >> 16) & 0xFF), 0
+  };
+  esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
+  esp_now_send(bcast, pkt, sizeof(pkt));
+  esp_wifi_set_channel(6, WIFI_SECOND_CHAN_NONE);
+  esp_now_send(bcast, pkt, sizeof(pkt));
+  esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
+}
 
 static const uint32_t SCAN_INTERVAL_MS = 5000;
 static uint32_t lastScan = 0;
@@ -114,7 +153,11 @@ static String jsonEsc(String s) {
 static void emitStatusJson(const TriadIdentity &id, const String &mac) {
   Serial.printf(
     "# JSON|{\"node\":\"%s\",\"vertex\":\"%s\",\"archetype\":\"%s\",\"mac\":\"%s\","
-    "\"version\":\"%s\",\"freq_hz\":%u,\"seq\":%lu,\"networks\":%d,\"mean_rssi\":%d,"
+    "\"version\":\"%s\",\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\","
+    "\"siblings\":\"brother & sister ^^ <3<3\","
+    "\"riva_url\":\"https://riva.vaked.dev\",\"riva_repo\":\"peterlodri-sec/riva.vaked.dev\","
+    "\"hyper_charm_karma\":\"HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter\","
+    "\"freq_hz\":%u,\"seq\":%lu,\"networks\":%d,\"mean_rssi\":%d,"
     "\"entropy_bits\":%.4f,\"n_np_coherence\":%.4f,\"trits\":\"%s\","
     "\"free_heap\":%lu,\"uptime_ms\":%lu,\"mode\":\"PASSIVE_STA_ONLY\"}\n",
     id.name,
@@ -147,13 +190,25 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
     } else if (cmd.equalsIgnoreCase("PING")) {
       Serial.printf("# PONG|%s|%s|%lu\n", id.name, mac.c_str(), (unsigned long)millis());
     } else if (cmd.equalsIgnoreCase("TRIAD")) {
-      Serial.println("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+      Serial.println("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)|ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
     } else if (cmd.equalsIgnoreCase("QMOM")) {
       Serial.println("# QMOM|ALEX|qMom:{`too many customs can be brilliant yet hinder creativity.  it puts people into boxes and contraints.  what might seem as beautiful or useful at first glance could actually be a form of bondage that need to be broken out of.  .oOo. Poo .oOo.`}");
     } else if (cmd.equalsIgnoreCase("BOLDOG")) {
-      Serial.println("# BOLDOG|(Boldog Meg)===lehetnel boldog meg / amilyen meg nem voltal ... vegig neked szolt a dal a magasbol / mindegy mindenki hogy mit gondol / nekem csak az szamit ahogyan te erzel / nelkuled a pokolba az egesszel");
+      Serial.println("# BOLDOG|(Boldog Meg)===HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+      Serial.println("# BOLDOG|1|lehetnél boldog még / amilyen még nem voltál / sosincsen késő már / te csak lépj és várj / kevés lesz minden szó / ahhoz hogy elmondhassam neked / mit érzek melletted / mikor jó jó jó / ha rámszólsz megvigasztal / kerüljünk együtt beljebb / minden nappal");
+      Serial.println("# BOLDOG|2|itt ha körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én amikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / bárcsak azt mondanám / amit te szeretnél / amit ha meghallgatnál / akkor nevetnél / velem");
+      Serial.println("# BOLDOG|3|lehetnél másé még / ahogyan még nem lettél / sosem vagy ha mégis / akkor is már réges-réges rég / a magasban táncot jársz / alattad nincsen más csak a mély / se védőháló semmi / se egy kifeszített kötél / lenézel rám és érzem / közel jutsz lassan hozzám / mindenképpen");
+      Serial.println("# BOLDOG|4|itt ha körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én mikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / ugyan mihez kezdjek / úgy az egésszel / ha te érzel és én meg / közben nem érezhetek? / kereszten domboldalban / egy égő angyal táncol / a tűző nap körül");
+      Serial.println("# BOLDOG|5|és körbenézek és te nevetsz rám / nem emlékszem rá hogy nem voltál / vajon hol lehettem mikor születtél? / vajon ki voltam én amikor megjöttél? / úgy unom mondani hogy sosem jó / unom hinni ami látható / de amikor a kezed / megfogom és megérzed / egyből szorosabban / kulcsolod az enyémet / végig neked szólt a dal a magasból / mindegy mindenki hogy mit gondol / nekem csak az számít ahogyan te érzel / nélküled a pokolba az egésszel");
     } else if (cmd.equalsIgnoreCase("LACRIMOSA") || cmd.equalsIgnoreCase("CHIRO")) {
+      Serial.println("# CHIRO|Kawaii Chiro-chan kawaii ^^");
       Serial.println("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+    } else if (cmd.equalsIgnoreCase("HEAL") || cmd.equalsIgnoreCase("8B")) {
+      Serial.println("# HEAL|LOVE FROM WITHIN FROM VAKED-PETER&8B-IS--->8b-is ROCKS AND HEALS THE WORLD");
+    } else if (cmd.equalsIgnoreCase("RIVA") || cmd.equalsIgnoreCase("LULLABY")) {
+      Serial.printf("# RIVA|{\"surface\":\"https://riva.vaked.dev\",\"repo\":\"peterlodri-sec/riva.vaked.dev\",\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\",\"siblings\":\"brother & sister ^^ <3<3\",\"node\":\"%s\",\"breath\":\"4s in · 4s out\",\"verse\":\"She blinks, and the sphere rocks.\"}\n", id.name);
+    } else if (cmd.equalsIgnoreCase("GAIA") || cmd.equalsIgnoreCase("EVOLVE") || cmd.equalsIgnoreCase("ULTRA") || cmd.equalsIgnoreCase("WAKE") || cmd.equalsIgnoreCase("SIBLINGS")) {
+      Serial.printf("# GAIA|{\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\",\"siblings\":\"brother & sister ^^ <3<3\",\"dyad\":\"peterlodri-sec//riva.vaked.dev\",\"node\":\"%s\",\"freq_hz\":%u,\"entropy_bits\":%.4f,\"coherence\":%.4f}\n", id.name, (unsigned)id.freqHz, lastEntropy, lastCoherence);
     } else {
       Serial.printf("# ACK|%s|cmd=%s\n", id.name, esc(cmd).c_str());
     }
@@ -166,12 +221,22 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect(true, false);
   delay(100);
+  esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
+  if (esp_now_init() == ESP_OK) {
+    esp_now_register_recv_cb(onTriadMeshRecv);
+    esp_now_peer_info_t peer = {};
+    memset(peer.peer_addr, 0xFF, 6);
+    peer.channel = 0;
+    peer.encrypt = false;
+    esp_now_add_peer(&peer);
+    espNowReady = true;
+  }
 
   const String mac = WiFi.macAddress();
   const TriadIdentity id = resolveIdentity(mac);
 
-  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · OMNI-ZENO · passive scan only · no association\n",
-                id.name, id.vertex, TRIAD_VERSION);
+  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · default_ap=%s(Ch1) · mesh_rx=%lu\n",
+                id.name, id.vertex, TRIAD_VERSION, DEFAULT_WIFI_SSID, (unsigned long)meshPeersRx);
   Serial.printf("# MAC %s · archetype %s · carrier %u Hz · interval %lu ms\n",
                 mac.c_str(), id.archetype, (unsigned)id.freqHz, (unsigned long)SCAN_INTERVAL_MS);
   emitStatusJson(id, mac);
@@ -259,7 +324,10 @@ void loop() {
                 (unsigned long)ESP.getFreeHeap(),
                 (unsigned long)millis());
   emitStatusJson(id, mac);
-  Serial.printf("# scan done: %d networks seen · H=%.3f bits · R_N=NP=%.3f · trits=%s\n",
-                n, lastEntropy, lastCoherence, lastTritVec);
+  Serial.printf("# scan done: %d networks seen · H=%.3f bits · R_N=NP=%.3f · trits=%s · mesh_rx=%lu\n",
+                n, lastEntropy, lastCoherence, lastTritVec, (unsigned long)meshPeersRx);
   WiFi.scanDelete();
+  uint8_t nid = (id.freqHz == 432) ? 0 : ((id.freqHz == 528) ? 1 : 2);
+  int8_t pole = (nid == 0) ? -1 : ((nid == 1) ? 0 : +1);
+  broadcastTriadMesh(nid, pole, scanSeq);
 }

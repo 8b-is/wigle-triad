@@ -1,0 +1,12 @@
+[package]
+name = "wiglewww"
+version = "3.1.0"
+edition = "2021"
+description = "wiglewww (Rust, no Python): ESP32 MEDUSA Triad bridge — serial + HTTP + Kokoro TTS + 8b-is-music/8b-is-engine feed, sealed with wupz-core"
+
+[dependencies]
+eight-b-is-music = { path = "../../8b-is-music" }
+wupz-core = { path = "../../wupz/wupz-rs" }
+serde_json = "1.0"
+
+[workspace]

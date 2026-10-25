@@ -1,0 +1,9 @@
+.pio/
+__pycache__/
+*.pyc
+.DS_Store
+android/build/
+android/*.keystore
+dist/
+known_networks.local.txt
+*.local.*
