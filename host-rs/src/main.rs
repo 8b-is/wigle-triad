@@ -336,7 +336,56 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
     let jbody = |v: Value| serde_json::to_vec_pretty(&v).unwrap();
     let json_t = "application/json; charset=utf-8";
 
-    // LAN-facing listener: ONLY POST /board/say with the per-run token. Everything else is 404.
+    // Serve OTA firmware version + binaries on BOTH :8088 (local UI) and :8089 (LAN board listener)
+    if method == "GET" && path.starts_with("/firmware/") {
+        let flug_dir = root_dir().parent().unwrap_or_else(|| Path::new(".")).join("flug-os");
+        let bin_18 = flug_dir.join(".pio/build/esp32s3_amoled_18/firmware.bin");
+        let bin_206 = flug_dir.join(".pio/build/esp32s3_amoled/firmware.bin");
+        match path {
+            "/firmware/version.json" => {
+                let v = json!({
+                    "ok": true,
+                    "version": "1.7.0",
+                    "full_version": "v1.7.0+smooth-nand-ota-wifishare-ble",
+                    "bin_18": "/firmware/esp32s3_18.bin",
+                    "bin_206": "/firmware/esp32s3_206.bin",
+                    "bin_18_ready": bin_18.exists(),
+                    "bin_206_ready": bin_206.exists(),
+                    "bin_18_bytes": fs::metadata(&bin_18).map(|m| m.len()).unwrap_or(0),
+                    "bin_206_bytes": fs::metadata(&bin_206).map(|m| m.len()).unwrap_or(0),
+                    "features": [
+                        "smooth-analog-nand-oscillator",
+                        "anti-clip-sine-kernel",
+                        "http-ota-auto-update",
+                        "espnow-twif-wifi-share",
+                        "ble-nordic-uart-provisioning"
+                    ]
+                });
+                respond(&mut s, 200, json_t, &jbody(v));
+                return;
+            }
+            "/firmware/esp32s3_18.bin" => {
+                match fs::read(&bin_18) {
+                    Ok(bytes) => respond(&mut s, 200, "application/octet-stream", &bytes),
+                    Err(e) => respond(&mut s, 404, json_t, &jbody(json!({"ok": false, "error": format!("esp32s3_18.bin not built: {e}")}))),
+                }
+                return;
+            }
+            "/firmware/esp32s3_206.bin" => {
+                match fs::read(&bin_206) {
+                    Ok(bytes) => respond(&mut s, 200, "application/octet-stream", &bytes),
+                    Err(e) => respond(&mut s, 404, json_t, &jbody(json!({"ok": false, "error": format!("esp32s3_206.bin not built: {e}")}))),
+                }
+                return;
+            }
+            _ => {
+                respond(&mut s, 404, "text/plain", b"Not Found");
+                return;
+            }
+        }
+    }
+
+    // LAN-facing listener: ONLY POST /board/say with the per-run token (plus GET /firmware/* above). Everything else is 404.
     if let Some(tok) = &board_token {
         let given = head.lines().find_map(|l| {
             let (k, v) = l.split_once(':')?;
@@ -488,6 +537,23 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
             v["ok"] = json!(true);
             respond(&mut s, 200, json_t, &jbody(v));
         }
+        ("GET", "/api/bicep") | ("POST", "/api/bicep") | ("GET", "/api/glue") | ("POST", "/api/glue") => {
+            let wav_path = synth_bicep_glue_wav();
+            let _ = Command::new("/usr/bin/afplay").arg(&wav_path).spawn();
+            let lines = send_all(&st, "BICEP GLUE", Duration::from_millis(900));
+            respond(&mut s, 200, json_t, &jbody(json!({
+                "ok": true,
+                "track": "GLUE",
+                "artist": "BICEP",
+                "genre": "UK Breakbeat",
+                "key": "Cm (Abmaj7 -> Fm7 -> Cm9 -> Bb6)",
+                "bpm": 130,
+                "crate_idx": 18,
+                "fnv_hash": "0x9A6D44C0",
+                "wav": wav_path,
+                "serial_lines": lines
+            })));
+        }
         ("GET", "/api/riva") | ("POST", "/api/riva") | ("POST", "/api/wake") => {
             let cmd = if path == "/api/wake" { "WAKE" } else { "RIVA" };
             let lines = send_all(&st, cmd, Duration::from_millis(800));
@@ -527,6 +593,37 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
             respond(&mut s, 200, json_t, &jbody(alexai::upload(&csv, rows)));
         }
         ("POST", "/api/queue/flush") => respond(&mut s, 200, json_t, &jbody(alexai::flush_queue())),
+        ("POST", "/api/wifi") => {
+            let v = serde_json::from_slice::<Value>(&body).unwrap_or(json!({}));
+            let ssid = v["ssid"].as_str().unwrap_or("").trim();
+            let pass = v["pass"].as_str().unwrap_or("").trim();
+            let cmd = if ssid.is_empty() {
+                "WIFI SHARE".to_string()
+            } else if pass.is_empty() {
+                format!("WIFI {ssid}")
+            } else {
+                format!("WIFI {ssid} {pass}")
+            };
+            let lines = send_all(&st, &cmd, Duration::from_millis(900));
+            respond(&mut s, 200, json_t, &jbody(json!({
+                "ok": true,
+                "shared_via_espnow": true,
+                "note": "Provisioned attached board and broadcast TWIF capsule across Ch 1..13 to sibling Triad boards",
+                "lines": lines
+            })));
+        }
+        ("POST", "/api/ota") => {
+            let v = serde_json::from_slice::<Value>(&body).unwrap_or(json!({}));
+            let url = v["url"].as_str().unwrap_or("").trim();
+            let cmd = if url.is_empty() { "OTA TRIAD".to_string() } else { format!("OTA {url}") };
+            let lines = send_all(&st, &cmd, Duration::from_millis(1200));
+            respond(&mut s, 200, json_t, &jbody(json!({
+                "ok": true,
+                "cmd": cmd,
+                "version": "1.7.0",
+                "lines": lines
+            })));
+        }
         ("POST", "/api/cmd") => {
             let cmd = serde_json::from_slice::<Value>(&body).ok().and_then(|v| v["cmd"].as_str().map(String::from)).unwrap_or_else(|| "STATUS".into());
             let lines = send_all(&st, &cmd, Duration::from_millis(600));
@@ -536,6 +633,99 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
         }
         _ => respond(&mut s, 404, "text/plain", b"Not Found"),
     }
+}
+
+fn synth_bicep_glue_wav() -> String {
+    let path = "/tmp/bicep_glue_130bpm.wav";
+    let sr = 48_000u32;
+    let secs = 14u32;
+    let total_frames = (sr * secs) as usize;
+    let mut pcm: Vec<u8> = Vec::with_capacity(44 + total_frames * 4);
+
+    let data_bytes = (total_frames * 4) as u32;
+    pcm.extend_from_slice(b"RIFF");
+    pcm.extend_from_slice(&(36 + data_bytes).to_le_bytes());
+    pcm.extend_from_slice(b"WAVEfmt ");
+    pcm.extend_from_slice(&16u32.to_le_bytes());
+    pcm.extend_from_slice(&1u16.to_le_bytes());
+    pcm.extend_from_slice(&2u16.to_le_bytes());
+    pcm.extend_from_slice(&sr.to_le_bytes());
+    pcm.extend_from_slice(&(sr * 4).to_le_bytes());
+    pcm.extend_from_slice(&4u16.to_le_bytes());
+    pcm.extend_from_slice(&16u16.to_le_bytes());
+    pcm.extend_from_slice(b"data");
+    pcm.extend_from_slice(&data_bytes.to_le_bytes());
+
+    // BICEP - GLUE: 130 BPM in C minor (Abmaj7 -> Fm7 -> Cm9 -> Bb6)
+    // 1 bar at 130 BPM = 4 * (60 / 130) = 1.8461538s
+    let bar_sec = 4.0f32 * 60.0f32 / 130.0f32;
+    let eighth_sec = bar_sec / 8.0f32;
+    let chords: [[f32; 5]; 4] = [
+        [51.91, 207.65, 261.63, 311.13, 783.99], // Abmaj7 (Ab1 Reese, Ab3, C4, Eb4, G5 vocal chop)
+        [43.65, 174.61, 207.65, 261.63, 698.46], // Fm7    (F1  Reese, F3,  Ab3, C4, F5 vocal chop)
+        [65.41, 196.00, 261.63, 311.13, 622.25], // Cm9    (C2  Reese, G3,  C4,  Eb4, Eb5 vocal chop)
+        [58.27, 174.61, 233.08, 293.66, 587.33], // Bb6    (Bb1 Reese, F3,  Bb3, D4,  D5 vocal chop)
+    ];
+    // UK Breakbeat 8-step pattern per bar: Kick(1), Hat(3), Hat(3), Kick(1), Snare(2), Hat(3), Kick(1), Snare/Ghost(2)
+    let brk: [u8; 8] = [1, 3, 3, 1, 2, 3, 1, 2];
+    let mut lfsr = 0x9A6D_44C0u32;
+    let mut kick_ph = 0.0f32;
+
+    for n in 0..total_frames {
+        let t = n as f32 / sr as f32;
+        let bar_idx = ((t / bar_sec) as usize) % 4;
+        let t_in_bar = t % bar_sec;
+        let step_idx = ((t_in_bar / eighth_sec) as usize) % 8;
+        let t_step = (t_in_bar % eighth_sec) / eighth_sec;
+
+        let c = chords[bar_idx];
+        let fb = c[0];
+        // Detuned stereo Reese sub-bass
+        let reese_l = (6.2831853 * fb * 0.994 * t).sin() + 0.5 * (6.2831853 * fb * 2.003 * t).sin();
+        let reese_r = (6.2831853 * fb * 1.006 * t).sin() + 0.5 * (6.2831853 * fb * 1.997 * t).sin();
+
+        // Lush atmospheric UK breakbeat pad
+        let pad_l = 0.22 * ((6.2831853 * c[1] * t).sin() + 0.8 * (6.2831853 * c[2] * 1.002 * t).sin() + 0.6 * (6.2831853 * c[3] * t).sin());
+        let pad_r = 0.22 * ((6.2831853 * c[1] * 1.003 * t).sin() + 0.8 * (6.2831853 * c[2] * t).sin() + 0.6 * (6.2831853 * c[3] * 0.998 * t).sin());
+
+        // Iconic soaring GLUE vocal-formant shimmer chop on steps 0, 3, 6
+        let vox_gate = if step_idx == 0 || step_idx == 3 || step_idx == 6 {
+            0.5 - 0.5 * (6.2831853 * t_step).cos()
+        } else {
+            0.18
+        };
+        let vibrato = 1.0 + 0.004 * (6.2831853 * 5.5 * t).sin();
+        let vox = 0.24 * vox_gate * ((6.2831853 * c[4] * vibrato * t).sin() + 0.45 * (6.2831853 * c[4] * 2.0 * vibrato * t).sin());
+
+        // Breakbeat drums
+        let hit = brk[step_idx];
+        lfsr ^= lfsr << 13;
+        lfsr ^= lfsr >> 17;
+        lfsr ^= lfsr << 5;
+        let nz = ((lfsr & 0xFFFF) as i16 as f32) / 32768.0;
+        let mut drum = 0.0f32;
+        if hit == 1 && t_step < 0.48 {
+            let fk = 48.0 + 130.0 * (1.0 - t_step * 2.0).max(0.0).powi(2);
+            kick_ph += 6.2831853 * fk / sr as f32;
+            drum = 0.65 * kick_ph.sin() * (1.0 - t_step * 2.0);
+        } else if hit == 2 && t_step < 0.55 {
+            let env = (1.0 - t_step * 1.8).max(0.0).powi(2);
+            drum = (0.42 * nz + 0.25 * (6.2831853 * 185.0 * t).sin()) * env;
+        } else if hit == 3 && t_step < 0.22 {
+            let env = (1.0 - t_step * 4.5).max(0.0).powi(2);
+            drum = 0.16 * nz * env;
+        }
+
+        let fade = if t < 0.4 { t / 0.4 } else if t > (secs as f32 - 1.2) { ((secs as f32 - t) / 1.2).max(0.0) } else { 1.0 };
+        let l = ((0.30 * reese_l.tanh() + pad_l + vox + drum) * 1.15).tanh() * fade;
+        let r = ((0.30 * reese_r.tanh() + pad_r + vox * 0.95 + drum) * 1.15).tanh() * fade;
+        let sl = (l * 24000.0) as i16;
+        let sr_i = (r * 24000.0) as i16;
+        pcm.extend_from_slice(&sl.to_le_bytes());
+        pcm.extend_from_slice(&sr_i.to_le_bytes());
+    }
+    let _ = fs::write(path, &pcm);
+    path.to_string()
 }
 
 fn import_wigle_csv(st: &mut State, path: &Path) -> Result<Value, String> {
