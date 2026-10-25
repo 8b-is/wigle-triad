@@ -150,14 +150,14 @@ Send newline-terminated commands over USB serial or directly from [https://esp32
 
 ---
 
-## 3. Wigle for macOS (`WigleMac.app v1.1.0+ultra-omni-evolve` · `MAC:MEDUSA` · MapKit + Dashboard + Quad-Spectrum + Anon Dual Upload)
+## 3. Wigle for macOS (`WigleMac.app v1.1.0+ultra-omni-evolve` · `MAC:MEDUSA` · MapKit + Dashboard + Quad-Spectrum + Local Export)
 
 On Apple Silicon macOS (`aarch64-darwin`), `macos/wigle-macos.swift` (`macos/WigleMac.app`) turns the MacBook Pro into a native **WiGLE.net × 8b-is Ultralovegod** desktop radar & menu bar app (`MAC:MEDUSA`):
 
 - **🗺️ Tab 1 — Live Radar Map (`MapKit` `.hybridFlyover`)**: Color-coded pins (`#00FF66` 2.4 GHz Wi-Fi, `#00E5C9` 5 GHz Wi-Fi, `#FFD700` AirPlay/RAOP, `#FF6AC1` BLE/BT) with RSSI-distance projection + live split-view network feed.
 - **📊 Tab 2 — Dashboard & Spectrum**: WiGLE telemetry pills, Passive RF, MarineSense `O(1)` Hydro, Shannon Entropy & `N=NP` balanced-ternary cards, 15-channel occupancy bar chart, top-10 SNR waterfall, and the **`ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)` Sanctuary (`ALEX|qMom` + `Kawaii Chiro-chan ^^` + `Mozart: Lacrimosa` + `Boldog Még`)**.
 - **🛰️ Tab 3 — Networks Table**: Full WiGLE explorer with instant search and band filters (`ALL`, `2.4G`, `5G`, `BLE/BT`, `AIRPLAY`).
-- **☁️ Tab 4 — Anon Uploads & CSV**: 1-click anonymous dual-server upload (`donate=on`, `observer=anonymous`) to **both** `https://esp32.vaked.dev/api/upload` and `https://api.wigle.net/api/v2/file/upload`, transaction receipt ledger (`transId`), and live `WigleWifi-1.4` CSV preview.
+- **Tab 4 — Local CSV Export**: Review and export observations locally. External sharing is disabled in the Swift app, browser UI, and Python bridge.
 - **🌸 Tab 5 (Web Workstation) — `Chiro × Boldog Még`**: Interactive `.oOo. Poo .oOo.` Unbound Creativity Mode (`ALEX|qMom`), WebAudio Post-Human `Mozart: Lacrimosa` & `Boldog Még` synthesizers, and full 5-stanza Hungarian lyrics scroll.
 - **⚡ `agy` Ultra UI/UX Kickstart Prompt**: [`macos/AGY_ULTRA_UI_UX_PROMPT.md`](macos/AGY_ULTRA_UI_UX_PROMPT.md)
 
@@ -170,10 +170,7 @@ open macos/WigleMac.app
 # or:
 ./macos/bin/wigle-macos --gui
 
-# 2. Scan Wi-Fi + BLE/BT + AirPlay and upload anonymously to BOTH esp32.vaked.dev AND api.wigle.net:
-./macos/bin/wigle-macos --upload
-# or via the Python bridge:
-cargo run --release --manifest-path host-rs/Cargo.toml --upload
+# --upload is disabled and exits with status 2 before scanning.
 
 # 3. Live W| (Wi-Fi) + B| (BLE/BT) + A| (AirPlay) + Q| + # QMOM| + # JSON| wire stream:
 ./macos/bin/wigle-macos --wire
@@ -190,20 +187,33 @@ cargo run --release --manifest-path host-rs/Cargo.toml --port 8088
 node scripts/dual-upload-wigle.mjs ~/Downloads/WigleWifi_20261022234507.csv.gz
 ```
 
-### Android `SM-S928U1` Dual-Upload Receipt (`WigleWifi_20261022234507.csv.gz` · Privacy-Safe Metadata Only)
+## Local privacy boundaries
 
-Raw coordinates and BSSIDs are stored exclusively in the **private** vault [`8b-is/wigle-triad-data`](https://github.com/8b-is/wigle-triad-data) and gitignored locally (`known_networks.local.txt`).
+The Python bridge binds only to `127.0.0.1` or `localhost`. Requests must use
+that loopback Host and, when present, the matching HTTP Origin. Cross-site
+browser requests are rejected; wildcard CORS is removed. These checks protect
+against browser cross-origin access and DNS rebinding, not other local processes
+that can forge HTTP headers. Do not expose the bridge through a reverse proxy.
 
-| Field | Verified Value |
-|---|---|
-| **Archive** | `WigleWifi_20261022234507.csv.gz` (`3,039,649 B` gz → `24,954,164 B` raw CSV · `8.21×` compression) |
-| **SHA-256** | `01cee2b0b602cdcc58c37d8b779bd8910744c2f2125c43c77ce431d7bed16edf` |
-| **Source Device** | Samsung `SM-S928U1` (`Android 16` · `WigleWifi-1.6` · `appRelease=2.111`) |
-| **Total Observations** | **`140,526`** (`98,485` WIFI · `39,147` BLE · `1,823` BT · `1,071` OTHER) |
-| **Unique Endpoints** | **`83,985`** (`57,067` WIFI BSSIDs imported into local `known_networks.local.txt` · `25,541` BLE · `943` BT · `434` OTHER) |
-| **Target 1 (`esp32.vaked.dev/api/upload`)** | `HTTP 200 OK` · `transId: esp32-vaked-20261023-00001` |
-| **Target 2 (`api.wigle.net/api/v2/file/upload`)** | `HTTP 200 OK` · `transId: 20261023-02869` / `20261023-02873` (`1792796674_WigleWifi_20261022234507.csv`) |
-| **Private Raw Vault** | [`8b-is/wigle-triad-data`](https://github.com/8b-is/wigle-triad-data) (`PRIVATE`) |
+Command bodies are limited to 4096 bytes. The HTTP command route currently accepts
+`PING`, `STATUS`, `JSON`, `SCAN`, and `TRIAD`; display controls remain available
+through direct serial. Malformed requests are rejected before probing devices.
+
+CSV exports leave latitude, longitude, altitude, and accuracy empty because the
+map's RSSI projections are illustrative, not measured transmitter locations.
+Map markers and the default map center must not be treated as location evidence.
+Observations can still contain sensitive network/device identifiers; review local
+exports before sharing them. No anonymous-upload guarantee is made.
+
+`macos/build_app.sh` packages a system-Swift launcher; it does not produce a signed
+or independently compiled release. Previously generated bundles may contain older
+source and must be rebuilt to incorporate these changes.
+
+Offline bridge regression tests (no sockets or radio scanning):
+
+```bash
+python3 -m unittest discover -s tests
+```
 
 ## the dashboard
 

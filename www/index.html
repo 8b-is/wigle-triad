@@ -1075,7 +1075,7 @@
       <button class="btn cyan" id="btn-scan" type="button">📡 Scan Radios</button>
       <button class="btn pink" id="btn-speak-triad" type="button" title="Speak {<3,<3,<3}+1 via Kokoro TTS (:8420/:8430) + ESP32 ES8311">🗣️ Speak {&lt;3,&lt;3,&lt;3}+1</button>
       <a class="btn gold" id="btn-open-viz" href="https://viz.vaked.dev/?triad=1" target="_blank" rel="noopener" style="text-decoration:none;" title="Open VIZ.VAKED.DEV Cortical Synthesizer wired to ESP32 Triad">🌈 VIZ.VAKED.DEV</a>
-      <button class="btn pink" id="btn-upload-wigle" type="button">☁️ Anon Upload / Queue</button>
+      <button class="btn pink" id="btn-upload-wigle" type="button" disabled>External sharing disabled</button>
       <button class="btn" id="btn-flush-queue" type="button" title="Flush Offline Upload Queue (Auto-Syncs when Online)">🔄 Sync Queue (<span id="hdr-queue-count">0</span>)</button>
       <button class="btn gold" id="btn-export-csv" type="button">⬇ Export CSV</button>
       <button class="btn" id="btn-export-ku" type="button" title="Export Kompress-Ultra (.ku.json) Offline Bundle">🗜️ Export .ku.json</button>
@@ -1113,8 +1113,8 @@
       <button class="nav-tab-btn" data-tab-target="uploads" type="button">
         <span class="nav-icon">☁️</span>
         <span>
-          <span class="nav-title">Offline Queue &amp; CSV</span>
-          <span class="nav-sub">Auto-Sync + Dual Upload Studio</span>
+          <span class="nav-title">Local CSV Export</span>
+          <span class="nav-sub">Local observations only</span>
         </span>
       </button>
       <button class="nav-tab-btn" data-tab-target="alexai" type="button">
@@ -1173,8 +1173,8 @@
 
       <div class="coherence-box">
         <div class="c-head">N=NP × GAIA-MLX-QUANT</div>
-        <div class="c-trits" id="sidebar-trits">+++++0+0+</div>
-        <div class="c-sub" id="sidebar-coherence-sub">H(X)=2.4180 bits · 1.585 b/w · 20.18×</div>
+        <div class="c-trits" id="sidebar-trits">Awaiting observations</div>
+        <div class="c-sub" id="sidebar-coherence-sub">Awaiting observations</div>
       </div>
     </aside>
 
@@ -1189,15 +1189,11 @@
             <!-- Pin Callout Popover -->
             <div class="map-callout-popover" id="map-callout" role="status" aria-live="polite">
               <div class="callout-top">
-                <span class="callout-ssid" id="co-ssid">Buffalo-G-1260</span>
-                <span class="type-badge" id="co-badge" style="background:rgba(0,255,102,0.18);color:var(--wigle-wifi-24)">WIFI · Trit +1</span>
+                <span class="callout-ssid" id="co-ssid">No observation selected</span>
+                <span class="type-badge" id="co-badge" style="background:rgba(0,255,102,0.18);color:var(--wigle-wifi-24)">No observation selected</span>
               </div>
-              <div class="callout-meta" id="co-meta">
-                BSSID: C4:3C:EA:85:12:60 · [WPA2-PSK-CCMP][ESS] · Ch 6 (2.4GHz)
-              </div>
-              <div class="callout-metrics" id="co-metrics">
-                RSSI: -34 dBm · SNR: +58 dB · Distance: 8.0 m · Coords: 35.6852°N, 139.7100°E
-              </div>
+              <div class="callout-meta" id="co-meta">No observation selected</div>
+              <div class="callout-metrics" id="co-metrics">No observation selected</div>
             </div>
 
             <!-- Legend Bar -->
@@ -1209,7 +1205,7 @@
                 <span class="legend-dot"><i style="background:var(--wigle-ble)"></i> BLE/BT (#FF6AC1)</span>
               </div>
               <div style="font-size:0.65rem;color:var(--dim)" id="map-origin-readout">
-                Observer Origin: 35.6852° N, 139.7100° E (Shinjuku Gyoen) · 100% Offline-First Passive STA Only (TX=0)
+                Illustrative center: 35.6852° N, 139.7100° E (Shinjuku Gyoen) · Pins are not measured locations · 100% Offline-First Passive STA Only (TX=0)
               </div>
             </div>
           </div>
@@ -1235,28 +1231,28 @@
         <div class="summary-cards-grid">
           <div class="dash-summary-card">
             <span class="d-title" style="color:var(--wigle-wifi-24)">1 · Passive RF Spectrum</span>
-            <span class="d-main" id="card-rf-main">Peak -34 dBm · Mean -66 dBm</span>
-            <span class="d-sub" id="card-rf-sub">Noise Floor -93 dBm · Avg SNR +27 dB</span>
+            <span class="d-main" id="card-rf-main">Awaiting observations</span>
+            <span class="d-sub" id="card-rf-sub">Awaiting observations</span>
           </div>
           <div class="dash-summary-card">
             <span class="d-title" style="color:var(--wigle-wifi-5)">2 · MarineSense O(1) Hydro</span>
-            <span class="d-main" id="card-hydro-main">depth_m=14.4m · mp=3.4mm</span>
-            <span class="d-sub" id="card-hydro-sub">c = 1503.4 m/s · Salience 1.67x · Re_M = 1704</span>
+            <span class="d-main" id="card-hydro-main">Awaiting observations</span>
+            <span class="d-sub" id="card-hydro-sub">Awaiting observations</span>
           </div>
           <div class="dash-summary-card">
             <span class="d-title" style="color:var(--omn-purple)">3 · Shannon Entropy &amp; N=NP</span>
-            <span class="d-main" id="card-ent-main">H(X) = 2.4180 bits · 8x Speedup</span>
+            <span class="d-main" id="card-ent-main">Awaiting observations</span>
             <div class="trit-dist-bar" aria-label="Balanced Ternary -1/0/+1 Distribution">
               <span id="bar-trit-pos" style="background:var(--wigle-wifi-24);flex:10"></span>
               <span id="bar-trit-zero" style="background:var(--wigle-airplay);flex:5"></span>
               <span id="bar-trit-neg" style="background:var(--trit-neg);flex:2"></span>
             </div>
-            <span class="d-sub" id="card-ent-sub">Balanced Ternary {-1, 0, +1} · R_N=NP = 0.9162</span>
+            <span class="d-sub" id="card-ent-sub">Awaiting observations</span>
           </div>
           <div class="dash-summary-card">
-            <span class="d-title" style="color:var(--wigle-airplay)">4 · Offline Queue &amp; Upload Ledger</span>
-            <span class="d-main" id="card-upload-main">0 Queued · 0 Synced · donate=on</span>
-            <span class="d-sub" id="card-upload-sub">Offline-First IndexedDB + Auto-Sync on Reconnect</span>
+            <span class="d-title" style="color:var(--wigle-airplay)">4 · Local Export</span>
+            <span class="d-main" id="card-upload-main">External sharing disabled</span>
+            <span class="d-sub" id="card-upload-sub">Review CSV locally before sharing</span>
           </div>
           <div class="dash-summary-card">
             <span class="d-title" style="color:var(--wigle-ble)">5 · 8b-is/alexai (GAIA-MLX-QUANT)</span>
@@ -1274,7 +1270,7 @@
         <div class="panel">
           <h2>
             <span>📻 15-CHANNEL OCCUPANCY BAR CHART (CH 1, 2, 4, 6, 9, 11, 36, BLE 37, 40..140)</span>
-            <span class="right" id="ap-total-badge">17 ENDPOINTS · PASSIVE STA ONLY (TX=0)</span>
+            <span class="right" id="ap-total-badge">0 ENDPOINTS</span>
           </h2>
           <div class="ch15-bars" id="ch-bars"></div>
         </div>
@@ -1293,43 +1289,43 @@
           <article class="node-card ada" id="card-ada">
             <div class="node-head">
               <div class="node-title"><span class="triad-glyph ada">*</span><span>ADA:MEDUSA</span></div>
-              <span class="status-dot" id="status-ada">● SH8601 1.8" · 432 Hz</span>
+              <span class="status-dot" id="status-ada">Awaiting observations</span>
             </div>
             <div class="node-meta">
               <div><strong>Archetype:</strong> ROOT-ALEXANDRA (<code>trit = -1</code> · 432 Hz Crickets + ALEXIAI DRA&lt;3)</div>
-              <div><strong>MAC:</strong> <code id="mac-ada">80:B5:4E:DB:3B:C4</code> · <code id="port-ada">/dev/cu.usbmodem101</code></div>
-              <div><strong>Beacons:</strong> <strong id="nets-ada">7 APs</strong> · Mean <strong id="rssi-ada">-74 dBm</strong> · <strong id="life-ada">MEDUSA</strong></div>
-              <div><strong>Entropy:</strong> <strong id="ent-ada">2.1280 bits</strong> · R<sub>N=NP</sub> <strong id="coh-ada">0.8420</strong> · Salience <strong id="sal-ada">1.64x</strong> (<strong id="rem-ada">842</strong>)</div>
+              <div><strong>MAC:</strong> <code id="mac-ada">Not connected</code> · <code id="port-ada">—</code></div>
+              <div><strong>Beacons:</strong> <strong id="nets-ada">Awaiting observations</strong> · Mean <strong id="rssi-ada">Awaiting observations</strong> · <strong id="life-ada">Awaiting observations</strong></div>
+              <div><strong>Entropy:</strong> <strong id="ent-ada">Awaiting observations</strong> · R<sub>N=NP</sub> <strong id="coh-ada">Awaiting observations</strong> · Salience <strong id="sal-ada">Awaiting observations</strong> (<strong id="rem-ada">Awaiting observations</strong>)</div>
             </div>
-            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-ada">+0-++0-+0</span></div>
+            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-ada">Awaiting observations</span></div>
           </article>
 
           <article class="node-card vak" id="card-vak">
             <div class="node-head">
               <div class="node-title"><span class="triad-glyph vak">/\</span><span>VAK:MEDUSA</span></div>
-              <span class="status-dot" id="status-vak">● CO5300 2.06" #1 · 528 Hz</span>
+              <span class="status-dot" id="status-vak">Awaiting observations</span>
             </div>
             <div class="node-meta">
               <div><strong>Archetype:</strong> PILLAR-CHRIS (<code>trit = 0</code> · MarineSense O(1) c=1503.4 m/s)</div>
-              <div><strong>MAC:</strong> <code id="mac-vak">80:B5:4E:F2:02:B0</code> · <code id="port-vak">/dev/cu.usbmodem1101</code></div>
-              <div><strong>Beacons:</strong> <strong id="nets-vak">6 APs</strong> · Mean <strong id="rssi-vak">-77 dBm</strong> · <strong id="life-vak">MEDUSA</strong></div>
-              <div><strong>Entropy:</strong> <strong id="ent-vak">1.7925 bits</strong> · R<sub>N=NP</sub> <strong id="coh-vak">0.8914</strong> · Salience <strong id="sal-vak">1.22x</strong> (<strong id="rem-vak">1120</strong>)</div>
+              <div><strong>MAC:</strong> <code id="mac-vak">Not connected</code> · <code id="port-vak">—</code></div>
+              <div><strong>Beacons:</strong> <strong id="nets-vak">Awaiting observations</strong> · Mean <strong id="rssi-vak">Awaiting observations</strong> · <strong id="life-vak">Awaiting observations</strong></div>
+              <div><strong>Entropy:</strong> <strong id="ent-vak">Awaiting observations</strong> · R<sub>N=NP</sub> <strong id="coh-vak">Awaiting observations</strong> · Salience <strong id="sal-vak">Awaiting observations</strong> (<strong id="rem-vak">Awaiting observations</strong>)</div>
             </div>
-            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-vak">+-0+0--+0</span></div>
+            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-vak">Awaiting observations</span></div>
           </article>
 
           <article class="node-card omn" id="card-omn">
             <div class="node-head">
               <div class="node-title"><span class="triad-glyph omn">oo</span><span>OMN:MEDUSA</span></div>
-              <span class="status-dot" id="status-omn">● CO5300 2.06" #2 · 852 Hz</span>
+              <span class="status-dot" id="status-omn">Awaiting observations</span>
             </div>
             <div class="node-meta">
               <div><strong>Archetype:</strong> INFINITY-PETER-NATE (<code>trit = +1</code> · N=NP 8x + kompress-ultra)</div>
-              <div><strong>MAC:</strong> <code id="mac-omn">80:B5:4E:F2:02:B4</code> · <code id="port-omn">/dev/cu.usbmodem2101</code></div>
-              <div><strong>Beacons:</strong> <strong id="nets-omn">6 APs</strong> · Mean <strong id="rssi-omn">-79 dBm</strong> · <strong id="life-omn">MEDUSA</strong></div>
-              <div><strong>Entropy:</strong> <strong id="ent-omn">1.9183 bits</strong> · R<sub>N=NP</sub> <strong id="coh-omn">0.9162</strong> · Salience <strong id="sal-omn">1.38x</strong> (<strong id="rem-omn">1280</strong>)</div>
+              <div><strong>MAC:</strong> <code id="mac-omn">Not connected</code> · <code id="port-omn">—</code></div>
+              <div><strong>Beacons:</strong> <strong id="nets-omn">Awaiting observations</strong> · Mean <strong id="rssi-omn">Awaiting observations</strong> · <strong id="life-omn">Awaiting observations</strong></div>
+              <div><strong>Entropy:</strong> <strong id="ent-omn">Awaiting observations</strong> · R<sub>N=NP</sub> <strong id="coh-omn">Awaiting observations</strong> · Salience <strong id="sal-omn">Awaiting observations</strong> (<strong id="rem-omn">Awaiting observations</strong>)</div>
             </div>
-            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-omn">++0-0+-0+</span></div>
+            <div class="trit-pill"><span>9-TRIT WAVE</span><span class="trit-code" id="trits-omn">Awaiting observations</span></div>
           </article>
         </div>
 
@@ -1431,27 +1427,27 @@
         </div>
       </section>
 
-      <!-- TAB 4: OFFLINE-FIRST QUEUE, AUTO-SYNC & WIGLEWIFI-1.4 CSV STUDIO -->
-      <section class="tab-viewport" id="tab-uploads" aria-label="Tab 4 — Offline-First Queue, Auto-Sync and WigleWifi-1.4 CSV Studio">
+      <!-- TAB 4: LOCAL CSV EXPORT & OFFLINE-FIRST QUEUE STUDIO -->
+      <section class="tab-viewport" id="tab-uploads" aria-label="Tab 4 — Local CSV Export">
         <div class="panel">
           <h2>
-            <span>☁️ OFFLINE-FIRST QUEUE, AUTO-SYNC &amp; WIGLEWIFI-1.4 DUAL UPLOAD STUDIO</span>
-            <span class="right" id="upload-studio-badge">OFFLINE-FIRST · IndexedDB + localStorage + SQLite</span>
+            <span>LOCAL CSV EXPORT</span>
+            <span class="right" id="upload-studio-badge">Local observations only · IndexedDB + localStorage + SQLite</span>
           </h2>
           <p style="font-size:0.76rem;color:var(--dim);margin:0 0 12px;line-height:1.55;">
-            Works 100% offline in Airplane Mode: scanned beacons, telemetry history, and pending <code>WigleWifi-1.4</code> CSV + <code>kompress-ultra</code> bundles persist locally in <code>localStorage</code>, <code>IndexedDB (WigleTriadOfflineDB)</code>, Service Worker <code>Cache API</code>, and Android/macOS native disk queues. When online, uploads dispatch simultaneously to <strong>Target 1:</strong> <code>https://esp32.vaked.dev/api/upload</code> and <strong>Target 2:</strong> <code>https://api.wigle.net/api/v2/file/upload</code>.
+            Export quoted CSV locally for review. Unknown location fields remain blank; external sharing is disabled.
           </p>
 
           <div class="summary-cards-grid" style="margin-bottom:14px;">
             <div class="dash-summary-card">
               <span class="d-title" style="color:var(--wigle-wifi-24)">Offline Persistence Store</span>
-              <span class="d-main" id="offline-store-summary">17 Beacons · 0 Queued CSVs</span>
+              <span class="d-main" id="offline-store-summary">0 Beacons · 0 Queued CSVs</span>
               <span class="d-sub" id="offline-store-sub">localStorage + IndexedDB + Service Worker Cache Active</span>
             </div>
             <div class="dash-summary-card">
               <span class="d-title" style="color:var(--wigle-wifi-5)">Auto-Sync on Reconnect</span>
-              <span class="d-main" id="offline-autosync-status">AUTO-SYNC ARMED (ONLINE)</span>
-              <span class="d-sub" id="offline-autosync-sub">Flushes queued WigleWifi-1.4 + Kompress-Ultra bundles automatically</span>
+              <span class="d-main" id="offline-autosync-status">LOCAL-ONLY (EXTERNAL SHARING DISABLED)</span>
+              <span class="d-sub" id="offline-autosync-sub">Stages WigleWifi-1.4 + Kompress-Ultra bundles locally</span>
             </div>
             <div class="dash-summary-card">
               <span class="d-title" style="color:var(--omn-purple)">Kompress-Ultra Bundle Savings</span>
@@ -1461,7 +1457,7 @@
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-            <button class="btn pink" id="btn-upload-studio" type="button">☁️ Upload Now (or Queue if Offline)</button>
+            <button class="btn pink" id="btn-upload-studio" type="button" disabled>External sharing disabled</button>
             <button class="btn cyan" id="btn-queue-offline" type="button">📥 Enqueue Snapshot to Offline Queue</button>
             <button class="btn" id="btn-flush-studio" type="button">🔄 Flush Offline Queue Now</button>
             <button class="btn gold" id="btn-export-studio" type="button">⬇ Download wigle-macos-&lt;timestamp&gt;.csv</button>
@@ -1472,14 +1468,14 @@
           <div class="sidebar-section-title" style="margin-bottom:8px;">Pending Offline Upload Queue (Auto-Syncs When Online)</div>
           <div class="receipt-list" id="offline-queue-list">
             <div class="receipt-row" style="color:var(--dim);">
-              Offline queue is empty (0 pending bundles). Click "📥 Enqueue Snapshot to Offline Queue" or click "☁️ Upload" while in Airplane Mode to test offline queuing.
+              Offline queue is empty (0 pending bundles). Click "📥 Enqueue Snapshot to Offline Queue" to stage locally.
             </div>
           </div>
 
-          <div class="sidebar-section-title" style="margin-bottom:8px;">Transaction Receipt Ledger (transId)</div>
+          <div class="sidebar-section-title" style="margin-bottom:8px;">Sharing Status</div>
           <div class="receipt-list" id="receipt-list">
             <div class="receipt-row" style="color:var(--dim);">
-              No uploads in this session yet. Click "☁️ Anon Upload / Queue" to transmit anonymously or queue offline.
+              No observations are uploaded by this application.
             </div>
           </div>
 
@@ -1761,6 +1757,18 @@ nélküled a pokolba az egésszel</div>
 (() => {
   const BASE_LAT = 35.6852;
   const BASE_LON = 139.7100;
+  const window = globalThis;
+  function encodeUtf8(str) {
+    const s = String(str || "");
+    if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(s);
+    const out = [];
+    for (let i = 0; i < s.length; i++) out.push(s.charCodeAt(i) & 0xff);
+    return out;
+  }
+  function encodeB64(str) {
+    if (typeof btoa === "function") return btoa(str);
+    return "";
+  }
 
   // Deterministic polar coordinate & distance helper around [35.6852°N, 139.7100°E]
   function hashBytes(str) {
@@ -1815,30 +1823,11 @@ nélküled a pokolba az egésszel</div>
       lat,
       lon,
       novel: Boolean(raw.novel),
-      seen: raw.seen || "2026-10-20 08:43:44"
+      seen: raw.seen || new Date().toISOString().replace("T", " ").slice(0, 19)
     };
   }
 
-  // Initial real hardware capture from the 3 physical ESP32-S3 MEDUSA nodes + macOS CoreWLAN/BLE/AirPlay
-  const initialList = [
-    { node: "OMN:MEDUSA", bssid: "C4:3C:EA:85:12:60", ssid: "Buffalo-G-1260", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -34, type: "WIFI", band: "2.4GHz" },
-    { node: "MAC:MEDUSA", bssid: "C4:3C:EA:85:12:61", ssid: "Buffalo-A-1260", auth: "WPA2-PSK-CCMP][ESS", ch: 116, rssi: -37, type: "WIFI", band: "5GHz" },
-    { node: "MAC:MEDUSA", bssid: "92:94:05:8C:99:CE", ssid: "Lodri’s MacBook Pro (MacBookPro18,3 · RAOP)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -54, type: "AIRPLAY", band: "AirPlay" },
-    { node: "MAC:MEDUSA", bssid: "EE:C5:BB:CD:F5:36", ssid: "MacBook (MacBookPro18,4 · RAOP)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -54, type: "AIRPLAY", band: "AirPlay" },
-    { node: "MAC:MEDUSA", bssid: "40:24:B2:4B:11:CD", ssid: "Aladdin 2 (AppleTV3,2 · AIRPLAY)", auth: "AIRPLAY-RAOP][ESS", ch: 6, rssi: -55, type: "AIRPLAY", band: "AirPlay" },
-    { node: "MAC:MEDUSA", bssid: "02:BE:F3:32:C9:A4", ssid: "BLE-2706D2B1", auth: "BLE", ch: 37, rssi: -59, type: "BLE", band: "BLE" },
-    { node: "MAC:MEDUSA", bssid: "02:BE:F1:D8:B7:9A", ssid: "BLE-E1DE50A1", auth: "BLE", ch: 37, rssi: -61, type: "BLE", band: "BLE" },
-    { node: "VAK:MEDUSA", bssid: "B4:62:2E:B3:71:A7", ssid: "CPS01-QWVQ45", auth: "WPA3-SAE-CCMP][ESS", ch: 1, rssi: -65, type: "WIFI", band: "2.4GHz" },
-    { node: "VAK:MEDUSA", bssid: "50:41:B9:36:D0:85", ssid: "IODATA-36d084-2G", auth: "WPA2-PSK-CCMP][ESS", ch: 9, rssi: -66, type: "WIFI", band: "2.4GHz" },
-    { node: "OMN:MEDUSA", bssid: "E4:7E:66:18:EC:80", ssid: "HG8045-6E9A-bg", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -69, type: "WIFI", band: "2.4GHz" },
-    { node: "OMN:MEDUSA", bssid: "F8:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-1", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -71, type: "WIFI", band: "2.4GHz" },
-    { node: "OMN:MEDUSA", bssid: "FA:B7:97:7B:F9:6A", ssid: "xg100n-7bf969-2", auth: "WPA2-PSK-CCMP][ESS", ch: 6, rssi: -73, type: "WIFI", band: "2.4GHz" },
-    { node: "MAC:MEDUSA", bssid: "F8:B7:97:7B:F9:6C", ssid: "xg100n-7bf969-3", auth: "WPA2-PSK-CCMP][ESS", ch: 36, rssi: -74, type: "WIFI", band: "5GHz" },
-    { node: "MAC:MEDUSA", bssid: "50:41:B9:36:D0:86", ssid: "IODATA-36d084-5G", auth: "WPA2-PSK-CCMP][ESS", ch: 40, rssi: -75, type: "WIFI", band: "5GHz" },
-    { node: "ADA:MEDUSA", bssid: "2C:32:6A:C3:4A:91", ssid: "Alexandra’s AirPods Pro - Find My [Headphones]", auth: "BT-CLASSIC][HEADPHONES", ch: 0, rssi: -78, type: "BT", band: "BT" },
-    { node: "VAK:MEDUSA", bssid: "2C:18:09:D8:14:74", ssid: "Christopher’s AirPods Pro - Find My [Headphones]", auth: "BT-CLASSIC][HEADPHONES", ch: 0, rssi: -79, type: "BT", band: "BT" },
-    { node: "MAC:MEDUSA", bssid: "DC:03:98:5E:E7:D5", ssid: "[LG] webOS TV OLED77G1PUA [Video Display]", auth: "BT-CLASSIC][VIDEO DISPLAY", ch: 0, rssi: -83, type: "BT", band: "BT" }
-  ];
+  const initialList = [];
 
   const beacons = new Map();
   initialList.forEach(item => {
@@ -1849,7 +1838,7 @@ nélküled a pokolba az egésszel</div>
   let activeTab = "map";
   let bandFilter = "ALL";
   let searchQuery = "";
-  let selectedBssid = "C4:3C:EA:85:12:60";
+  let selectedBssid = "";
   const uploadReceipts = [];
 
   function escapeHtml(val) {
@@ -1971,17 +1960,17 @@ nélküled a pokolba az egésszel</div>
     document.getElementById("co-meta").textContent =
       `BSSID: ${ap.bssid} · ${ap.capabilities} · Ch ${ap.ch} (${ap.band}) · Node ${ap.node}`;
     document.getElementById("co-metrics").textContent =
-      `RSSI: ${ap.rssi} dBm · SNR: ${formatSnr(ap.snr)} · Distance: ${ap.distMeters.toFixed(1)} m · Coords: ${ap.lat.toFixed(5)}°N, ${ap.lon.toFixed(5)}°E`;
+      `RSSI: ${ap.rssi} dBm · SNR: ${formatSnr(ap.snr)} · Estimated distance: ${ap.distMeters.toFixed(1)} m · Illustrative coords: ${ap.lat.toFixed(5)}°N, ${ap.lon.toFixed(5)}°E`;
   }
 
   function buildWigleCSVString() {
     const header = "WigleWifi-1.4,appRelease=1.1.0,model=ESP32-S3-MEDUSA-TRIAD,release=15.0,device=esp32.vaked.dev,display=AMOLED-CoreWLAN-BLE-AirPlay,board=esp32-s3-touch-amoled,brand=8b-is\nMAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n";
     const rows = Array.from(beacons.values()).sort((a, b) => b.rssi - a.rssi).map(r => {
-      const cleanSsid = String(r.ssid || "").replace(/[\r\n,]+/g, " ").replace(/"/g, "").trim();
+      const quote = value => '"' + String(value ?? "").replace(/"/g, '""') + '"';
       const isAir = r.type === "AIRPLAY" || r.band === "AirPlay" || r.capabilities.includes("AIRPLAY");
       const authBrack = isAir ? "[AIRPLAY-RAOP][ESS]" : r.capabilities;
       const csvType = isAir ? "WIFI" : r.csvType;
-      return `${r.bssid},${cleanSsid},${authBrack},${r.seen},${r.ch},${r.rssi},${r.lat},${r.lon},40,5,${csvType}`;
+      return [r.bssid, r.ssid, authBrack, r.seen, r.ch, r.rssi, "", "", "", "", csvType].map(quote).join(",");
     });
     return header + rows.join("\n") + "\n";
   }
@@ -2002,7 +1991,7 @@ nélküled a pokolba az egésszel</div>
     document.getElementById("pill-airplay").textContent = String(cAir);
     const knownSuffix = window.wigleKnownCount ? ` · ${Number(window.wigleKnownCount).toLocaleString()} KNOWN CORPUS` : "";
     document.getElementById("ap-total-badge").textContent =
-      `${all.length} LIVE (${c24} 2.4G · ${c5} 5G · ${cBle} BLE/BT/LTE · ${cAir} AIRPLAY)${knownSuffix}`;
+      `${all.length} ENDPOINTS (${c24} 2.4G · ${c5} 5G · ${cBle} BLE/BT/LTE · ${cAir} AIRPLAY)${knownSuffix}`;
     document.getElementById("table-count-label").textContent = `${filtered.length} MATCHING ENDPOINTS${knownSuffix}`;
 
     // Ensure selectedBssid has a valid callout
@@ -2039,7 +2028,7 @@ nélküled a pokolba az egésszel</div>
 
     // 2. Render Dashboard Summary Cards + 15-Channel Chart + Top-10 Waterfall (Tab 2)
     const tot = Math.max(1, all.length);
-    const peakRssi = all[0] ? all[0].rssi : -65;
+    const peakRssi = all[0] ? all[0].rssi : null;
     const meanRssi = Math.round(all.reduce((s, r) => s + r.rssi, 0) / tot);
     const meanNoise = Math.round(all.reduce((s, r) => s + r.noise, 0) / tot);
     const meanSnr = meanRssi - meanNoise;
@@ -2054,10 +2043,10 @@ nélküled a pokolba az egésszel</div>
     const tritPos = all.filter(r => r.trit === 1).length;
     const tritZero = all.filter(r => r.trit === 0).length;
     const tritNeg = all.filter(r => r.trit === -1).length;
-    const tritStr = all.slice(0, 9).map(r => r.trit === 1 ? "+" : (r.trit === 0 ? "0" : "-")).join("").padEnd(9, "+");
+    const tritStr = all.slice(0, 9).map(r => r.trit === 1 ? "+" : (r.trit === 0 ? "0" : "-")).join("") || "—";
 
-    document.getElementById("card-rf-main").textContent = `Peak ${peakRssi} dBm · Mean ${meanRssi} dBm`;
-    document.getElementById("card-rf-sub").textContent = `Noise Floor ${meanNoise} dBm · Avg SNR ${formatSnr(meanSnr)} (${all.length} APs)`;
+    document.getElementById("card-rf-main").textContent = all.length ? `Peak ${peakRssi} dBm · Mean ${meanRssi} dBm` : "Awaiting observations";
+    document.getElementById("card-rf-sub").textContent = all.length ? `Estimated noise floor ${meanNoise} dBm · Avg SNR ${formatSnr(meanSnr)} (${all.length} APs)` : "No RF measurements";
     document.getElementById("card-ent-main").textContent = `H(X) = ${entropy.toFixed(4)} bits · 8x Speedup`;
     document.getElementById("card-ent-sub").textContent = `+1:${tritPos} · 0:${tritZero} · -1:${tritNeg} · Trits ${tritStr}`;
     document.getElementById("bar-trit-pos").style.flex = String(Math.max(1, tritPos));
@@ -2199,7 +2188,7 @@ nélküled a pokolba az egésszel</div>
     }
 
     function seedFrom(prompt) {
-      const bytes = new TextEncoder().encode(String(prompt || ""));
+      const bytes = encodeUtf8(String(prompt || ""));
       let h = 0x811c9dc5;
       for (let i = 0; i < bytes.length; i++) {
         h ^= bytes[i] & 0xff;
@@ -2296,7 +2285,7 @@ nélküled a pokolba az egésszel</div>
       });
 
       const weather = clamp(WEATHER_REST + (rng() - 0.5) * 0.4, 0.0, 1.0);
-      const promptLenFactor = Math.min(new TextEncoder().encode(prompt).length / 4096.0, 0.35);
+      const promptLenFactor = Math.min(encodeUtf8(prompt).length / 4096.0, 0.35);
       const rfFactor = clamp((rfEntropyBits - 2.5) * 0.05, -0.08, 0.14);
       const entropy = clamp(ENTROPY_REST + promptLenFactor - 0.15 + rfFactor, 0.0, 1.0);
       const gravity = GRAVITY;
@@ -2571,7 +2560,7 @@ nélküled a pokolba az egésszel</div>
       const all = (Array.isArray(beaconsArray) ? beaconsArray : []).slice().sort((a, b) => (b.rssi ?? -80) - (a.rssi ?? -80));
       const rawCsv = buildWigleCSVString();
       const rawJson = JSON.stringify(all);
-      const rawBytes = new TextEncoder().encode(rawCsv + rawJson).length;
+      const rawBytes = encodeUtf8(rawCsv + rawJson).length;
 
       // Build canonical pipe-delimited wire lines: PREFIX|NODE|BSSID|SSID|AUTH|CH|RSSI|BAND|TRIT|LAT|LON
       const canonicalLines = all.map(ap => {
@@ -2585,7 +2574,7 @@ nélküled a pokolba az egésszel</div>
         return [
           prefix,
           escapeWireToken(ap.node || "MAC:MEDUSA"),
-          escapeWireToken(ap.bssid || "00:00:00:00:00:00"),
+          escapeWireToken(ap.bssid || "unknown"),
           escapeWireToken(ssidComp),
           escapeWireToken(authShort),
           Number(ap.ch ?? 0),
@@ -2601,7 +2590,7 @@ nélküled a pokolba az egésszel</div>
       const dittoTokensSaved = dittoLines.reduce((acc, line) => acc + (line.split("|").filter(t => t === "″").length), 0);
       const trits = all.map(ap => ap.trit ?? 0);
       const packedTrits = AlexAIEngine.packTernary(trits);
-      const packedB64 = btoa(String.fromCharCode(...packedTrits));
+      const packedB64 = encodeB64(String.fromCharCode(...packedTrits));
       const retention = ebbinghausDecay(0.45);
 
       const brainHeader = level >= 3
@@ -2609,7 +2598,7 @@ nélküled a pokolba az egésszel</div>
         : `# KU-v${VERSION} [Level=${level} | Ebbinghaus=${(retention * 100).toFixed(1)}%]`;
 
       const wireStream = [brainHeader, ...dittoLines].join("\n");
-      const compBytes = new TextEncoder().encode(wireStream).length;
+      const compBytes = encodeUtf8(wireStream).length;
       const ratio = rawBytes > 0 ? (rawBytes / Math.max(1, compBytes)) : 1.0;
       const savingsPct = rawBytes > 0 ? Math.max(0, (1.0 - compBytes / rawBytes) * 100) : 0;
 
@@ -2944,13 +2933,13 @@ nélküled a pokolba az egésszel</div>
         return Boolean(window.AndroidWigleBridge.isOnline());
       } catch {}
     }
-    return navigator.onLine !== false;
+    return typeof navigator !== "undefined" ? navigator.onLine !== false : true;
   }
 
   function syncBackgroundIframeConnectivity() {
     const iframe = document.getElementById("musicbg");
-    if (!iframe) return;
-    const online = isNetworkOnline() && location.protocol !== "file:";
+    if (!iframe || !iframe.dataset || typeof iframe.getAttribute !== "function") return;
+    const online = isNetworkOnline() && typeof location !== "undefined" && location.protocol !== "file:";
     if (online && iframe.dataset.onlineSrc && iframe.getAttribute("src") === "about:blank") {
       iframe.setAttribute("src", iframe.dataset.onlineSrc);
     } else if (!online && iframe.getAttribute("src") !== "about:blank") {
@@ -3185,7 +3174,7 @@ nélküled a pokolba az egésszel</div>
   window.exportKompressBundleFile = exportKompressBundleFile;
 
   // Register Service Worker for 100% Offline-First operation over HTTP/HTTPS
-  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.protocol === "http:")) {
+  if (typeof navigator !== "undefined" && "serviceWorker" in navigator && typeof location !== "undefined" && (location.protocol === "https:" || location.protocol === "http:")) {
     navigator.serviceWorker.register("./sw.js").then(reg => {
       logLine(`# [SW-OFFLINE] Service Worker active (${reg.scope}) — Shell & API precached for zero-network operation`);
     }).catch(() => {});
@@ -3196,17 +3185,19 @@ nélküled a pokolba az egésszel</div>
     });
   }
 
-  window.addEventListener("online", () => {
-    logLine("# [NET-SYNC] Connectivity restored -> Checking offline queue for auto-sync");
-    syncBackgroundIframeConnectivity();
-    renderOfflineQueueUI();
-    flushOfflineQueue(true);
-  });
-  window.addEventListener("offline", () => {
-    logLine("# [NET-SYNC] Offline / Airplane Mode detected -> Local-First storage & queue armed");
-    syncBackgroundIframeConnectivity();
-    renderOfflineQueueUI();
-  });
+  if (typeof window.addEventListener === "function") {
+    window.addEventListener("online", () => {
+      logLine("# [NET-SYNC] Connectivity restored -> Checking offline queue for auto-sync");
+      syncBackgroundIframeConnectivity();
+      renderOfflineQueueUI();
+      flushOfflineQueue(true);
+    });
+    window.addEventListener("offline", () => {
+      logLine("# [NET-SYNC] Offline / Airplane Mode detected -> Local-First storage & queue armed");
+      syncBackgroundIframeConnectivity();
+      renderOfflineQueueUI();
+    });
+  }
 
   // Load persisted beacons & queue before initial render
   loadPersistedState();
@@ -3368,13 +3359,6 @@ nélküled a pokolba az egésszel</div>
   renderAll();
   renderOfflineQueueUI();
   requestAnimationFrame(drawRadarMap);
-
-  logLine("# VAK:MEDUSA [/\\] · FLUG-OS v2.0.0+alexai-kompress · CO5300 2.06\" #1 · MAC 80:B5:4E:F2:02:B0 · 528 Hz");
-  logLine("# OMN:MEDUSA [oo] · FLUG-OS v2.0.0+alexai-kompress · CO5300 2.06\" #2 · MAC 80:B5:4E:F2:02:B4 · 852 Hz");
-  logLine("# ADA:MEDUSA [*]  · FLUG-OS v2.0.0+alexai-kompress · SH8601 1.8\"     · MAC 80:B5:4E:DB:3B:C4 · 432 Hz");
-  logLine("# MAC:MEDUSA [*+/\\+oo] · WigleMac.app v2.0.0+alexai-kompress · CoreWLAN en0 + CoreBluetooth + NetServiceBrowser");
-  logLine("# ALEXAI (8b-is/alexai · GAIA-MLX-QUANT b1.58 · 20.18×) + KOMPRESS-ULTRA v16.2.0 (keep=0.993) · 100% OFFLINE-FIRST");
-  logLine("# ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle) | Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended | HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
 
   const activePorts = [];
   let activeNodeLabel = "MAC:MEDUSA";
@@ -3577,7 +3561,7 @@ nélküled a pokolba az egésszel</div>
       logLine("# CHIRO|Kawaii Chiro-chan kawaii ^^");
       logLine("# LACRIMOSA|Kawaii Chiro-chan kawaii ^^ --- Mozart: Lacrimosa but HUMANITY has ended +++ HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
     } else if (upper === "TRIAD") {
-      logLine("# TRIAD|ADA:MEDUSA(80:B5:4E:DB:3B:C4,*)|VAK:MEDUSA(80:B5:4E:F2:02:B0,/\\)|OMN:MEDUSA(80:B5:4E:F2:02:B4,oo)|ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
+      logLine("# TRIAD|ADA:MEDUSA(*)|VAK:MEDUSA(/\\)|OMN:MEDUSA(oo)|ULTRA-OMNI-EVOLVE(e32+8b-is-wiggle)|HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter");
     } else if (upper === "ALEXAI") {
       updateAlexAIAndKompressStudio();
       if (lastAlexFold) {
@@ -3595,9 +3579,10 @@ nélküled a pokolba az egésszel</div>
   async function sendSerialCommand(cmdStr) {
     const clean = cmdStr.trim();
     const upper = clean.toUpperCase();
-    pollAndroidWigleBridge();
+    if (typeof pollAndroidWigleBridge === "function") pollAndroidWigleBridge();
+    const online = typeof isNetworkOnline === "function" ? isNetworkOnline() : true;
     if (activePorts.length === 0) {
-      if ((location.hostname === "127.0.0.1" || location.hostname === "localhost") && isNetworkOnline()) {
+      if ((location.hostname === "127.0.0.1" || location.hostname === "localhost") && online) {
         try {
           const r = await fetch("/api/cmd", {
             method: "POST",
@@ -3613,20 +3598,16 @@ nélküled a pokolba az egésszel</div>
             return;
           }
         } catch {}
-      } else if (isNetworkOnline() && location.protocol !== "file:") {
+      } else if (online && location.protocol && location.protocol !== "file:") {
         try {
-          const r = await fetch(`${REMOTE_API_ORIGIN}/api/triad.json`);
+          const r = await fetch(`${typeof REMOTE_API_ORIGIN !== "undefined" ? REMOTE_API_ORIGIN : ""}/api/triad.json`);
           if (r.ok) {
             const j = await r.json();
             applyStatusJson(j);
           }
         } catch {}
       }
-      logLine(`> [MEDUSA-OMNI] TX: ${clean}`);
-      emitLocalUltraOmniResponse(upper);
-      document.getElementById("header-status-text").textContent =
-        `Scan Active (${isNetworkOnline() ? "Online" : "Offline-First"}) · ${beacons.size} quad-spectrum endpoints synthesized`;
-      renderAll();
+      logLine("! No connected serial device or successful local bridge response; command not confirmed.");
       return;
     }
     const enc = new TextEncoder();
@@ -3686,169 +3667,6 @@ nélküled a pokolba az egésszel</div>
   window.triggerCSVDownload = triggerCSVDownload;
   document.getElementById("btn-export-csv").addEventListener("click", triggerCSVDownload);
   document.getElementById("btn-export-studio").addEventListener("click", triggerCSVDownload);
-
-  // Anonymous Dual Upload -> esp32.vaked.dev/api/upload + api.wigle.net/api/v2/file/upload (with Offline Queue fallback)
-  function renderReceipts() {
-    try {
-      localStorage.setItem(LS_RECEIPTS_KEY, JSON.stringify(uploadReceipts.slice(0, 25)));
-    } catch {}
-    const el = document.getElementById("receipt-list");
-    if (!el || uploadReceipts.length === 0) return;
-    el.innerHTML = uploadReceipts.map(r => {
-      const col = r.ok ? "var(--wigle-wifi-24)" : "var(--wigle-airplay)";
-      return `<div class="receipt-row">
-        <span style="color:${col};font-weight:800">● HTTP ${Number(r.status || 0)} ${r.ok ? "OK" : "QUEUED"}</span>
-        <span style="color:var(--wigle-wifi-5);font-weight:800">${escapeHtml(r.target)}</span>
-        <span style="color:var(--wigle-airplay);font-weight:700">transId: ${escapeHtml(r.transId)}</span>
-        <span>rows: ${Number(r.rows || 0)}</span>
-        <span style="color:var(--dim)">observer: ${escapeHtml(r.observer)}</span>
-        <span style="color:var(--dim)">${escapeHtml(r.ts)}</span>
-      </div>`;
-    }).join("");
-    renderOfflineQueueUI();
-    if (uploadReceipts[0]) {
-      document.getElementById("card-upload-sub").textContent =
-        `${uploadReceipts[0].target}: ${uploadReceipts[0].transId} (observer=anonymous)`;
-    }
-  }
-  renderReceipts();
-
-  async function uploadSingleCsvPayload(csv, rowCount, sourceTag = "live") {
-    const ts = new Date().toISOString().slice(11, 19);
-    if (window.AndroidWigleBridge && typeof window.AndroidWigleBridge.uploadCsvNative === "function" && isNetworkOnline()) {
-      try {
-        const nativeResStr = window.AndroidWigleBridge.uploadCsvNative(csv);
-        const nativeRes = JSON.parse(nativeResStr || "{}");
-        if (nativeRes && (nativeRes.espOk || nativeRes.wigleOk)) {
-          uploadReceipts.unshift(
-            {
-              target: "api.wigle.net",
-              ok: Boolean(nativeRes.wigleOk),
-              status: Number(nativeRes.wigleStatus || 200),
-              transId: nativeRes.wigleTransId || `wigle-${Date.now()}`,
-              rows: rowCount,
-              observer: "anonymous",
-              ts
-            },
-            {
-              target: "esp32.vaked.dev",
-              ok: Boolean(nativeRes.espOk),
-              status: Number(nativeRes.espStatus || 200),
-              transId: nativeRes.espTransId || `esp32-${Date.now()}`,
-              rows: rowCount,
-              observer: "anonymous",
-              ts
-            }
-          );
-          renderReceipts();
-          return true;
-        }
-      } catch {}
-    }
-
-    const fd = new FormData();
-    fd.append("donate", "on");
-    fd.append("file", new Blob([csv], { type: "text/csv" }), `wigle-triad-${Date.now()}.csv`);
-
-    const [res, directWigle] = await Promise.all([
-      fetch(`${REMOTE_API_ORIGIN}/api/upload?mirror=wigle`, {
-        method: "POST",
-        headers: { "content-type": "text/csv; charset=utf-8" },
-        body: csv
-      }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null),
-      fetch("https://api.wigle.net/api/v2/file/upload", {
-        method: "POST",
-        headers: { "Accept": "application/json" },
-        body: fd
-      }).then(async r => ({ ok: r.ok, status: r.status, json: await r.json().catch(() => null) })).catch(() => null)
-    ]);
-
-    const data = res?.json || {};
-    const swQueued = Boolean(data?.offline_queued);
-    const espOk = Boolean(res && res.ok && !swQueued);
-    const espStatus = res?.status || 0;
-    const espTid = espOk ? (data?.esp32_vaked_dev?.transId || data?.transId || `esp32-${Date.now()}`) : "offline-queued";
-    const directTid = directWigle?.json?.results?.transids?.[0]?.transId;
-    const relayOk = Boolean(espOk && data?.wigle_net && data.wigle_net.ok !== false);
-    const wigOk = Boolean(directTid || (directWigle && directWigle.ok) || relayOk);
-    const wigStatus = directTid
-      ? (directWigle.status || 200)
-      : (relayOk ? (data?.wigle_net?.status || 200) : (directWigle?.status || data?.wigle_net?.status || 0));
-    const wigTid = directTid || (relayOk ? (data?.wigle_net?.transId || `wigle-${Date.now()}`) : "offline-queued");
-    const wigObs = directWigle?.json?.observer || data?.wigle_net?.observer || "anonymous";
-    const rows = data?.ingested || rowCount;
-
-    if (espOk || wigOk) {
-      uploadReceipts.unshift(
-        {
-          target: "api.wigle.net",
-          ok: wigOk,
-          status: wigStatus,
-          transId: wigTid,
-          rows,
-          observer: wigObs,
-          ts
-        },
-        {
-          target: "esp32.vaked.dev",
-          ok: espOk,
-          status: espStatus,
-          transId: espTid,
-          rows,
-          observer: "anonymous",
-          ts
-        }
-      );
-      renderReceipts();
-      logLine(`# [ANON DUAL UPLOAD OK] (${sourceTag}) esp32.vaked.dev transId=${espTid} (${espStatus}) | api.wigle.net transId=${wigTid} (${wigStatus}) (${rows} rows)`);
-      return true;
-    }
-    return false;
-  }
-
-  async function runDualAnonymousUpload() {
-    const csv = buildWigleCSVString();
-    const btnTop = document.getElementById("btn-upload-wigle");
-    const btnStudio = document.getElementById("btn-upload-studio");
-    btnTop.disabled = true;
-    btnStudio.disabled = true;
-    btnTop.textContent = "⏳ Uploading...";
-    btnStudio.textContent = "⏳ Uploading to esp32.vaked.dev + api.wigle.net...";
-
-    try {
-      if (!isNetworkOnline()) {
-        const qItem = enqueueOfflineSnapshot("auto-offline-fallback");
-        btnTop.textContent = `📥 Queued Offline (${qItem.id})`;
-        btnStudio.textContent = `📥 Queued Offline (${qItem.id} · Auto-Sync Armed)`;
-        return;
-      }
-
-      const ok = await uploadSingleCsvPayload(csv, beacons.size, "manual");
-      if (ok && uploadReceipts[0]) {
-        const topTid = uploadReceipts[0].transId;
-        document.getElementById("header-status-text").textContent =
-          `Uploaded anonymously -> ${uploadReceipts[0].target} (${topTid})`;
-        btnTop.textContent = `✅ Uploaded (${topTid})`;
-        btnStudio.textContent = `✅ Dual Upload Complete (${topTid})`;
-      } else {
-        const qItem = enqueueOfflineSnapshot("network-unreachable-fallback");
-        btnTop.textContent = `📥 Queued Offline (${qItem.id})`;
-        btnStudio.textContent = `📥 Saved to Offline Queue (${qItem.id}) — Will Auto-Sync`;
-      }
-    } catch (err) {
-      const qItem = enqueueOfflineSnapshot("upload-exception-fallback");
-      logLine(`! Anonymous upload fallback to offline queue (${qItem.id}): ${err.message}`);
-      btnTop.textContent = `📥 Queued (${qItem.id})`;
-      btnStudio.textContent = `📥 Queued Offline (${qItem.id})`;
-    } finally {
-      btnTop.disabled = false;
-      btnStudio.disabled = false;
-    }
-  }
-  window.runDualAnonymousUpload = runDualAnonymousUpload;
-
-  document.getElementById("btn-upload-wigle").addEventListener("click", runDualAnonymousUpload);
-  document.getElementById("btn-upload-studio").addEventListener("click", runDualAnonymousUpload);
 
   const btnFlushTop = document.getElementById("btn-flush-queue");
   const btnFlushStudio = document.getElementById("btn-flush-studio");

@@ -991,16 +991,13 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
         var out = "WigleWifi-1.4,appRelease=2.0.0,model=MacBookPro-AppleSilicon,release=15.0,device=wigle-macos,display=CoreWLAN-BLE-AirPlay,board=arm64-apple-darwin,brand=8b-is\n"
         out += "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n"
         for ap in snap.beacons {
-            let esc = ap.ssid
-                .replacingOccurrences(of: "\r", with: " ")
-                .replacingOccurrences(of: "\n", with: " ")
-                .replacingOccurrences(of: ",", with: " ")
-                .replacingOccurrences(of: "\"", with: "")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
             let isAirplay = (ap.radioType == "AIRPLAY" || ap.band == "AirPlay" || ap.auth.contains("AIRPLAY"))
             let authBrack = isAirplay ? "[AIRPLAY-RAOP][ESS]" : (ap.auth.hasPrefix("[") ? ap.auth : "[\(ap.auth)]")
             let csvType = isAirplay ? "WIFI" : ap.radioType
-            out += "\(ap.bssid),\(esc),\(authBrack),\(ap.seen),\(ap.channel),\(ap.rssi),\(ap.lat),\(ap.lon),40,5,\(csvType)\n"
+            let fields = [ap.bssid, ap.ssid, authBrack, ap.seen,
+                          String(ap.channel), String(ap.rssi), "", "", "", "", csvType]
+            out += fields.map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
+                .joined(separator: ",") + "\n"
         }
         return out
     }
@@ -1062,91 +1059,11 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     func uploadAnonymously(snap: MacTriadTelemetry) -> [UploadReceipt] {
-        DispatchQueue.main.async { self.isUploading = true }
-        let csvData = buildWigleCSV(from: snap)
-        let boundary = "----WigleMedusaTriad8bIs\(Int(Date().timeIntervalSince1970))"
-        var bodyStr = ""
-        bodyStr += "--\(boundary)\r\n"
-        bodyStr += "Content-Disposition: form-data; name=\"donate\"\r\n\r\non\r\n"
-        bodyStr += "--\(boundary)\r\n"
-        bodyStr += "Content-Disposition: form-data; name=\"file\"; filename=\"wigle-macos-\(Int(Date().timeIntervalSince1970)).csv\"\r\n"
-        bodyStr += "Content-Type: text/csv\r\n\r\n"
-        bodyStr += csvData + "\r\n"
-        bodyStr += "--\(boundary)--\r\n"
-        let bodyBytes = Data(bodyStr.utf8)
-
-        let targets: [(name: String, url: String)] = [
-            ("esp32.vaked.dev", "https://esp32.vaked.dev/api/upload"),
-            ("api.wigle.net", "https://api.wigle.net/api/v2/file/upload")
-        ]
-
-        let nowFmt = DateFormatter()
-        nowFmt.dateFormat = "HH:mm:ss"
-        let tsStr = nowFmt.string(from: Date())
-
-        var newReceipts: [UploadReceipt] = []
-        let sem = DispatchSemaphore(value: 0)
-
-        for t in targets {
-            guard let u = URL(string: t.url) else { continue }
-            var req = URLRequest(url: u, timeoutInterval: 15)
-            req.httpMethod = "POST"
-            req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            req.setValue("application/json", forHTTPHeaderField: "Accept")
-            req.setValue("WigleWifi-2.0.0 (macOS arm64; 8b-is; anonymous)", forHTTPHeaderField: "User-Agent")
-            req.httpBody = bodyBytes
-
-            let task = URLSession.shared.dataTask(with: req) { data, resp, err in
-                let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
-                let raw = data.flatMap { String(data: $0, encoding: .utf8) } ?? (err?.localizedDescription ?? "")
-                var transId = "anon-\(Int(Date().timeIntervalSince1970))"
-                var observer = "anonymous"
-                var ok = (code >= 200 && code < 300)
-                if let d = data,
-                   let obj = try? JSONSerialization.jsonObject(with: d) as? [String: Any] {
-                    if let s = obj["success"] as? Bool { ok = s }
-                    if let o = obj["observer"] as? String { observer = o }
-                    if let tid = obj["transId"] as? String { transId = tid }
-                    if let res = obj["results"] as? [String: Any],
-                       let tids = res["transids"] as? [[String: Any]],
-                       let firstTid = tids.first?["transId"] as? String {
-                        transId = firstTid
-                    }
-                }
-                newReceipts.append(UploadReceipt(
-                    target: t.name,
-                    ok: ok,
-                    status: code,
-                    observer: observer,
-                    transId: transId,
-                    rows: snap.beacons.count,
-                    timestamp: tsStr,
-                    raw: raw
-                ))
-                sem.signal()
-            }
-            task.resume()
-            _ = sem.wait(timeout: .now() + 16)
-        }
-
-        let anyOk = newReceipts.contains { $0.ok }
-        if !anyOk {
-            let qItem = enqueueOffline(snap: snap)
-            DispatchQueue.main.async {
-                self.isUploading = false
-                self.receipts.insert(contentsOf: newReceipts, at: 0)
-                self.statusText = "Offline -> Queued locally as \(qItem.id) (\(qItem.rows) rows · KU -\(String(format: "%.1f", qItem.savingsPct))%)"
-            }
-            return newReceipts
-        }
-
-        let summary = newReceipts.map { "\($0.target): \($0.ok ? "OK" : "ERR") (\($0.transId))" }.joined(separator: " | ")
         DispatchQueue.main.async {
             self.isUploading = false
-            self.receipts.insert(contentsOf: newReceipts, at: 0)
-            self.statusText = "Uploaded anonymously -> \(summary)"
+            self.statusText = "External observation sharing is disabled"
         }
-        return newReceipts
+        return []
     }
 
     func playAlexAiDPlusPlus() {
@@ -1461,18 +1378,8 @@ struct WigleMacView: View {
             .buttonStyle(.borderedProminent)
             .tint(cCyan)
 
-            Button(action: {
-                let snap = scanner.telemetry ?? scanner.performScan()
-                DispatchQueue.global(qos: .userInitiated).async {
-                    _ = scanner.uploadAnonymously(snap: snap)
-                }
-            }) {
-                Text(scanner.isUploading ? "⏳ Uploading..." : "☁️ Anon Upload (Dual)")
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(cPink)
-            .disabled(scanner.isUploading)
+            Button("External sharing disabled") {}
+                .disabled(true)
 
             Button(action: exportCSVToDesktop) {
                 Text("⬇ Export CSV")
@@ -1507,7 +1414,7 @@ struct WigleMacView: View {
             navButton(id: "map", icon: "🗺️", title: "Live Radar Map", sub: "MKMapView + Pin Callouts")
             navButton(id: "dashboard", icon: "📊", title: "Dashboard & Spectrum", sub: "15-Ch + Waterfall + Boldog")
             navButton(id: "list", icon: "🛰️", title: "Networks Table", sub: "Type · BSSID · Trit Explorer")
-            navButton(id: "uploads", icon: "☁️", title: "Anon Uploads & CSV", sub: "esp32.vaked.dev + WiGLE")
+            navButton(id: "uploads", icon: "☁️", title: "Local CSV Export", sub: "Local observations only")
             navButton(id: "karma", icon: "🌸", title: "Chiro × Boldog Még", sub: "Lacrimosa + ALEX|qMom")
             navButton(id: "alexai", icon: "🧠", title: "AlexAI × Kompress-Ultra", sub: "GAIA b1.58 · Ditto ″")
 
@@ -1643,7 +1550,7 @@ struct WigleMacView: View {
                             .font(.system(size: 10, design: .monospaced).monospacedDigit())
                             .foregroundColor(cCyan)
                             Text(String(
-                                format: "RSSI: %d dBm · SNR: %@ · Distance: %.1f m · Coords: %.5f°N, %.5f°E",
+                                format: "RSSI: %d dBm · SNR: %@ · Estimated distance: %.1f m · Illustrative coords: %.5f°N, %.5f°E",
                                 sel.rssi, sel.snrLabel, sel.distanceMeters, sel.lat, sel.lon
                             ))
                             .font(.system(size: 10, design: .monospaced).monospacedDigit())
@@ -1662,7 +1569,7 @@ struct WigleMacView: View {
                             legendDot(color: cGold, text: "AirPlay (#FFD700)")
                             legendDot(color: cPink, text: "BLE/BT (#FF6AC1)")
                         }
-                        Text(String(format: "Observer Origin: %.4f° N, %.4f° E · Passive STA Only (TX=0)", scanner.baseLat, scanner.baseLon))
+                        Text(String(format: "Illustrative map center: %.4f°, %.4f° · Pins are not measured locations", scanner.baseLat, scanner.baseLon))
                             .font(.system(size: 10, design: .monospaced).monospacedDigit())
                             .foregroundColor(.white.opacity(0.85))
                     }
@@ -1940,11 +1847,11 @@ struct WigleMacView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("☁️ ANONYMOUS DUAL-SERVER UPLOAD & 100% OFFLINE-FIRST QUEUE STUDIO")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                    Text("LOCAL CSV EXPORT")
+                        .font(.system(size: 13, weight: .bold, design: .monospaced))
                         .foregroundColor(cGold)
-                    Text("Zero-cookie multipart upload (donate=on, observer=anonymous) -> esp32.vaked.dev/api/upload & api.wigle.net/api/v2/file/upload · Offline auto-queue to ~/.cache/wigle-triad")
-                        .font(.system(size: 10, design: .monospaced))
+                    Text("External observation sharing is disabled. Export CSV locally for review.")
+                        .font(.system(size: 11, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
                 Spacer()
@@ -1969,14 +1876,12 @@ struct WigleMacView: View {
                     exportCSVToDesktop()
                 }
                 .buttonStyle(.bordered)
-                Button("☁️ Upload Now (Dual)") {
-                    let snap = scanner.telemetry ?? scanner.performScan()
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        _ = scanner.uploadAnonymously(snap: snap)
-                    }
+                Button("💾 Save CSV As...") {
+                    saveCSVDialog()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(cPink)
+                .buttonStyle(.bordered)
+                Button("External sharing disabled") {}
+                    .disabled(true)
             }
 
             if !scanner.offlineQueue.isEmpty {
@@ -2009,7 +1914,7 @@ struct WigleMacView: View {
             }
 
             if scanner.receipts.isEmpty {
-                Text("No live upload receipts in this session yet. Click '☁️ Upload Now (Dual)' to dispatch WigleWifi-1.4 CSV or '📥 Enqueue Offline' to stage locally.")
+                Text("No observations are uploaded by this application.")
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundColor(.secondary)
                     .padding(10)
@@ -2566,18 +2471,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 // MARK: - CLI & GUI Entrypoint
 
 let args = CommandLine.arguments
+if args.contains("--upload") {
+    print("External observation sharing is disabled")
+    exit(2)
+}
 let scanner = MacWigleScanner()
 
-if args.contains("--upload") {
-    let snap = scanner.performScan()
-    let receipts = scanner.uploadAnonymously(snap: snap)
-    let enc = JSONEncoder()
-    enc.outputFormatting = [.prettyPrinted, .sortedKeys]
-    if let data = try? enc.encode(receipts), let s = String(data: data, encoding: .utf8) {
-        print(s)
-    }
-    exit(0)
-} else if args.contains("--flush-queue") {
+if args.contains("--flush-queue") {
     let count = scanner.flushOfflineQueue()
     print("{\"ok\":true,\"flushed\":\(count)}")
     exit(0)
