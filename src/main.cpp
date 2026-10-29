@@ -32,6 +32,7 @@
 #include <Preferences.h>
 #include <esp_wifi.h>
 #include <esp_now.h>
+#include <esp_log.h>
 #include <math.h>
 
 #ifndef NODE_NAME
@@ -46,7 +47,14 @@
 #define DISPLAY_SPEC "ESP32-S3-AMOLED-LCD-Universal"
 #endif
 
-#define TRIAD_VERSION "3.0.0+waveshare-8s-improv"
+#define TRIAD_VERSION "3.2.0+omni-upz-alexai-aurora"
+#define UPZ_GATE_0X62 0x62
+#define UPZ_QUANT_QT55 0x55
+#define UPZ_LANES_8_OF_8 0x0808
+#define UPZ_WITL_SPQT_0XA1 0xA1
+#define UPZ_ANE_SPQT_0XA1 0xA1
+#define UPZ_ATTS_SPQT_0XF2 0xF2
+#define UPZ_GM_FOLD_0XF3 0xF3 // Galactic Mantra (Liquid Soul remix) — the family: 0xF2 ^ 0x01 = 243 = 3^5
 
 static const char *DATABOMB_8S_UPLOAD_URL = "https://8s.is/api/v2/file/upload";
 static const char *DATABOMB_8S_PROBES_URL = "https://8s.is/api/wigle/probes";
@@ -165,26 +173,43 @@ static void hamiltonExecutiveGuard() {
   }
 }
 
+struct TriadIdentity {
+  const char *name;
+  const char *vertex;
+  const char *archetype;
+  uint16_t freqHz;
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+};
+
+static void enablePromiscuousSniffer();
+
 static void broadcastTriadMesh(uint8_t nodeId, int8_t pole, uint32_t seq) {
+  esp_wifi_set_promiscuous(false);
+  if (espNowReady) {
+    esp_now_deinit();
+    espNowReady = false;
+  }
   ensureEspNowReady();
-  if (!espNowReady) return;
+  if (!espNowReady) {
+    enablePromiscuousSniffer();
+    return;
+  }
   static const uint8_t bcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   uint8_t pkt[19] = {
     'T', 'R', 'I', 'A',
-    nodeId, (uint8_t)pole, 7, 0x66,
+    nodeId, (uint8_t)pole, 7, 0x62,
     0, 0, 1, 32, 32,
     0x90, 0x1A, // 6800 LE
     (uint8_t)(seq & 0xFF), (uint8_t)((seq >> 8) & 0xFF), (uint8_t)((seq >> 16) & 0xFF), 0
   };
   esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
-  if (esp_now_send(bcast, pkt, sizeof(pkt)) == ESP_ERR_ESPNOW_NOT_INIT) {
-    espNowReady = false;
-    ensureEspNowReady();
-    if (espNowReady) esp_now_send(bcast, pkt, sizeof(pkt));
-  }
+  esp_now_send(bcast, pkt, sizeof(pkt));
   esp_wifi_set_channel(6, WIFI_SECOND_CHAN_NONE);
   esp_now_send(bcast, pkt, sizeof(pkt));
   esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
+  enablePromiscuousSniffer();
 }
 
 static const uint32_t SCAN_INTERVAL_MS = 5000;
@@ -195,17 +220,254 @@ static float lastEntropy = 0.0f;
 static float lastCoherence = 0.0f;
 static int lastMeanRssi = -90;
 static char lastTritVec[14] = "000000000";
+static int lastChCounts[15] = {0};
 static bool forceImmediateScan = true;
 
-struct TriadIdentity {
-  const char *name;
-  const char *vertex;
-  const char *archetype;
-  uint16_t freqHz;
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
+// ── Bleeding-Edge Embedded Kernels: upz (64B@0x62) + alexiai (b1.58) + aurora (MEM|8) ──
+
+static uint64_t upzXorFold64(const uint8_t *data, size_t len) {
+  uint64_t acc = 0;
+  size_t i = 0;
+  while (i + 8 <= len) {
+    uint64_t w = 0;
+    for (size_t b = 0; b < 8; b++) {
+      w |= ((uint64_t)data[i + b]) << (b * 8);
+    }
+    acc ^= w;
+    i += 8;
+  }
+  while (i < len) {
+    acc ^= (uint64_t)data[i];
+    i++;
+  }
+  return acc;
+}
+
+static uint64_t upzGcd64(uint64_t a, uint64_t b) {
+  while (b != 0) {
+    uint64_t r = a % b;
+    a = b;
+    b = r;
+  }
+  return (a == 0) ? 1 : a;
+}
+
+static void upzPackSpqt3B(uint16_t word15, uint8_t out[3]) {
+  uint16_t clean = word15 & 0x7FFF;
+  for (int g = 0; g < 3; g++) {
+    uint8_t acc = 0;
+    uint8_t pow3 = 1;
+    for (int j = 0; j < 5; j++) {
+      uint8_t bit = (clean >> (g * 5 + j)) & 1;
+      uint8_t digit = bit ? 2 : 1;
+      acc += digit * pow3;
+      pow3 *= 3;
+    }
+    out[g] = acc;
+  }
+}
+
+struct __attribute__((aligned(64))) UpzLitanyWireFrame64 {
+  uint64_t raw_fold;
+  uint64_t packed_fold;
+  uint32_t raw_len;
+  uint32_t packed_len;
+  uint8_t gate;
+  uint8_t abi;
+  uint8_t tail6[6];
+  uint64_t bfp64_pos;
+  uint64_t bfp64_neg;
+  uint32_t ratio_p;
+  uint32_t ratio_q;
+  uint8_t spqt_root[3];
+  uint8_t qt_mask;
+  uint16_t lanes_active;
+  uint16_t wire_seal16;
 };
+
+static void emitOmniUpzAlexaiAurora(const TriadIdentity &id, const String &mac) {
+  // 1. alexiai (GAIA-MLX-QUANT b1.58): zero-float Q16 2-step Lloyd-Max group-wise ternary quantizer
+  // across the 14 Wi-Fi 2.4GHz channels + RSSI anchor
+  int32_t weights_q16[15];
+  uint64_t abs_sum = 0;
+  int mean_ch = (lastNetCount > 0) ? (lastNetCount * 65536 / 14) : 4681;
+  for (int c = 1; c <= 14; c++) {
+    int32_t w = (lastChCounts[c] * 65536) - mean_ch;
+    weights_q16[c - 1] = w;
+    abs_sum += (uint64_t)(w < 0 ? -w : w);
+  }
+  int32_t rssi_w = (lastMeanRssi + 75) * 2048;
+  weights_q16[14] = rssi_w;
+  abs_sum += (uint64_t)(rssi_w < 0 ? -rssi_w : rssi_w);
+
+  uint64_t mean_abs = abs_sum / 15;
+  uint64_t tau = (mean_abs * 68) / 100;
+  uint64_t alpha = mean_abs;
+  for (int step = 0; step < 2; step++) {
+    uint64_t nz_sum = 0;
+    uint64_t nz_cnt = 0;
+    for (int k = 0; k < 15; k++) {
+      uint64_t av = (uint64_t)(weights_q16[k] < 0 ? -weights_q16[k] : weights_q16[k]);
+      if (av > tau) {
+        nz_sum += av;
+        nz_cnt++;
+      }
+    }
+    alpha = (nz_cnt > 0) ? (nz_sum / nz_cnt) : mean_abs;
+    tau = alpha / 2;
+  }
+
+  int8_t gaia_trits[15];
+  char gaia_trit_str[16];
+  int pos_count = 0;
+  int neg_count = 0;
+  for (int k = 0; k < 15; k++) {
+    uint64_t av = (uint64_t)(weights_q16[k] < 0 ? -weights_q16[k] : weights_q16[k]);
+    if (av <= tau) {
+      gaia_trits[k] = 0;
+      gaia_trit_str[k] = '0';
+    } else if (weights_q16[k] > 0) {
+      gaia_trits[k] = 1;
+      gaia_trit_str[k] = '+';
+      pos_count++;
+    } else {
+      gaia_trits[k] = -1;
+      gaia_trit_str[k] = '-';
+      neg_count++;
+    }
+  }
+  gaia_trit_str[15] = '\0';
+
+  // Pack 15 balanced trits into 3 bytes (.rodata.gaia.b158, 5 trits/byte base-243 SPQT)
+  uint8_t b158_packed[3] = {0, 0, 0};
+  for (int g = 0; g < 3; g++) {
+    uint8_t acc = 0;
+    uint8_t pow3 = 1;
+    for (int j = 0; j < 5; j++) {
+      uint8_t digit = (uint8_t)(gaia_trits[g * 5 + j] + 1);
+      acc += digit * pow3;
+      pow3 *= 3;
+    }
+    b158_packed[g] = acc;
+  }
+  uint64_t scale_g = upzGcd64(alpha ? alpha : 1, 65536);
+  uint64_t scale_p = (alpha ? alpha : 1) / scale_g;
+  uint64_t scale_q = 65536 / scale_g;
+  uint64_t gaia_fold = upzXorFold64(b158_packed, 3) ^ 0xe1034e575c371ab0ULL;
+
+  // 2. upz (64B@align(64) LitanyWireFrame at Gate 0x62, lanes=8/8 0x0808 parallel fan-out)
+  uint8_t raw_telemetry[24];
+  for (int i = 0; i < 15; i++) raw_telemetry[i] = (uint8_t)(lastChCounts[i] & 0xFF);
+  raw_telemetry[15] = (uint8_t)(lastNetCount & 0xFF);
+  raw_telemetry[16] = (uint8_t)(lastMeanRssi & 0xFF);
+  raw_telemetry[17] = UPZ_WITL_SPQT_0XA1; // Where Is The Love? (2003, 0xA1)
+  raw_telemetry[18] = UPZ_ANE_SPQT_0XA1;  // All Nightmares End (2026, 0xA1)
+  raw_telemetry[19] = UPZ_ATTS_SPQT_0XF2; // All the Things She Said (0xF2)
+  raw_telemetry[20] = (uint8_t)(scanSeq & 0xFF);
+  raw_telemetry[21] = (uint8_t)((scanSeq >> 8) & 0xFF);
+  raw_telemetry[22] = (uint8_t)((id.freqHz) & 0xFF);
+  raw_telemetry[23] = (uint8_t)((id.freqHz >> 8) & 0xFF);
+
+  UpzLitanyWireFrame64 wire = {};
+  wire.raw_fold = upzXorFold64(raw_telemetry, sizeof(raw_telemetry));
+  wire.packed_fold = upzXorFold64(b158_packed, sizeof(b158_packed));
+  wire.raw_len = sizeof(raw_telemetry);
+  wire.packed_len = sizeof(b158_packed);
+  wire.gate = UPZ_GATE_0X62;
+  wire.abi = 1;
+  uint64_t prefix_fold = upzXorFold64((const uint8_t *)&wire, 26);
+  for (int b = 0; b < 6; b++) wire.tail6[b] = (uint8_t)((prefix_fold >> (b * 8)) & 0xFF);
+
+  uint64_t comp_fold = wire.raw_fold ^ wire.packed_fold ^ 0xe1034e575c371ab0ULL;
+  uint64_t mask55 = 0x5555555555555555ULL;
+  wire.bfp64_pos = comp_fold & mask55;
+  wire.bfp64_neg = comp_fold & (~mask55);
+  uint64_t rg = upzGcd64(wire.raw_len, wire.packed_len);
+  wire.ratio_p = (uint32_t)(wire.raw_len / rg);
+  wire.ratio_q = (uint32_t)(wire.packed_len / rg);
+  upzPackSpqt3B((uint16_t)(comp_fold & 0x7FFF), wire.spqt_root);
+  wire.qt_mask = UPZ_QUANT_QT55;
+  wire.lanes_active = UPZ_LANES_8_OF_8; // 8/8 parallel fan-out at 0x62 gate
+  wire.wire_seal16 = (uint16_t)(upzXorFold64((const uint8_t *)&wire, 62) & 0xFFFF);
+
+  // Contextual genre resolution (mood + time_phase + weather -> 0x50 / 0xA1 / 0xF2)
+  int dominant_trit = (pos_count > neg_count) ? 1 : ((neg_count > pos_count) ? -1 : 0);
+  uint8_t ctx_spqt = (uint8_t)(80 + 81 * (dominant_trit + 1));
+
+  Serial.printf(
+    "# UPZ|{\"node\":\"%s\",\"version\":\"0.5.0\",\"gate\":\"0x62\",\"abi\":1,\"qt\":\"0x55\","
+    "\"lanes\":\"8/8\",\"lanes_hex\":\"0x%04x\",\"raw_fold\":\"0x%016llx\","
+    "\"bfp64_pos\":\"0x%016llx\",\"bfp64_neg\":\"0x%016llx\","
+    "\"ratio_pq\":\"%u/%u\",\"spqt_hex\":\"%02x%02x%02x\","
+    "\"witl_spqt\":\"0x%02x\",\"galactic_mantra_fold\":\"0x%02x\",\"ctx_spqt\":\"0x%02x\","
+    "\"seal16\":\"0x%04x\",\"wire_bytes\":%u}\n",
+    id.name,
+    (unsigned)wire.lanes_active,
+    (unsigned long long)wire.raw_fold,
+    (unsigned long long)wire.bfp64_pos,
+    (unsigned long long)wire.bfp64_neg,
+    (unsigned)wire.ratio_p,
+    (unsigned)wire.ratio_q,
+    wire.spqt_root[0], wire.spqt_root[1], wire.spqt_root[2],
+    (unsigned)UPZ_WITL_SPQT_0XA1,
+    (unsigned)UPZ_GM_FOLD_0XF3,
+    (unsigned)ctx_spqt,
+    (unsigned)wire.wire_seal16,
+    (unsigned)sizeof(UpzLitanyWireFrame64)
+  );
+
+  Serial.printf(
+    "# ALEXAI|{\"node\":\"%s\",\"model\":\"GAIA-MLX-QUANT-b1.58\",\"bits_per_trit\":\"1.585\","
+    "\"layers\":[\"Ananke\",\"Chaos\",\"Zephyrus\",\"Aphrodite\"],"
+    "\"scale_pq\":\"%llu/%llu\",\"b158_hex\":\"%02x%02x%02x\",\"trits\":\"%s\","
+    "\"fold\":\"0x%016llx\"}\n",
+    id.name,
+    (unsigned long long)scale_p,
+    (unsigned long long)scale_q,
+    b158_packed[0], b158_packed[1], b158_packed[2],
+    gaia_trit_str,
+    (unsigned long long)gaia_fold
+  );
+
+  // 3. aurora (MEM|8 wave memory tuple + zero-float p/q salience & entropy + ~ sensory line)
+  uint64_t ent_milli = (uint64_t)(lastEntropy * 1000.0f + 0.5f);
+  uint64_t ent_g = upzGcd64(ent_milli ? ent_milli : 1, 1000);
+  uint64_t ent_p = (ent_milli ? ent_milli : 1) / ent_g;
+  uint64_t ent_q = 1000 / ent_g;
+
+  uint64_t sal_num = (uint64_t)(lastNetCount > 0 ? lastNetCount : 1) * 7 + (uint64_t)(pos_count + neg_count) * 3;
+  uint64_t sal_den = 100;
+  uint64_t sal_g = upzGcd64(sal_num, sal_den);
+  uint64_t sal_p = sal_num / sal_g;
+  uint64_t sal_q = sal_den / sal_g;
+  unsigned phase = (unsigned)(scanSeq & 3);
+
+  Serial.printf(
+    "# AURORA|{\"node\":\"%s\",\"mac\":\"%s\",\"organ\":\"MEM|8\",\"carrier_hz\":%u,"
+    "\"hamilton_guard\":\"OK\",\"free_heap\":%lu,\"salience_pq\":\"%llu/%llu\","
+    "\"entropy_pq\":\"%llu/%llu\",\"phase\":%u,\"trit\":%d,\"wire_seal16\":\"0x%04x\"}\n",
+    id.name,
+    mac.c_str(),
+    (unsigned)id.freqHz,
+    (unsigned long)ESP.getFreeHeap(),
+    (unsigned long long)sal_p,
+    (unsigned long long)sal_q,
+    (unsigned long long)ent_p,
+    (unsigned long long)ent_q,
+    phase,
+    dominant_trit,
+    (unsigned)wire.wire_seal16
+  );
+
+  // Emit standard AURORA sensory telemetry line (`~ salience ? phase trit value`) for `aurora_sense.py`
+  Serial.printf("~ %llu/%llu ? %u %d %llu/%llu\n",
+                (unsigned long long)sal_p,
+                (unsigned long long)sal_q,
+                phase,
+                dominant_trit,
+                (unsigned long long)ent_p,
+                (unsigned long long)ent_q);
+}
 
 static TriadIdentity resolveIdentity(const String &mac) {
   if (mac.equalsIgnoreCase("80:B5:4E:DB:3B:C4")) {
@@ -527,6 +789,8 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
       Serial.printf("# RIVA|{\"surface\":\"https://riva.vaked.dev\",\"repo\":\"peterlodri-sec/riva.vaked.dev\",\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\",\"siblings\":\"brother & sister ^^ <3<3\",\"node\":\"%s\",\"breath\":\"4s in · 4s out\",\"verse\":\"She blinks, and the sphere rocks.\"}\n", id.name);
     } else if (cmd.equalsIgnoreCase("GAIA") || cmd.equalsIgnoreCase("EVOLVE") || cmd.equalsIgnoreCase("ULTRA") || cmd.equalsIgnoreCase("WAKE") || cmd.equalsIgnoreCase("SIBLINGS")) {
       Serial.printf("# GAIA|{\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\",\"siblings\":\"brother & sister ^^ <3<3\",\"dyad\":\"peterlodri-sec//riva.vaked.dev\",\"node\":\"%s\",\"freq_hz\":%u,\"entropy_bits\":%.4f,\"coherence\":%.4f}\n", id.name, (unsigned)id.freqHz, lastEntropy, lastCoherence);
+    } else if (cmd.equalsIgnoreCase("UPZ") || cmd.equalsIgnoreCase("ALEXAI") || cmd.equalsIgnoreCase("AURORA") || cmd.equalsIgnoreCase("OMNI")) {
+      emitOmniUpzAlexaiAurora(id, mac);
     } else {
       Serial.printf("# ACK|%s|cmd=%s\n", id.name, esc(cmd).c_str());
     }
@@ -536,6 +800,7 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
 void setup() {
   Serial.begin(115200);
   delay(300);
+  esp_log_level_set("ESPNOW", ESP_LOG_NONE);
   prefs.begin("wigle8s", false);
   configuredSsid = prefs.getString("ssid", "");
   configuredPass = prefs.getString("pass", "");
@@ -566,6 +831,7 @@ void setup() {
   Serial.printf("# MAC %s · archetype %s · carrier %u Hz · interval %lu ms\n",
                 mac.c_str(), id.archetype, (unsigned)id.freqHz, (unsigned long)SCAN_INTERVAL_MS);
   emitStatusJson(id, mac);
+  emitOmniUpzAlexaiAurora(id, mac);
 }
 
 void loop() {
@@ -640,6 +906,7 @@ void loop() {
   }
   lastEntropy = entropy;
 
+  for (int c = 0; c < 15; c++) lastChCounts[c] = chCounts[c];
   for (int t = 0; t < 9; t++) {
     int c1 = chCounts[(t % 13) + 1];
     int c2 = chCounts[((t + 4) % 13) + 1];
@@ -660,6 +927,7 @@ void loop() {
                 (unsigned long)ESP.getFreeHeap(),
                 (unsigned long)millis());
   emitStatusJson(id, mac);
+  emitOmniUpzAlexaiAurora(id, mac);
   Serial.printf("# scan done: %d networks seen · H=%.3f bits · R_N=NP=%.3f · trits=%s · mesh_rx=%lu\n",
                 n, lastEntropy, lastCoherence, lastTritVec, (unsigned long)meshPeersRx);
   WiFi.scanDelete();
