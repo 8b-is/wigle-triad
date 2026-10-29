@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * dual-upload-wigle.mjs — Dual-upload a WiGLE export (.csv.gz or .csv) to:
+ * dual-upload-wigle.mjs — Multi-target upload of a WiGLE export (.csv.gz or .csv) to:
+ *   Target 0 (Sovereign DataBomb 8s): https://8s.is/api/v2/file/upload
  *   Target 1: https://esp32.vaked.dev/api/upload?mirror=wigle
  *   Target 2: https://api.wigle.net/api/v2/file/upload
  *
@@ -147,7 +148,42 @@ async function uploadToEsp32VakedDev() {
   }
 }
 
-const [wigleNetReceipt, esp32Receipt] = await Promise.all([uploadToWigleNet(), uploadToEsp32VakedDev()])
+async function uploadToDatabomb8s() {
+  const url = process.env.DATABOMB_8S_URL || 'https://8s.is/api/v2/file/upload'
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'WigleWifi-2.111 (Android 16; SM-S928U1; 8b-is/wigle-triad -> DataBomb-8s)',
+      },
+      body: makeFormData(),
+    })
+    const data = await resp.json().catch(async () => ({ raw: (await resp.text()).slice(0, 240) }))
+    return {
+      target: 'databomb-8s (8s.is)',
+      url,
+      http_status: resp.status,
+      ok: resp.ok,
+      transId: data?.transId || null,
+      observer: data?.observer || null,
+      receipt: data?.receipt || null,
+    }
+  } catch (err) {
+    return {
+      target: 'databomb-8s (8s.is)',
+      url,
+      ok: false,
+      error: err.message,
+    }
+  }
+}
+
+const [databomb8sReceipt, wigleNetReceipt, esp32Receipt] = await Promise.all([
+  uploadToDatabomb8s(),
+  uploadToWigleNet(),
+  uploadToEsp32VakedDev(),
+])
 
 const summary = {
   file: basename(input),
@@ -167,6 +203,7 @@ const summary = {
   known_networks_local_updated: knownWifiMacs.size,
   private_vault_repo: 'https://github.com/8b-is/wigle-triad-data',
   dual_upload_receipts: {
+    databomb_8s: databomb8sReceipt,
     wigle_net: wigleNetReceipt,
     esp32_vaked_dev: esp32Receipt,
   },
