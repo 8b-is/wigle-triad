@@ -264,6 +264,30 @@ public class MainActivity extends Activity {
         JSONObject res = new JSONObject();
         try {
             byte[] body = (csvContent != null ? csvContent : "").getBytes(StandardCharsets.UTF_8);
+            // Priority #1: Sovereign DataBomb on 8s.is
+            boolean db8sOk = false;
+            int db8sCode = 0;
+            String db8sTid = "databomb-8s-android-" + (System.currentTimeMillis() / 1000L);
+            try {
+                HttpURLConnection dbConn = (HttpURLConnection) new URL("https://8s.is/api/v2/file/upload").openConnection();
+                dbConn.setConnectTimeout(6000);
+                dbConn.setReadTimeout(8000);
+                dbConn.setRequestMethod("POST");
+                dbConn.setDoOutput(true);
+                dbConn.setRequestProperty("Content-Type", "text/csv; charset=utf-8");
+                dbConn.setRequestProperty("Accept", "application/json");
+                try (OutputStream os = dbConn.getOutputStream()) {
+                    os.write(body);
+                    os.flush();
+                }
+                db8sCode = dbConn.getResponseCode();
+                db8sOk = db8sCode >= 200 && db8sCode < 300;
+            } catch (Throwable ignored) {}
+            res.put("databombStatus", db8sCode);
+            res.put("databombOk", db8sOk);
+            res.put("databombTransId", db8sTid);
+
+            // Priority #2: esp32.vaked.dev edge mirror
             HttpURLConnection conn = (HttpURLConnection) new URL("https://esp32.vaked.dev/api/upload?mirror=wigle").openConnection();
             conn.setConnectTimeout(6000);
             conn.setReadTimeout(8000);

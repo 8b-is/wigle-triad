@@ -35,13 +35,62 @@
 #define NODE_NAME "MEDUSA:AUTO"
 #endif
 
-#define TRIAD_VERSION "2.2.0+rakuten-4ce2-espnow-mesh"
+#define TRIAD_VERSION "2.3.0+databomb-8s-probes"
 
+static const char *DATABOMB_8S_UPLOAD_URL = "https://8s.is/api/v2/file/upload";
+static const char *DATABOMB_8S_PROBES_URL = "https://8s.is/api/wigle/probes";
 static const char *DEFAULT_WIFI_SSID = "Rakuten-4CE2";
 static const char *DEFAULT_WIFI_PASS = "EYA5EVQWC2U4GDA9";
 static const uint8_t MESH_PRIMARY_CH = 1; // Matches Rakuten-4CE2 (Ch 1) + baye-rust + FLUG-OS
 static uint32_t meshPeersRx = 0;
+static uint32_t clientProbesRx = 0;
 static bool espNowReady = false;
+static const char *activeNodeName = "MEDUSA:AUTO";
+
+// Passive 802.11 Management Subtype 0x04 (Probe Request) sniffer for DataBomb 8s.is
+static void onPromiscuousProbeRx(void *buf, wifi_promiscuous_pkt_type_t type) {
+  if (type != WIFI_PKT_MGMT || !buf) return;
+  const wifi_promiscuous_pkt_t *pkt = (const wifi_promiscuous_pkt_t *)buf;
+  const uint8_t *frame = pkt->payload;
+  const int len = pkt->rx_ctrl.sig_len;
+  if (len < 26) return;
+  // Frame Control byte 0: subtype 0x04 (Probe Request) in bits 4..7 -> (frame[0] & 0xFC) == 0x40
+  if ((frame[0] & 0xFC) != 0x40) return;
+
+  const uint8_t *sa = &frame[10]; // Source Address (Client MAC)
+  char macBuf[18];
+  snprintf(macBuf, sizeof(macBuf), "%02X:%02X:%02X:%02X:%02X:%02X",
+           sa[0], sa[1], sa[2], sa[3], sa[4], sa[5]);
+  uint16_t seqNum = ((uint16_t)frame[22] >> 4) | ((uint16_t)frame[23] << 4);
+
+  // Parse 802.11 Information Elements starting at offset 24
+  char ssidBuf[34] = {0};
+  char ieFpBuf[48] = "ie:";
+  size_t ieFpPos = 3;
+  int pos = 24;
+  while (pos + 2 <= len - 4 && pos + 2 <= 180) {
+    uint8_t tag = frame[pos];
+    uint8_t tlen = frame[pos + 1];
+    if (pos + 2 + tlen > len) break;
+    if (tag == 0 && tlen > 0 && tlen <= 32 && ssidBuf[0] == 0) {
+      for (uint8_t k = 0; k < tlen; k++) {
+        char c = (char)frame[pos + 2 + k];
+        ssidBuf[k] = (c >= 32 && c < 127 && c != '|') ? c : '_';
+      }
+      ssidBuf[tlen] = 0;
+    }
+    if (ieFpPos + 4 < sizeof(ieFpBuf)) {
+      ieFpPos += snprintf(ieFpBuf + ieFpPos, sizeof(ieFpBuf) - ieFpPos, "%02x-", tag);
+    }
+    pos += 2 + tlen;
+  }
+  if (ieFpPos > 3 && ieFpBuf[ieFpPos - 1] == '-') ieFpBuf[ieFpPos - 1] = 0;
+
+  clientProbesRx++;
+  Serial.printf("P|%s|%s|%d|%d|%s|%u|%s\n",
+                macBuf, ssidBuf, (int)pkt->rx_ctrl.channel, (int)pkt->rx_ctrl.rssi,
+                ieFpBuf, (unsigned)seqNum, activeNodeName);
+}
 
 #if defined(ESP_IDF_VERSION) && (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0))
 static void onTriadMeshRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
@@ -155,19 +204,23 @@ static void emitStatusJson(const TriadIdentity &id, const String &mac) {
     "# JSON|{\"node\":\"%s\",\"vertex\":\"%s\",\"archetype\":\"%s\",\"mac\":\"%s\","
     "\"version\":\"%s\",\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\","
     "\"siblings\":\"brother & sister ^^ <3<3\","
+    "\"priority_upload_url\":\"%s\",\"priority_probes_url\":\"%s\","
     "\"riva_url\":\"https://riva.vaked.dev\",\"riva_repo\":\"peterlodri-sec/riva.vaked.dev\","
     "\"hyper_charm_karma\":\"HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter\","
-    "\"freq_hz\":%u,\"seq\":%lu,\"networks\":%d,\"mean_rssi\":%d,"
+    "\"freq_hz\":%u,\"seq\":%lu,\"networks\":%d,\"client_probes_rx\":%lu,\"mean_rssi\":%d,"
     "\"entropy_bits\":%.4f,\"n_np_coherence\":%.4f,\"trits\":\"%s\","
-    "\"free_heap\":%lu,\"uptime_ms\":%lu,\"mode\":\"PASSIVE_STA_ONLY\"}\n",
+    "\"free_heap\":%lu,\"uptime_ms\":%lu,\"mode\":\"PASSIVE_STA_AND_PROBE_RX\"}\n",
     id.name,
     jsonEsc(String(id.vertex)).c_str(),
     id.archetype,
     mac.c_str(),
     TRIAD_VERSION,
+    DATABOMB_8S_UPLOAD_URL,
+    DATABOMB_8S_PROBES_URL,
     (unsigned)id.freqHz,
     (unsigned long)scanSeq,
     lastNetCount,
+    (unsigned long)clientProbesRx,
     lastMeanRssi,
     lastEntropy,
     lastCoherence,
@@ -234,9 +287,16 @@ void setup() {
 
   const String mac = WiFi.macAddress();
   const TriadIdentity id = resolveIdentity(mac);
+  activeNodeName = id.name;
 
-  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · default_ap=%s(Ch1) · mesh_rx=%lu\n",
-                id.name, id.vertex, TRIAD_VERSION, DEFAULT_WIFI_SSID, (unsigned long)meshPeersRx);
+  wifi_promiscuous_filter_t filt = {};
+  filt.filter_mask = WIFI_PROMISCUOUS_FILTER_MASK_MGMT;
+  esp_wifi_set_promiscuous_filter(&filt);
+  esp_wifi_set_promiscuous_rx_cb(&onPromiscuousProbeRx);
+  esp_wifi_set_promiscuous(true);
+
+  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · priority_db=%s · default_ap=%s(Ch1) · mesh_rx=%lu\n",
+                id.name, id.vertex, TRIAD_VERSION, DATABOMB_8S_UPLOAD_URL, DEFAULT_WIFI_SSID, (unsigned long)meshPeersRx);
   Serial.printf("# MAC %s · archetype %s · carrier %u Hz · interval %lu ms\n",
                 mac.c_str(), id.archetype, (unsigned)id.freqHz, (unsigned long)SCAN_INTERVAL_MS);
   emitStatusJson(id, mac);

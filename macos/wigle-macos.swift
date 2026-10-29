@@ -1033,19 +1033,28 @@ final class MacWigleScanner: NSObject, ObservableObject, CLLocationManagerDelega
             var bodyStr = "--\(boundary)\r\nContent-Disposition: form-data; name=\"donate\"\r\n\r\non\r\n"
             bodyStr += "--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\(offlineQueue[idx].id).csv\"\r\nContent-Type: text/csv\r\n\r\n"
             bodyStr += csv + "\r\n--\(boundary)--\r\n"
-            guard let u = URL(string: "https://esp32.vaked.dev/api/upload?mirror=wigle") else { continue }
-            var req = URLRequest(url: u, timeoutInterval: 12)
-            req.httpMethod = "POST"
-            req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            req.httpBody = Data(bodyStr.utf8)
-            let sem = DispatchSemaphore(value: 0)
+            // Priority #1: Sovereign DataBomb on 8s.is (fallback to esp32.vaked.dev)
+            let targetUrls = [
+                "https://8s.is/api/v2/file/upload",
+                "https://esp32.vaked.dev/api/upload?mirror=wigle"
+            ]
             var ok = false
-            URLSession.shared.dataTask(with: req) { _, resp, _ in
-                let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
-                ok = (code >= 200 && code < 300)
-                sem.signal()
-            }.resume()
-            _ = sem.wait(timeout: .now() + 14)
+            for targetUrl in targetUrls {
+                guard let u = URL(string: targetUrl) else { continue }
+                var req = URLRequest(url: u, timeoutInterval: 12)
+                req.httpMethod = "POST"
+                req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+                req.httpBody = Data(bodyStr.utf8)
+                let sem = DispatchSemaphore(value: 0)
+                var targetOk = false
+                URLSession.shared.dataTask(with: req) { _, resp, _ in
+                    let code = (resp as? HTTPURLResponse)?.statusCode ?? 0
+                    targetOk = (code >= 200 && code < 300)
+                    sem.signal()
+                }.resume()
+                _ = sem.wait(timeout: .now() + 14)
+                if targetOk { ok = true }
+            }
             if ok {
                 offlineQueue[idx].status = "synced"
                 flushed += 1

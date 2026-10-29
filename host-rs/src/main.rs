@@ -37,6 +37,7 @@ struct State {
     known: HashSet<String>,
     nodes: BTreeMap<String, Value>,
     beacons: BTreeMap<String, Value>,
+    probes: Vec<String>,
     corpus: Value,
     viz_idx: usize,
     last_tts: String,
@@ -132,6 +133,11 @@ fn ingest(st: &mut State, port: &str, line: &str) {
                 st.last_tts = s.to_string();
             }
         }
+    } else if line.starts_with("P|") {
+        if st.probes.len() >= 2048 {
+            st.probes.remove(0);
+        }
+        st.probes.push(line.to_string());
     } else if line.starts_with("W|") || line.starts_with("B|") || line.starts_with("A|") {
         let p: Vec<&str> = line.split('|').collect();
         if p.len() >= 6 {
@@ -583,14 +589,37 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
         }
         ("POST", "/api/upload") => {
             let raw = String::from_utf8_lossy(&body).to_string();
-            let (csv, rows) = if raw.trim_start().starts_with("WigleWifi-1.") {
+            let (csv, rows, pending_probes) = if raw.trim_start().starts_with("WigleWifi-1.") {
                 let n = raw.lines().count().saturating_sub(2);
-                (raw, n)
+                let g = st.lock().unwrap();
+                (raw, n, g.probes.clone())
             } else {
                 let g = st.lock().unwrap();
-                (wigle_csv(&g), g.beacons.len())
+                (wigle_csv(&g), g.beacons.len(), g.probes.clone())
             };
-            respond(&mut s, 200, json_t, &jbody(alexai::upload(&csv, rows)));
+            let mut res = alexai::upload(&csv, rows);
+            if !pending_probes.is_empty() {
+                res["databomb_8s_probes"] = alexai::post_probes(&pending_probes);
+            }
+            respond(&mut s, 200, json_t, &jbody(res));
+        }
+        ("GET", "/api/probes") => {
+            let g = st.lock().unwrap();
+            respond(&mut s, 200, json_t, &jbody(json!({
+                "ok": true,
+                "priority_target": alexai::DATABOMB_8S_PROBES_URL,
+                "count": g.probes.len(),
+                "probes": g.probes
+            })));
+        }
+        ("POST", "/api/probes") => {
+            let raw = String::from_utf8_lossy(&body).to_string();
+            let lines: Vec<String> = if raw.trim().is_empty() {
+                st.lock().unwrap().probes.clone()
+            } else {
+                raw.lines().map(|l| l.trim().to_string()).filter(|l| !l.is_empty()).collect()
+            };
+            respond(&mut s, 200, json_t, &jbody(alexai::post_probes(&lines)));
         }
         ("POST", "/api/queue/flush") => respond(&mut s, 200, json_t, &jbody(alexai::flush_queue())),
         ("POST", "/api/wifi") => {

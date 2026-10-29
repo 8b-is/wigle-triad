@@ -211,15 +211,51 @@ fn post_csv(url: &str, csv: &str) -> Value {
     }
 }
 
-fn upload_targets(csv: &str) -> (Value, Value, bool) {
+pub const DATABOMB_8S_UPLOAD_URL: &str = "https://8s.is/api/v2/file/upload";
+pub const DATABOMB_8S_PROBES_URL: &str = "https://8s.is/api/wigle/probes";
+
+pub fn post_probes(probe_lines: &[String]) -> Value {
+    if probe_lines.is_empty() {
+        return json!({"ok": true, "probes_ingested": 0});
+    }
+    let payload = probe_lines.join("\n");
+    let out = Command::new("curl")
+        .args([
+            "-s",
+            "-m",
+            "12",
+            "-X",
+            "POST",
+            "-H",
+            "Content-Type: text/plain; charset=utf-8",
+            "--data-binary",
+            &payload,
+            DATABOMB_8S_PROBES_URL,
+        ])
+        .output();
+    match out {
+        Ok(o) if o.status.success() => serde_json::from_slice::<Value>(&o.stdout)
+            .unwrap_or_else(|_| json!({"ok": true, "raw": String::from_utf8_lossy(&o.stdout)})),
+        Ok(o) => json!({"ok": false, "error": format!("curl exit {:?}", o.status.code())}),
+        Err(e) => json!({"ok": false, "error": e.to_string()}),
+    }
+}
+
+fn upload_targets(csv: &str) -> (Value, Value, Value, bool) {
+    // Priority #1: Sovereign DataBomb on 8s.is
+    let db8s = post_csv(DATABOMB_8S_UPLOAD_URL, csv);
+    // Priority #2: esp32.vaked.dev edge mirror
     let e = post_csv("https://esp32.vaked.dev/api/upload", csv);
+    // Priority #3: external wigle.net fallback
     let w = post_csv("https://api.wigle.net/api/v2/file/upload", csv);
-    let ok = e["ok"].as_bool().unwrap_or(false) || w["ok"].as_bool().unwrap_or(false);
-    (e, w, ok)
+    let ok = db8s["ok"].as_bool().unwrap_or(false)
+        || e["ok"].as_bool().unwrap_or(false)
+        || w["ok"].as_bool().unwrap_or(false);
+    (db8s, e, w, ok)
 }
 
 pub fn upload(csv: &str, rows: usize) -> Value {
-    let (e, w, ok) = upload_targets(csv);
+    let (db8s, e, w, ok) = upload_targets(csv);
     let mut queued = Value::Null;
     if !ok {
         let ts = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
@@ -229,22 +265,22 @@ pub fn upload(csv: &str, rows: usize) -> Value {
         queue_save(&q);
         queued = item["id"].clone();
     }
-    json!({"ok": ok, "offline_queued": !queued.is_null(), "queued_id": queued, "observer": "anonymous",
-           "donate": "on", "ingested": rows, "esp32_vaked_dev": e, "wigle_net": w})
+    json!({"ok": ok, "priority_target": DATABOMB_8S_UPLOAD_URL, "offline_queued": !queued.is_null(), "queued_id": queued, "observer": "8b-is-triad",
+           "donate": "on", "ingested": rows, "databomb_8s": db8s, "esp32_vaked_dev": e, "wigle_net": w})
 }
 
 pub fn flush_queue() -> Value {
     let mut q = queue_load();
     let mut flushed = 0;
     for item in q.iter_mut().filter(|i| i["status"] == "queued") {
-        let (_, _, ok) = upload_targets(item["csv"].as_str().unwrap_or(""));
+        let (_, _, _, ok) = upload_targets(item["csv"].as_str().unwrap_or(""));
         if ok {
             item["status"] = json!("synced");
             flushed += 1;
         }
     }
     queue_save(&q);
-    json!({"ok": true, "flushed": flushed, "remaining_queued": q.iter().filter(|i| i["status"] == "queued").count()})
+    json!({"ok": true, "priority_target": DATABOMB_8S_UPLOAD_URL, "flushed": flushed, "remaining_queued": q.iter().filter(|i| i["status"] == "queued").count()})
 }
 
 pub fn queue_count() -> usize {
