@@ -27,6 +27,9 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
+#include <Preferences.h>
 #include <esp_wifi.h>
 #include <esp_now.h>
 #include <math.h>
@@ -35,17 +38,34 @@
 #define NODE_NAME "MEDUSA:AUTO"
 #endif
 
-#define TRIAD_VERSION "2.3.0+databomb-8s-probes"
+#ifndef BOARD_MODEL
+#define BOARD_MODEL "Waveshare-ESP32-S3-Universal"
+#endif
+
+#ifndef DISPLAY_SPEC
+#define DISPLAY_SPEC "ESP32-S3-AMOLED-LCD-Universal"
+#endif
+
+#define TRIAD_VERSION "3.0.0+waveshare-8s-improv"
 
 static const char *DATABOMB_8S_UPLOAD_URL = "https://8s.is/api/v2/file/upload";
 static const char *DATABOMB_8S_PROBES_URL = "https://8s.is/api/wigle/probes";
-static const char *DEFAULT_WIFI_SSID = "Rakuten-4CE2";
-static const char *DEFAULT_WIFI_PASS = "EYA5EVQWC2U4GDA9";
+static const char *INSTALLER_8S_URL = "https://waveshare.8s.is";
 static const uint8_t MESH_PRIMARY_CH = 1; // Matches Rakuten-4CE2 (Ch 1) + baye-rust + FLUG-OS
 static uint32_t meshPeersRx = 0;
 static uint32_t clientProbesRx = 0;
+static uint32_t directUploadsCount = 0;
 static bool espNowReady = false;
-static const char *activeNodeName = "MEDUSA:AUTO";
+static const char *activeNodeName = NODE_NAME;
+
+static Preferences prefs;
+static String configuredSsid = "";
+static String configuredPass = "";
+static bool autoDirectUpload = false;
+static String bufferedCsvRows = "";
+static String bufferedProbeLines = "";
+static uint16_t bufferedBeaconCount = 0;
+static uint16_t bufferedProbeCount = 0;
 
 // Passive 802.11 Management Subtype 0x04 (Probe Request) sniffer for DataBomb 8s.is
 static void onPromiscuousProbeRx(void *buf, wifi_promiscuous_pkt_type_t type) {
@@ -87,6 +107,14 @@ static void onPromiscuousProbeRx(void *buf, wifi_promiscuous_pkt_type_t type) {
   if (ieFpPos > 3 && ieFpBuf[ieFpPos - 1] == '-') ieFpBuf[ieFpPos - 1] = 0;
 
   clientProbesRx++;
+  if (bufferedProbeCount < 64) {
+    char pLine[160];
+    snprintf(pLine, sizeof(pLine), "P|%s|%s|%d|%d|%s|%u|%s|FF:FF:FF:FF:FF:FF|PROBE-REQ\n",
+             macBuf, ssidBuf, (int)pkt->rx_ctrl.channel, (int)pkt->rx_ctrl.rssi,
+             ieFpBuf, (unsigned)seqNum, activeNodeName);
+    bufferedProbeLines += pLine;
+    bufferedProbeCount++;
+  }
   Serial.printf("P|%s|%s|%d|%d|%s|%u|%s\n",
                 macBuf, ssidBuf, (int)pkt->rx_ctrl.channel, (int)pkt->rx_ctrl.rssi,
                 ieFpBuf, (unsigned)seqNum, activeNodeName);
@@ -199,12 +227,169 @@ static String jsonEsc(String s) {
   return s;
 }
 
+static void enablePromiscuousSniffer() {
+  wifi_promiscuous_filter_t filt = {};
+  filt.filter_mask = WIFI_PROMIS_FILTER_MASK_MGMT;
+  esp_wifi_set_promiscuous_filter(&filt);
+  esp_wifi_set_promiscuous_rx_cb(&onPromiscuousProbeRx);
+  esp_wifi_set_promiscuous(true);
+}
+
+static bool performDirect8sUpload(const TriadIdentity &id) {
+  if (configuredSsid.length() == 0) return false;
+  if (bufferedBeaconCount == 0 && bufferedProbeCount == 0) return false;
+
+  esp_wifi_set_promiscuous(false);
+  WiFi.begin(configuredSsid.c_str(), configuredPass.c_str());
+  uint32_t t0 = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - t0) < 9000) {
+    delay(150);
+  }
+  bool ok = false;
+  if (WiFi.status() == WL_CONNECTED) {
+    WiFiClientSecure client;
+    client.setInsecure();
+    if (bufferedBeaconCount > 0) {
+      HTTPClient http;
+      if (http.begin(client, DATABOMB_8S_UPLOAD_URL)) {
+        http.addHeader("Content-Type", "text/csv");
+        String csv = String("WigleWifi-1.4,appRelease=") + TRIAD_VERSION +
+                     ",model=" + BOARD_MODEL + ",release=" + TRIAD_VERSION +
+                     ",device=" + id.name + ",display=" + DISPLAY_SPEC +
+                     ",board=" + BOARD_MODEL + ",brand=8b-is\n"
+                     "MAC,SSID,AuthMode,FirstSeen,Channel,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,Type\n" +
+                     bufferedCsvRows;
+        int code = http.POST(csv);
+        if (code >= 200 && code < 300) {
+          ok = true;
+          bufferedCsvRows = "";
+          bufferedBeaconCount = 0;
+        }
+        http.end();
+      }
+    }
+    if (bufferedProbeCount > 0) {
+      HTTPClient httpP;
+      if (httpP.begin(client, DATABOMB_8S_PROBES_URL)) {
+        httpP.addHeader("Content-Type", "text/plain");
+        int codeP = httpP.POST(bufferedProbeLines);
+        if (codeP >= 200 && codeP < 300) {
+          ok = true;
+          bufferedProbeLines = "";
+          bufferedProbeCount = 0;
+        }
+        httpP.end();
+      }
+    }
+    if (ok) {
+      directUploadsCount++;
+      Serial.printf("# UPLOAD_OK|target=%s|uploads=%lu\n", DATABOMB_8S_UPLOAD_URL, (unsigned long)directUploadsCount);
+    }
+  }
+  WiFi.disconnect(true, false);
+  delay(50);
+  enablePromiscuousSniffer();
+  return ok;
+}
+
+// Improv Wi-Fi Serial v1 protocol support (for WLED / ESP Web Tools browser installer)
+static void sendImprovPacket(uint8_t type, const uint8_t *data, uint8_t len) {
+  uint8_t hdr[9] = {'I', 'M', 'P', 'R', 'O', 'V', 0x01, type, len};
+  uint8_t csum = 0;
+  for (int i = 0; i < 9; i++) csum += hdr[i];
+  for (int i = 0; i < len; i++) csum += data[i];
+  Serial.write(hdr, 9);
+  if (len > 0) Serial.write(data, len);
+  Serial.write(csum);
+  Serial.write('\n');
+}
+
+static void sendImprovRpcResult(uint8_t cmd, const String *strs, int count) {
+  uint8_t buf[240];
+  buf[0] = cmd;
+  uint8_t pos = 2;
+  for (int i = 0; i < count; i++) {
+    uint8_t slen = (uint8_t)min((unsigned int)strs[i].length(), (unsigned int)(sizeof(buf) - pos - 1));
+    buf[pos++] = slen;
+    memcpy(&buf[pos], strs[i].c_str(), slen);
+    pos += slen;
+  }
+  buf[1] = pos - 2;
+  sendImprovPacket(0x04, buf, pos);
+}
+
+static void handleImprovRpc(const TriadIdentity &id, const uint8_t *payload, uint8_t len) {
+  if (len < 1) return;
+  uint8_t cmd = payload[0];
+  if (cmd == 0x01 && len >= 4) { // WIFI_SETTINGS
+    uint8_t ssidLen = payload[2];
+    if (3 + ssidLen < len) {
+      String ssid = "";
+      for (uint8_t i = 0; i < ssidLen; i++) ssid += (char)payload[3 + i];
+      uint8_t passLen = payload[3 + ssidLen];
+      String pass = "";
+      for (uint8_t i = 0; i < passLen && (4 + ssidLen + i) < len; i++) {
+        pass += (char)payload[4 + ssidLen + i];
+      }
+      configuredSsid = ssid;
+      configuredPass = pass;
+      autoDirectUpload = (ssid.length() > 0);
+      prefs.putString("ssid", configuredSsid);
+      prefs.putString("pass", configuredPass);
+      prefs.putBool("auto_up", autoDirectUpload);
+      uint8_t stProv = 0x03; // Provisioning
+      sendImprovPacket(0x01, &stProv, 1);
+      uint8_t stDone = 0x04; // Provisioned
+      sendImprovPacket(0x01, &stDone, 1);
+      String urls[1] = {String("https://8s.is/wigle")};
+      sendImprovRpcResult(0x01, urls, 1);
+    }
+  } else if (cmd == 0x02) { // IDENTIFY
+    for (int i = 0; i < 6; i++) {
+      pulseLed(id, (float)i, 1.5f);
+      delay(80);
+    }
+    sendImprovRpcResult(0x02, nullptr, 0);
+  } else if (cmd == 0x03) { // GET_CURRENT_STATE
+    uint8_t st = (configuredSsid.length() > 0) ? 0x04 : 0x02;
+    sendImprovPacket(0x01, &st, 1);
+    if (st == 0x04) {
+      String urls[1] = {String("https://8s.is/wigle")};
+      sendImprovRpcResult(0x03, urls, 1);
+    }
+  } else if (cmd == 0x04) { // GET_DEVICE_INFO
+    String info[4] = {
+      String("8b-is WiGLE DataBomb"),
+      String(TRIAD_VERSION),
+      String("ESP32-S3 (") + DISPLAY_SPEC + ")",
+      String(BOARD_MODEL)
+    };
+    sendImprovRpcResult(0x04, info, 4);
+  } else if (cmd == 0x05) { // GET_WIFI_NETWORKS
+    int n = WiFi.scanNetworks(false, false, true, 120);
+    int limit = (n > 12) ? 12 : n;
+    for (int i = 0; i < limit; i++) {
+      String row[3] = {
+        WiFi.SSID(i),
+        String(WiFi.RSSI(i)),
+        (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? String("NO") : String("YES")
+      };
+      sendImprovRpcResult(0x05, row, 3);
+    }
+    WiFi.scanDelete();
+    sendImprovRpcResult(0x05, nullptr, 0);
+  }
+}
+
 static void emitStatusJson(const TriadIdentity &id, const String &mac) {
   Serial.printf(
     "# JSON|{\"node\":\"%s\",\"vertex\":\"%s\",\"archetype\":\"%s\",\"mac\":\"%s\","
+    "\"board\":\"%s\",\"display\":\"%s\","
     "\"version\":\"%s\",\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\","
     "\"siblings\":\"brother & sister ^^ <3<3\","
+    "\"installer_url\":\"%s\","
     "\"priority_upload_url\":\"%s\",\"priority_probes_url\":\"%s\","
+    "\"wifi_ssid\":\"%s\",\"auto_direct_upload\":%s,\"direct_uploads\":%lu,"
     "\"riva_url\":\"https://riva.vaked.dev\",\"riva_repo\":\"peterlodri-sec/riva.vaked.dev\","
     "\"hyper_charm_karma\":\"HYPER-CHARM-KARMA~https://github.com/8b-is/wigle-triad~~~∞~{<3,<3,<3}+1-peter\","
     "\"freq_hz\":%u,\"seq\":%lu,\"networks\":%d,\"client_probes_rx\":%lu,\"mean_rssi\":%d,"
@@ -214,9 +399,15 @@ static void emitStatusJson(const TriadIdentity &id, const String &mac) {
     jsonEsc(String(id.vertex)).c_str(),
     id.archetype,
     mac.c_str(),
+    BOARD_MODEL,
+    DISPLAY_SPEC,
     TRIAD_VERSION,
+    INSTALLER_8S_URL,
     DATABOMB_8S_UPLOAD_URL,
     DATABOMB_8S_PROBES_URL,
+    jsonEsc(configuredSsid).c_str(),
+    autoDirectUpload ? "true" : "false",
+    (unsigned long)directUploadsCount,
     (unsigned)id.freqHz,
     (unsigned long)scanSeq,
     lastNetCount,
@@ -232,6 +423,26 @@ static void emitStatusJson(const TriadIdentity &id, const String &mac) {
 
 static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
   while (Serial.available() > 0) {
+    if (Serial.peek() == 'I') {
+      uint8_t raw[192];
+      size_t rlen = Serial.readBytesUntil('\n', raw, sizeof(raw) - 1);
+      raw[rlen] = 0;
+      if (rlen >= 10 && memcmp(raw, "IMPROV", 6) == 0 && raw[6] == 0x01) {
+        uint8_t ptype = raw[7];
+        uint8_t plen = raw[8];
+        if (ptype == 0x03 && 9 + plen <= rlen) {
+          handleImprovRpc(id, &raw[9], plen);
+        }
+        continue;
+      }
+      String cmd = String((const char *)raw);
+      cmd.trim();
+      if (cmd.equalsIgnoreCase("IDENTIFY")) {
+        for (int i = 0; i < 6; i++) { pulseLed(id, (float)i, 1.5f); delay(80); }
+        Serial.printf("# IDENTIFY|%s|%s\n", id.name, BOARD_MODEL);
+      }
+      continue;
+    }
     String cmd = Serial.readStringUntil('\n');
     cmd.trim();
     if (cmd.length() == 0) continue;
@@ -240,6 +451,22 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
     } else if (cmd.equalsIgnoreCase("SCAN")) {
       Serial.printf("# %s triggering immediate passive scan\n", id.name);
       forceImmediateScan = true;
+    } else if (cmd.equalsIgnoreCase("UPLOAD")) {
+      Serial.printf("# %s triggering direct upload to %s\n", id.name, DATABOMB_8S_UPLOAD_URL);
+      performDirect8sUpload(id);
+    } else if (cmd.startsWith("WIFI|")) {
+      int sep = cmd.indexOf('|', 5);
+      if (sep > 5) {
+        configuredSsid = cmd.substring(5, sep);
+        configuredPass = cmd.substring(sep + 1);
+        autoDirectUpload = (configuredSsid.length() > 0);
+        prefs.putString("ssid", configuredSsid);
+        prefs.putString("pass", configuredPass);
+        prefs.putBool("auto_up", autoDirectUpload);
+        Serial.printf("# WIFI_SAVED|ssid=%s|auto_upload=true|target=%s\n",
+                      configuredSsid.c_str(), DATABOMB_8S_UPLOAD_URL);
+        emitStatusJson(id, mac);
+      }
     } else if (cmd.equalsIgnoreCase("PING")) {
       Serial.printf("# PONG|%s|%s|%lu\n", id.name, mac.c_str(), (unsigned long)millis());
     } else if (cmd.equalsIgnoreCase("TRIAD")) {
@@ -271,6 +498,11 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
 void setup() {
   Serial.begin(115200);
   delay(300);
+  prefs.begin("wigle8s", false);
+  configuredSsid = prefs.getString("ssid", "");
+  configuredPass = prefs.getString("pass", "");
+  autoDirectUpload = prefs.getBool("auto_up", false);
+
   WiFi.mode(WIFI_STA);
   WiFi.disconnect(true, false);
   delay(100);
@@ -289,14 +521,10 @@ void setup() {
   const TriadIdentity id = resolveIdentity(mac);
   activeNodeName = id.name;
 
-  wifi_promiscuous_filter_t filt = {};
-  filt.filter_mask = WIFI_PROMISCUOUS_FILTER_MASK_MGMT;
-  esp_wifi_set_promiscuous_filter(&filt);
-  esp_wifi_set_promiscuous_rx_cb(&onPromiscuousProbeRx);
-  esp_wifi_set_promiscuous(true);
+  enablePromiscuousSniffer();
 
-  Serial.printf("# %s [%s] · WiGLE+ENTHEAI rig v%s · priority_db=%s · default_ap=%s(Ch1) · mesh_rx=%lu\n",
-                id.name, id.vertex, TRIAD_VERSION, DATABOMB_8S_UPLOAD_URL, DEFAULT_WIFI_SSID, (unsigned long)meshPeersRx);
+  Serial.printf("# %s [%s] · %s (%s) · v%s · priority_db=%s · installer=%s\n",
+                id.name, id.vertex, BOARD_MODEL, DISPLAY_SPEC, TRIAD_VERSION, DATABOMB_8S_UPLOAD_URL, INSTALLER_8S_URL);
   Serial.printf("# MAC %s · archetype %s · carrier %u Hz · interval %lu ms\n",
                 mac.c_str(), id.archetype, (unsigned)id.freqHz, (unsigned long)SCAN_INTERVAL_MS);
   emitStatusJson(id, mac);
@@ -339,6 +567,15 @@ void loop() {
     const int rssi = WiFi.RSSI(i);
     const char *auth = authName(WiFi.encryptionType(i));
     Serial.printf("W|%s|%s|%s|%d|%d\n", bssid.c_str(), ssid.c_str(), auth, ch, rssi);
+    if (bufferedBeaconCount < 64) {
+      String cleanSsid = WiFi.SSID(i);
+      cleanSsid.replace(",", " ");
+      cleanSsid.replace("\r", "");
+      cleanSsid.replace("\n", "");
+      bufferedCsvRows += bssid + "," + cleanSsid + ",[" + String(auth) + "][ESS],2026-10-29 04:00:00," +
+                         String(ch) + "," + String(rssi) + ",0.0000000,0.0000000,0,10,WIFI\n";
+      bufferedBeaconCount++;
+    }
 
     if (ch >= 1 && ch <= 14) chCounts[ch]++;
     rssiSum += rssi;
@@ -390,4 +627,7 @@ void loop() {
   uint8_t nid = (id.freqHz == 432) ? 0 : ((id.freqHz == 528) ? 1 : 2);
   int8_t pole = (nid == 0) ? -1 : ((nid == 1) ? 0 : +1);
   broadcastTriadMesh(nid, pole, scanSeq);
+  if (autoDirectUpload && configuredSsid.length() > 0 && (scanSeq % 6 == 0)) {
+    performDirect8sUpload(id);
+  }
 }
