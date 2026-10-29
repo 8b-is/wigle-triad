@@ -134,7 +134,39 @@ static void onTriadMeshRecv(const uint8_t *mac, const uint8_t *data, int len) {
   }
 }
 
+static void ensureEspNowReady() {
+  if (WiFi.getMode() != WIFI_STA) {
+    WiFi.mode(WIFI_STA);
+  }
+  if (!espNowReady) {
+    if (esp_now_init() == ESP_OK) {
+      esp_now_register_recv_cb(onTriadMeshRecv);
+      espNowReady = true;
+    } else {
+      return;
+    }
+  }
+  if (!esp_now_is_peer_exist((const uint8_t *)"\xFF\xFF\xFF\xFF\xFF\xFF")) {
+    esp_now_peer_info_t peer = {};
+    memset(peer.peer_addr, 0xFF, 6);
+    peer.channel = 0;
+    peer.encrypt = false;
+    esp_now_add_peer(&peer);
+  }
+}
+
+// Margaret Hamilton Apollo-11 Priority Executive Guard (prevents 1202 buffer/heap exhaustion)
+static void hamiltonExecutiveGuard() {
+  if (ESP.getFreeHeap() < 65536 || bufferedCsvRows.length() > 12288 || bufferedProbeLines.length() > 8192) {
+    bufferedCsvRows = "";
+    bufferedBeaconCount = 0;
+    bufferedProbeLines = "";
+    bufferedProbeCount = 0;
+  }
+}
+
 static void broadcastTriadMesh(uint8_t nodeId, int8_t pole, uint32_t seq) {
+  ensureEspNowReady();
   if (!espNowReady) return;
   static const uint8_t bcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   uint8_t pkt[19] = {
@@ -145,7 +177,11 @@ static void broadcastTriadMesh(uint8_t nodeId, int8_t pole, uint32_t seq) {
     (uint8_t)(seq & 0xFF), (uint8_t)((seq >> 8) & 0xFF), (uint8_t)((seq >> 16) & 0xFF), 0
   };
   esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
-  esp_now_send(bcast, pkt, sizeof(pkt));
+  if (esp_now_send(bcast, pkt, sizeof(pkt)) == ESP_ERR_ESPNOW_NOT_INIT) {
+    espNowReady = false;
+    ensureEspNowReady();
+    if (espNowReady) esp_now_send(bcast, pkt, sizeof(pkt));
+  }
   esp_wifi_set_channel(6, WIFI_SECOND_CHAN_NONE);
   esp_now_send(bcast, pkt, sizeof(pkt));
   esp_wifi_set_channel(MESH_PRIMARY_CH, WIFI_SECOND_CHAN_NONE);
@@ -287,7 +323,9 @@ static bool performDirect8sUpload(const TriadIdentity &id) {
     }
   }
   WiFi.disconnect(true, false);
+  espNowReady = false;
   delay(50);
+  ensureEspNowReady();
   enablePromiscuousSniffer();
   return ok;
 }
@@ -531,6 +569,7 @@ void setup() {
 }
 
 void loop() {
+  hamiltonExecutiveGuard();
   const String mac = WiFi.macAddress();
   const TriadIdentity id = resolveIdentity(mac);
 
