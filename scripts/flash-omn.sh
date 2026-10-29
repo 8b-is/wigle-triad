@@ -38,18 +38,18 @@ PY
 echo "Flashing MEDUSA (3.2.0+omni-upz-alexai-aurora) to ${PORT} @ 115200 baud (--no-stub chunked)..."
 "$ESPTOOL" --chip esp32s3 --port "$PORT" --baud 115200 --no-stub \
   --before default-reset --after no-reset write-flash \
-  --flash-mode dio --flash-freq 80m --flash-size 16MB \
+  --flash-mode keep --flash-freq keep --flash-size keep \
   0x0000 "${DIST_DIR}/bootloader.bin" \
   0x8000 "${DIST_DIR}/partitions.bin" \
   0xe000 "${DIST_DIR}/boot_app0.bin" \
   0x10000 "${DIST_DIR}/fw_part0.bin"
 
 "$ESPTOOL" --chip esp32s3 --port "$PORT" --baud 115200 --no-stub \
-  --before no-reset --after no-reset write-flash \
-  --flash-mode dio --flash-freq 80m --flash-size 16MB \
+  --before default-reset --after no-reset write-flash \
+  --flash-mode keep --flash-freq keep --flash-size keep \
   0x60000 "${DIST_DIR}/fw_part1.bin"
 
 "$ESPTOOL" --chip esp32s3 --port "$PORT" --baud 115200 --no-stub \
-  --before no-reset --after hard-reset write-flash \
-  --flash-mode dio --flash-freq 80m --flash-size 16MB \
+  --before default-reset --after watchdog-reset write-flash \
+  --flash-mode keep --flash-freq keep --flash-size keep \
   0xb0000 "${DIST_DIR}/fw_part2.bin"
