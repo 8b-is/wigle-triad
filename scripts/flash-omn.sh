@@ -8,9 +8,10 @@ DIST_DIR="${ROOT_DIR}/dist/omn"
 ESPTOOL="${ESPTOOL:-/Library/Frameworks/Python.framework/Versions/3.12/bin/esptool}"
 
 PORT="${1:-}"
+WAIT_TICKS="${WAIT_TICKS:-7200}" # default 3600s (1 hour) at 0.5s intervals
 if [ -z "$PORT" ]; then
   echo "Waiting for ESP32-S3 USB-CDC port (/dev/cu.usbmodem*)..."
-  for _ in $(seq 1 60); do
+  for _ in $(seq 1 "$WAIT_TICKS"); do
     PORT=$(find /dev -maxdepth 1 -name "cu.usbmodem*" 2>/dev/null | sort | head -n 1 || true)
     if [ -n "$PORT" ]; then
       break
