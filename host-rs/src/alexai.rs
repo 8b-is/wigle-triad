@@ -135,6 +135,23 @@ pub fn compute(prompt: Option<&str>, beacons: &[Value]) -> Value {
     let comp = wire.len().max(1);
     let seal_src: Vec<u8> = packed.clone();
 
+    // WiGLE DataBomb v3.0 Custodian Principle (Record != Admit != Commit) + 64B@0x62 LitanyWireFrame
+    let (mut rec_cnt, mut adm_cnt, mut com_cnt) = (0usize, 0usize, 0usize);
+    for &t in &trits {
+        match t {
+            1 => com_cnt += 1,
+            0 => adm_cnt += 1,
+            _ => rec_cnt += 1,
+        }
+    }
+    let litany_wire = wupz_core::fold::seal_litany_wire_64b_scalar(
+        wire.as_bytes(),
+        &seal_src,
+        wupz_core::fold::GATE_0X62,
+        wupz_core::fold::QUANT_QT55,
+    );
+    let sense_trit: i8 = if com_cnt >= rec_cnt { 1 } else if adm_cnt > 0 { 0 } else { -1 };
+
     json!({
         "alexai": {
             "engine": "GAIA-MLX-QUANT", "repo": "https://github.com/8b-is/alexai", "prompt": prompt, "seed": seed,
@@ -148,6 +165,25 @@ pub fn compute(prompt: Option<&str>, beacons: &[Value]) -> Value {
             "bits_per_weight": BITS_PER_WEIGHT, "compression_vs_f32": COMPRESSION_VS_F32,
             "packed_hex": packed_hex, "roundtrip_ok": roundtrip_ok,
             "wupz_xor_fold": format!("0x{:016x}", xor_fold(&seal_src)), "wupz_popcount": popcount(&seal_src),
+        },
+        "databomb_v3_custodian": {
+            "principle": "Record != Admit != Commit",
+            "location_fix": { "lat_e7": 356_852_000, "lon_e7": 139_710_000, "decoupled": true },
+            "record_count": rec_cnt,
+            "admit_count": adm_cnt,
+            "commit_count": com_cnt,
+            "codec_density_pq": "407/389",
+            "lossless_ratio_pq": "29/30",
+            "gate": "0x62",
+            "wire_seal16": format!("0x{:04x}", litany_wire.wire_seal16),
+        },
+        "aurora_bridge": {
+            "wire": "64B@0x62",
+            "trit": sense_trit,
+            "bfp64_pos": format!("0x{:016x}", litany_wire.bfp64_pos),
+            "bfp64_neg": format!("0x{:016x}", litany_wire.bfp64_neg),
+            "spqt_root": litany_wire.spqt_root,
+            "seal16": format!("0x{:04x}", litany_wire.wire_seal16),
         },
         "kompress_ultra": {
             "engine": "kompress-ultra", "version": "16.2.0", "brain_line": "ralph · lodri · krengel · cosmos",
