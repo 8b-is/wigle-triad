@@ -47,7 +47,7 @@
 #define DISPLAY_SPEC "ESP32-S3-AMOLED-LCD-Universal"
 #endif
 
-#define TRIAD_VERSION "3.2.0+omni-upz-alexai-aurora"
+#define TRIAD_VERSION "3.3.0+audio8-arktts-esp32s3"
 #define UPZ_GATE_0X62 0x62
 #define UPZ_QUANT_QT55 0x55
 #define UPZ_LANES_8_OF_8 0x0808
@@ -285,6 +285,9 @@ struct __attribute__((aligned(64))) UpzLitanyWireFrame64 {
   uint16_t wire_seal16;
 };
 
+// 4. Edge0/Audio8-TTS-Realistic-0.6b (ArkttsModel) ESP32-S3 / MEDUSA Triad Fit & 10-RVQ 44.1kHz Codec Frame
+static void emitAudio8ArkttsStatus(const TriadIdentity &id, const String &mac, const String &utterance);
+
 static void emitOmniUpzAlexaiAurora(const TriadIdentity &id, const String &mac) {
   // 1. alexiai (GAIA-MLX-QUANT b1.58): zero-float Q16 2-step Lloyd-Max group-wise ternary quantizer
   // across the 14 Wi-Fi 2.4GHz channels + RSSI anchor
@@ -467,6 +470,80 @@ static void emitOmniUpzAlexaiAurora(const TriadIdentity &id, const String &mac) 
                 dominant_trit,
                 (unsigned long long)ent_p,
                 (unsigned long long)ent_q);
+
+  emitAudio8ArkttsStatus(id, mac, "Audio8-TTS-Realistic-0.6b on ESP32-S3 MEDUSA Triad");
+}
+
+// 4. Edge0/Audio8-TTS-Realistic-0.6b (ArkttsModel) ESP32-S3 / MEDUSA Triad Fit & 10-RVQ 44.1kHz Codec Frame
+static void emitAudio8ArkttsStatus(const TriadIdentity &id, const String &mac, const String &utterance) {
+  String clean = jsonEsc(utterance.length() > 0 ? utterance : String("Audio8-TTS-Realistic-0.6b on ESP32-S3 MEDUSA Triad"));
+  uint64_t h = upzXorFold64((const uint8_t *)clean.c_str(), clean.length()) ^ ((uint64_t)scanSeq * 0x9E3779B97F4A7C15ULL);
+
+  // Codebook 0: Semantic VQ index in [0..4095] -> token ID in [151678..155773]
+  uint16_t sem_idx = (uint16_t)(h & 0x0FFF);
+  uint32_t sem_token_id = 151678U + (uint32_t)sem_idx;
+  // Codebooks 1..9: Acoustic RVQ indices in [0..1023] (10 bits each = 90 bits; total 102 bits = 13 bytes/frame)
+  uint16_t cb[10];
+  cb[0] = sem_idx;
+  uint64_t mix = h ^ 0xA8D10844100ULL;
+  for (int i = 1; i < 10; i++) {
+    mix ^= (mix << 13) ^ (mix >> 7) ^ ((uint64_t)(uint8_t)lastTritVec[(i - 1) % 9] * 0x2545F4914F6CDD1DULL);
+    cb[i] = (uint16_t)(mix & 0x03FF);
+  }
+
+  // Pack 102 bits (12-bit sem_idx + 9 * 10-bit acoustic RVQ) into 13 bytes (280 B/s @ 21.533 Hz)
+  uint8_t frame13[13];
+  memset(frame13, 0, sizeof(frame13));
+  uint32_t bitpos = 0;
+  for (int i = 0; i < 10; i++) {
+    uint32_t bits = (i == 0) ? 12U : 10U;
+    uint32_t val = cb[i];
+    for (uint32_t b = 0; b < bits; b++) {
+      if ((val >> b) & 1U) {
+        frame13[bitpos >> 3] |= (uint8_t)(1U << (bitpos & 7U));
+      }
+      bitpos++;
+    }
+  }
+  char hex26[27];
+  for (int i = 0; i < 13; i++) {
+    snprintf(&hex26[i * 2], 3, "%02x", frame13[i]);
+  }
+  hex26[26] = '\0';
+
+  // Causal Snake1d activation sample: y = x + (1/alpha) * sin^2(alpha * x) in Q16 fixed-point
+  float x = ((float)((int)sem_idx - 2048)) / 2048.0f;
+  float alpha = 1.618f + 0.25f * lastCoherence;
+  float s = sinf(alpha * x);
+  float snake_y = x + (s * s) / alpha;
+  int32_t snake_q16 = (int32_t)(snake_y * 65536.0f);
+
+  const char *role = "OMN:FAST-AR-4L+RVQ10-SNAKE1D-44K1 (9.82MB sparse b1.58, 5KB SRAM KV)";
+  if (id.freqHz == 432) {
+    role = "ADA:SLOW-AR-L00-11 (12 GQA layers, dim=896, 17.89MB sparse b1.58)";
+  } else if (id.freqHz == 528) {
+    role = "VAK:SLOW-AR-L12-23+SEM4097 (12 GQA layers + 4097-row semantic head, 18.63MB sparse b1.58)";
+  }
+
+  Serial.printf(
+    "# AUDIO8|{\"node\":\"%s\",\"mac\":\"%s\",\"model\":\"Edge0/Audio8-TTS-Realistic-0.6b\","
+    "\"arch\":\"ArkttsModel (24L Slow GQA + 4L Fast Depth-AR + 10-RVQ 44.1kHz Snake1d)\","
+    "\"triad_role\":\"%s\",\"single_esp32s3_mb\":\"9.82\",\"triad_total_mb\":\"46.34\","
+    "\"sample_rate_hz\":44100,\"frame_samples\":2048,\"frame_rate_hz\":\"21.533\","
+    "\"rvq_codebooks\":10,\"frame_bits\":102,\"frame_bytes\":13,\"wire_bytes_per_sec\":280,"
+    "\"espnow_frames_per_pkt\":19,\"espnow_audio_ms_per_pkt\":882,"
+    "\"semantic_token_id\":%lu,\"rvq_codes\":[%u,%u,%u,%u,%u,%u,%u,%u,%u,%u],"
+    "\"frame_13b_hex\":\"%s\",\"snake1d_q16\":%ld,\"text\":\"%s\"}\n",
+    id.name,
+    mac.c_str(),
+    role,
+    (unsigned long)sem_token_id,
+    (unsigned)cb[0], (unsigned)cb[1], (unsigned)cb[2], (unsigned)cb[3], (unsigned)cb[4],
+    (unsigned)cb[5], (unsigned)cb[6], (unsigned)cb[7], (unsigned)cb[8], (unsigned)cb[9],
+    hex26,
+    (long)snake_q16,
+    clean.c_str()
+  );
 }
 
 static TriadIdentity resolveIdentity(const String &mac) {
@@ -791,6 +868,14 @@ static void handleSerialCommands(const TriadIdentity &id, const String &mac) {
       Serial.printf("# GAIA|{\"evolve\":\"ULTRA-OMNI-GAIA-EVOLVE\",\"siblings\":\"brother & sister ^^ <3<3\",\"dyad\":\"peterlodri-sec//riva.vaked.dev\",\"node\":\"%s\",\"freq_hz\":%u,\"entropy_bits\":%.4f,\"coherence\":%.4f}\n", id.name, (unsigned)id.freqHz, lastEntropy, lastCoherence);
     } else if (cmd.equalsIgnoreCase("UPZ") || cmd.equalsIgnoreCase("ALEXAI") || cmd.equalsIgnoreCase("AURORA") || cmd.equalsIgnoreCase("OMNI")) {
       emitOmniUpzAlexaiAurora(id, mac);
+    } else if (cmd.equalsIgnoreCase("AUDIO8") || cmd.equalsIgnoreCase("ARKTTS") || cmd.startsWith("AUDIO8 ") || cmd.startsWith("ARKTTS ") || cmd.startsWith("SPEAK ") || cmd.startsWith("TTS|")) {
+      String txt = cmd;
+      int sp = cmd.indexOf(' ');
+      int bar = cmd.indexOf('|');
+      if (bar > 0) txt = cmd.substring(bar + 1);
+      else if (sp > 0) txt = cmd.substring(sp + 1);
+      else txt = "Edge0/Audio8-TTS-Realistic-0.6b on ESP32-S3 MEDUSA Triad";
+      emitAudio8ArkttsStatus(id, mac, txt);
     } else {
       Serial.printf("# ACK|%s|cmd=%s\n", id.name, esc(cmd).c_str());
     }

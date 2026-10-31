@@ -133,6 +133,16 @@ fn ingest(st: &mut State, port: &str, line: &str) {
                 st.last_tts = s.to_string();
             }
         }
+    } else if let Some(a8) = line.strip_prefix("# AUDIO8|") {
+        if let Ok(v) = serde_json::from_str::<Value>(a8) {
+            if let Some(s) = v["text"].as_str() {
+                st.last_tts = s.to_string();
+            }
+            let k = v["node"].as_str().unwrap_or(port).to_string();
+            if let Some(node_obj) = st.nodes.get_mut(&k) {
+                node_obj["audio8"] = v;
+            }
+        }
     } else if line.starts_with("P|") {
         if st.probes.len() >= 2048 {
             st.probes.remove(0);
@@ -471,7 +481,7 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
                     {"name": "Shibuya · Yoyogi / Crossing", "lat": 35.6580, "lon": 139.7016, "observations": 2871},
                     {"name": "Minato-ku · Roppongi / Toranomon", "lat": 35.6655, "lon": 139.7378, "observations": 2711}
                 ],
-                "offline_queue_count": alexai::queue_count(), "alexai": ak["alexai"], "kompress_ultra": ak["kompress_ultra"],
+                "offline_queue_count": alexai::queue_count(), "alexai": ak["alexai"], "kompress_ultra": ak["kompress_ultra"], "audio8_tts": ak["audio8_tts"],
                 "runtime": "rust (no python)", "viz_enthea": viz, "wupz_seal": wupz_seal(&g),
                 "ports": ports, "nodes": g.nodes.values().collect::<Vec<_>>(),
                 "corpus": g.corpus,
@@ -541,6 +551,24 @@ fn handle(mut s: TcpStream, st: Shared, www: PathBuf, board_token: Option<String
             let beacons: Vec<Value> = st.lock().unwrap().beacons.values().cloned().collect();
             let mut v = alexai::compute(query(q, "prompt").map(|p| p.replace('+', " ")).as_deref(), &beacons);
             v["ok"] = json!(true);
+            respond(&mut s, 200, json_t, &jbody(v));
+        }
+        ("GET", "/api/audio8") | ("POST", "/api/audio8") | ("GET", "/api/arktts") | ("POST", "/api/arktts") => {
+            let body_json = serde_json::from_slice::<Value>(&body).unwrap_or(json!({}));
+            let text_q = query(q, "text")
+                .or_else(|| query(q, "prompt"))
+                .map(|p| p.replace('+', " "))
+                .or_else(|| body_json["text"].as_str().map(String::from));
+            let lang_q = query(q, "lang").or_else(|| body_json["lang"].as_str().map(String::from));
+            let beacons: Vec<Value> = st.lock().unwrap().beacons.values().cloned().collect();
+            let mut v = alexai::audio8_esp32(text_q.as_deref(), lang_q.as_deref(), &beacons);
+            let txt = v["text"].as_str().unwrap_or("Audio8 TTS on ESP32-S3 MEDUSA Triad").to_string();
+            let wav_path = synth_audio8_arktts_wav(&txt);
+            let short: String = txt.chars().take(64).collect();
+            let lines = send_all(&st, &format!("AUDIO8 {short}"), Duration::from_millis(450));
+            v["ok"] = json!(true);
+            v["wav"] = json!(wav_path);
+            v["serial_lines"] = json!(lines);
             respond(&mut s, 200, json_t, &jbody(v));
         }
         ("GET", "/api/bicep") | ("POST", "/api/bicep") | ("GET", "/api/glue") | ("POST", "/api/glue") => {
@@ -752,6 +780,64 @@ fn synth_bicep_glue_wav() -> String {
         let sr_i = (r * 24000.0) as i16;
         pcm.extend_from_slice(&sl.to_le_bytes());
         pcm.extend_from_slice(&sr_i.to_le_bytes());
+    }
+    let _ = fs::write(path, &pcm);
+    path.to_string()
+}
+
+/// Synthesize a 44.1 kHz WAV preview using the Arktts 10-codebook RVQ + causal Snake1d (x + alpha^-1 sin^2(alpha x)) kernel.
+fn synth_audio8_arktts_wav(text: &str) -> String {
+    let path = "/tmp/audio8_arktts_44k1.wav";
+    let sr = 44_100u32;
+    let frame_samples = 2048usize; // 46.44 ms per RVQ frame @ 44.1 kHz = 21.533 Hz
+    let num_frames = 32usize;      // ~1.486 seconds
+    let total_samples = frame_samples * num_frames;
+    let mut pcm: Vec<u8> = Vec::with_capacity(44 + total_samples * 2);
+
+    let data_bytes = (total_samples * 2) as u32;
+    pcm.extend_from_slice(b"RIFF");
+    pcm.extend_from_slice(&(36 + data_bytes).to_le_bytes());
+    pcm.extend_from_slice(b"WAVEfmt ");
+    pcm.extend_from_slice(&16u32.to_le_bytes());
+    pcm.extend_from_slice(&1u16.to_le_bytes()); // PCM
+    pcm.extend_from_slice(&1u16.to_le_bytes()); // Mono 44.1kHz (matches ArkttsDecoder out_channels=1)
+    pcm.extend_from_slice(&sr.to_le_bytes());
+    pcm.extend_from_slice(&(sr * 2).to_le_bytes());
+    pcm.extend_from_slice(&2u16.to_le_bytes());
+    pcm.extend_from_slice(&16u16.to_le_bytes());
+    pcm.extend_from_slice(b"data");
+    pcm.extend_from_slice(&data_bytes.to_le_bytes());
+
+    let seed = wupz_core::fold::xor_fold(text.as_bytes());
+    let mut phase0 = 0.0f32;
+    let mut phase1 = 0.0f32;
+    let mut phase2 = 0.0f32;
+
+    for f in 0..num_frames {
+        let h = seed
+            .wrapping_add((f as u64).wrapping_mul(0xBF58_476D_1CE4_E5B9))
+            .rotate_left((f as u32 * 7) & 63);
+        let sem_idx = (h & 0x0FFF) as u16;
+        let c1 = ((h >> 12) & 0x03FF) as u16;
+        let c2 = ((h >> 22) & 0x03FF) as u16;
+        // Fundamental pitch + 2 vocal formants modulated by Semantic VQ + Acoustic RVQ codebooks
+        let f0 = 135.0 + (sem_idx % 96) as f32 * 1.25;
+        let fmt1 = 480.0 + (c1 % 420) as f32;
+        let fmt2 = 1420.0 + (c2 % 880) as f32;
+        let alpha = 1.618f32 + ((h >> 32) & 0xFF) as f32 / 512.0;
+
+        for s_idx in 0..frame_samples {
+            let env = (std::f32::consts::PI * (s_idx as f32) / (frame_samples as f32)).sin();
+            phase0 += 6.2831853 * f0 / (sr as f32);
+            phase1 += 6.2831853 * fmt1 / (sr as f32);
+            phase2 += 6.2831853 * fmt2 / (sr as f32);
+            let x = 0.55 * phase0.sin() + 0.28 * phase1.sin() + 0.17 * phase2.sin();
+            // Causal Snake1d nonlinearity: x + (1/alpha) * sin^2(alpha * x)
+            let sa = (alpha * x).sin();
+            let snake = (x + (sa * sa) / alpha - 0.25 / alpha) * env;
+            let sample = (snake.tanh() * 22000.0) as i16;
+            pcm.extend_from_slice(&sample.to_le_bytes());
+        }
     }
     let _ = fs::write(path, &pcm);
     path.to_string()

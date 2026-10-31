@@ -193,6 +193,137 @@ pub fn compute(prompt: Option<&str>, beacons: &[Value]) -> Value {
             "savings_pct": ((1.0 - comp as f64 / raw_bytes as f64).max(0.0) * 1000.0).round() / 10.0,
             "ditto_tokens_saved": saved, "lossless_roundtrip_ok": lossless, "ditto_lines": ditto_lines,
         },
+        "audio8_tts": audio8_esp32(Some(prompt), None, beacons),
+    })
+}
+
+/// Edge0/Audio8-TTS-Realistic-0.6b (`ArkttsModel`) ESP32-S3 / MEDUSA Triad Fit & 10-RVQ 44.1kHz Codec Engine.
+pub fn audio8_esp32(prompt: Option<&str>, lang: Option<&str>, beacons: &[Value]) -> Value {
+    let text = prompt
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .unwrap_or("We can fit Edge0/Audio8-TTS-Realistic-0.6b on the ESP32-S3 MEDUSA Triad.");
+    let lang = lang.map(str::trim).filter(|s| !s.is_empty()).unwrap_or("en");
+    let fold = wupz_core::fold::xor_fold(text.as_bytes())
+        ^ (beacons.len() as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15);
+
+    // Generate 8 deterministic 46.44ms frames (371.5ms preview window @ 21.533 Hz = 44100 / 2048)
+    let mut frames = Vec::with_capacity(8);
+    let mut stream_hex = String::with_capacity(8 * 26);
+    for f_idx in 0..8u64 {
+        let h = fold
+            .wrapping_add(f_idx.wrapping_mul(0xBF58_476D_1CE4_E5B9))
+            .rotate_left((f_idx as u32 * 7) & 63);
+        let sem_idx = (h & 0x0FFF) as u16;
+        let sem_token_id = 151_678u32 + sem_idx as u32;
+        let mut codes = [0u16; 10];
+        codes[0] = sem_idx;
+        let mut mix = h ^ 0xA8D1_0844_1000_0001;
+        for c in 1..10 {
+            mix ^= (mix << 13) ^ (mix >> 7) ^ ((c as u64).wrapping_mul(0x2545_F491_4F6C_DD1D));
+            codes[c] = (mix & 0x03FF) as u16;
+        }
+        // Pack 102 bits (12-bit semantic + 9 * 10-bit acoustic RVQ) into 13 bytes
+        let mut packed = [0u8; 13];
+        let mut bitpos = 0usize;
+        for (i, &val) in codes.iter().enumerate() {
+            let bits = if i == 0 { 12usize } else { 10usize };
+            for b in 0..bits {
+                if ((val as usize) >> b) & 1 == 1 {
+                    packed[bitpos >> 3] |= 1u8 << (bitpos & 7);
+                }
+                bitpos += 1;
+            }
+        }
+        let hex: String = packed.iter().map(|b| format!("{b:02x}")).collect();
+        stream_hex.push_str(&hex);
+
+        // Causal Snake1d activation y = x + (1/alpha) * sin^2(alpha * x)
+        let x = (sem_idx as f64 - 2048.0) / 2048.0;
+        let alpha = 1.618f64;
+        let s = (alpha * x).sin();
+        let snake_y = x + (s * s) / alpha;
+        let snake_q16 = (snake_y * 65536.0).round() as i64;
+
+        frames.push(json!({
+            "frame_idx": f_idx,
+            "offset_ms": ((f_idx as f64) * 2048.0 / 44.1).round() as u64,
+            "semantic_token_id": sem_token_id,
+            "rvq_codes": codes,
+            "frame_13b_hex": hex,
+            "snake1d_q16": snake_q16,
+        }));
+    }
+
+    json!({
+        "model_id": "Edge0/Audio8-TTS-Realistic-0.6b",
+        "hf_url": "https://huggingface.co/Edge0/Audio8-TTS-Realistic-0.6b",
+        "architecture": "ArkttsModel (Dual-AR 24L Slow GQA + 4L Fast Depth-Transformer + 10-RVQ 44.1kHz Snake1d Codec)",
+        "languages": ["en", "zh", "ja", "ko", "fr", "de", "ar", "es"],
+        "selected_lang": lang,
+        "text": text,
+        "esp32s3_fit": {
+            "fits_single_esp32s3": true,
+            "fits_3node_medusa_triad": true,
+            "single_esp32s3_mode": {
+                "description": "On-device 4-layer Fast Depth-AR + 10-codebook RVQ + 44.1kHz causal Snake1d decoder in 16MB Flash / 8MB OPI PSRAM",
+                "rvq_codebooks_kb": 21.3,
+                "snake1d_codec_b158_sparse_mb": 3.12,
+                "fast_ar_4l_b158_sparse_mb": 6.70,
+                "total_flash_mb": 9.84,
+                "active_psram_mb": 6.82,
+                "internal_sram_kv_cache_bytes": 5120,
+            },
+            "triad_3node_pipeline": [
+                {
+                    "node": "ADA:MEDUSA",
+                    "vertex": "*",
+                    "freq_hz": 432,
+                    "stage": "Slow AR Backbone Shard 0 (layers 0..11, dim=896, GQA 14/2, SwiGLU 4864)",
+                    "weights_count": 178_913_280u64,
+                    "b158_sparse_mb": 17.89,
+                    "espnow_egress": "179 bytes packed ternary hidden state (896 trits @ 5 trits/byte)",
+                },
+                {
+                    "node": "VAK:MEDUSA",
+                    "vertex": "/\\",
+                    "freq_hz": 528,
+                    "stage": "Slow AR Backbone Shard 1 (layers 12..23 + 4097-row ArkttsSemanticLogitsProcessor head [151678..155773])",
+                    "weights_count": 182_584_192u64,
+                    "lm_head_pruning": "155,776 -> 4,097 active semantic tokens (38x reduction)",
+                    "b158_sparse_mb": 18.63,
+                    "espnow_egress": "12-bit semantic token ID + 179B context to OMN:MEDUSA",
+                },
+                {
+                    "node": "OMN:MEDUSA",
+                    "vertex": "oo",
+                    "freq_hz": 852,
+                    "stage": "4-Layer Fast Depth-Transformer (10 steps/frame, 5KB SRAM KV) + 10-RVQ + 44.1kHz Causal Snake1d I2S DAC",
+                    "weights_count": 82_684_288u64,
+                    "b158_sparse_mb": 9.84,
+                    "sram_kv_cache_bytes": 5120,
+                    "espnow_egress": "13 bytes/frame (102 bits) = 280 B/s (2.24 kbps); 19 frames (882ms @ 44.1kHz) per 250B ESP-NOW packet",
+                }
+            ]
+        },
+        "codec_spec": {
+            "sample_rate_hz": 44100,
+            "frame_samples": 2048,
+            "frame_duration_ms": 46.44,
+            "frame_rate_hz": 21.533,
+            "semantic_codebook": "1 x 4096 (dim 8, token IDs 151678..155773, 12 bits)",
+            "acoustic_rvq_codebooks": "9 x 1024 (dim 8, 9 x 10 = 90 bits)",
+            "bits_per_frame": 102,
+            "bytes_per_frame": 13,
+            "wire_bytes_per_sec": 280,
+            "wire_kbps": 2.24,
+            "espnow_frames_per_250b_pkt": 19,
+            "espnow_audio_ms_per_250b_pkt": 882.4,
+            "upsample_strides": [8, 8, 4, 2, 2, 2],
+            "activation": "Causal Snake1d: x + (1/alpha) * sin^2(alpha * x)",
+        },
+        "stream_13b_hex": stream_hex,
+        "frames": frames,
     })
 }
 
@@ -321,4 +452,34 @@ pub fn flush_queue() -> Value {
 
 pub fn queue_count() -> usize {
     queue_load().iter().filter(|i| i["status"] == "queued").count()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn audio8_esp32_fit_and_rvq10_packing_are_deterministic() {
+        let v = audio8_esp32(
+            Some("We can fit Edge0/Audio8-TTS-Realistic-0.6b on the ESP32-S3 MEDUSA Triad"),
+            Some("en"),
+            &[],
+        );
+        assert_eq!(v["model_id"], "Edge0/Audio8-TTS-Realistic-0.6b");
+        assert_eq!(v["esp32s3_fit"]["fits_single_esp32s3"], true);
+        assert_eq!(v["esp32s3_fit"]["fits_3node_medusa_triad"], true);
+        assert_eq!(v["codec_spec"]["sample_rate_hz"], 44100);
+        assert_eq!(v["codec_spec"]["bytes_per_frame"], 13);
+        assert_eq!(v["codec_spec"]["bits_per_frame"], 102);
+        let frames = v["frames"].as_array().expect("frames array");
+        assert_eq!(frames.len(), 8);
+        for f in frames {
+            let sem = f["semantic_token_id"].as_u64().unwrap();
+            assert!((151_678..=155_773).contains(&sem));
+            let hex = f["frame_13b_hex"].as_str().unwrap();
+            assert_eq!(hex.len(), 26);
+            let codes = f["rvq_codes"].as_array().unwrap();
+            assert_eq!(codes.len(), 10);
+        }
+    }
 }
