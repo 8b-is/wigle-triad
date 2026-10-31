@@ -526,11 +526,14 @@ static void emitAudio8ArkttsStatus(const TriadIdentity &id, const String &mac, c
   }
 
   Serial.printf(
-    "# AUDIO8|{\"node\":\"%s\",\"mac\":\"%s\",\"model\":\"Edge0/Audio8-TTS-Realistic-0.6b\","
-    "\"arch\":\"ArkttsModel (24L Slow GQA + 4L Fast Depth-AR + 10-RVQ 44.1kHz Snake1d)\","
-    "\"triad_role\":\"%s\",\"single_esp32s3_mb\":\"9.82\",\"triad_total_mb\":\"46.34\","
-    "\"sample_rate_hz\":44100,\"frame_samples\":2048,\"frame_rate_hz\":\"21.533\","
+    "# AUDIO8|{\"node\":\"%s\",\"mac\":\"%s\",\"tts_06b\":\"Edge0/Audio8-TTS-Realistic-0.6b\","
+    "\"tts_01b\":\"Edge0/Audio8-TTS-Preview-0.1b\",\"stt_01b\":\"Edge0/Audio8-ASR-0.1B\","
+    "\"stt_06b\":\"Edge0/ARK-ASR-0.6B\","
+    "\"arch\":\"ArkttsModel (24L Slow + 4L Fast + 10-RVQ 44.1kHz Snake1d) + ArkasrForConditionalGeneration (8L 512d + 4x Whisper Merge)\","
+    "\"triad_role\":\"%s\",\"single_esp32s3_tts01b_full_mb\":\"8.99\",\"single_esp32s3_tts06b_fast_mb\":\"9.84\","
+    "\"single_esp32s3_stt01b_mb\":\"11.23\",\"sample_rate_hz\":44100,\"frame_samples\":2048,\"frame_rate_hz\":\"21.533\","
     "\"rvq_codebooks\":10,\"frame_bits\":102,\"frame_bytes\":13,\"wire_bytes_per_sec\":280,"
+    "\"stt_token_rate_hz\":\"12.5\",\"stt_wire_bytes_per_sec\":1288,"
     "\"espnow_frames_per_pkt\":19,\"espnow_audio_ms_per_pkt\":882,"
     "\"semantic_token_id\":%lu,\"rvq_codes\":[%u,%u,%u,%u,%u,%u,%u,%u,%u,%u],"
     "\"frame_13b_hex\":\"%s\",\"snake1d_q16\":%ld,\"text\":\"%s\"}\n",
