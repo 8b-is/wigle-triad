@@ -1,0 +1,29 @@
+[package]
+name = "aye-flug-os"
+version = "0.2.0"
+edition = "2021"
+description = "ayeOS + flugOS: Bare-Metal #![no_std] Rust 3-Node ESP32-S3 Acoustic Mesh & Trilingual Q15 Formant Engine"
+license = "MIT"
+
+[lib]
+name = "aye_flug_os"
+path = "src/lib.rs"
+
+[dependencies]
+bytemuck = { version = "1.21.0", default-features = false, features = ["derive", "min_const_generics"] }
+heapless = "0.8.0"
+static_cell = "2.1.0"
+
+[features]
+default = ["node-ear"]
+node-ear = []
+node-brain = []
+node-mouth = []
+esp32s3-hal = []
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+debug = false
