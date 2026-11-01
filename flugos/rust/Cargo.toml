@@ -1,6 +1,6 @@
 [package]
 name = "aye-flug-os"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "ayeOS + flugOS: Bare-Metal #![no_std] Rust 3-Node ESP32-S3 Acoustic Mesh & Trilingual Q15 Formant Engine"
 license = "MIT"

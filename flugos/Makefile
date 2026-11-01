@@ -11,6 +11,7 @@ all: test pack
 test:
 	$(CC) $(CFLAGS) \
 		common/flugos_mesh.c \
+		common/flugos_mosaico.c \
 		main/node_ear.c \
 		main/node_brain.c \
 		main/node_mouth.c \

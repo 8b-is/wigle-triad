@@ -12,6 +12,7 @@
  * ============================================================================ */
 
 #include "flugos_mesh.h"
+#include "flugos_mosaico.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -179,6 +180,31 @@ int main(void) {
     assert(peak_tts > 500);
     printf("  [PASS] Node 2 -> Node 3 Trilingual Formant TTS: synthesized %zu PCM samples (peak=%d)\n",
            synth_samples, (int)peak_tts);
+
+    /* 5. Verify ESP-Mosaico Multi-Function Interaction Module (0x16) Slot Discovery & Quiescence Gate */
+    flugos_mosaico_pins_t left_h2, right_h1;
+    assert(flugos_mosaico_probe_slot(FLUGOS_MOSAICO_SLOT_LEFT_H2, FLUGOS_MOSAICO_BOARD_ID_INTERACTION, &left_h2));
+    assert(flugos_mosaico_probe_slot(FLUGOS_MOSAICO_SLOT_RIGHT_H1, FLUGOS_MOSAICO_BOARD_ID_INTERACTION, &right_h1));
+    assert(left_h2.eeprom_i2c_addr == 0x50U && left_h2.ldr_adc_gpio == 53U && left_h2.pir_gpio == 4U && left_h2.ws2812_gpio == 15U);
+    assert(right_h1.eeprom_i2c_addr == 0x51U && right_h1.ldr_adc_gpio == 46U && right_h1.pir_gpio == 5U && right_h1.ws2812_gpio == 38U);
+    assert(!flugos_mosaico_probe_slot(FLUGOS_MOSAICO_SLOT_LEFT_H2, 0x00U, &left_h2));
+
+    flugos_quiescence_gate_t qgate;
+    flugos_quiescence_gate_init(&qgate, 3000U, 8000U, 4U);
+    assert(!qgate.in_ultradreamstate);
+    for (int t = 0; t < 12; ++t) {
+        flugos_quiescence_gate_step(&qgate, 20U, false, false, false, 100U);
+    }
+    assert(qgate.in_ultradreamstate); /* Entered Tayama UltraDreamState after quiet hold */
+    assert(!flugos_quiescence_gate_step(&qgate, 600U, true, false, false, 9000U)); /* Woke back to Yamada on PIR/voice */
+
+    const int8_t trits[6] = { 1, 0, -1, 0, 0, 1 }; /* +0-00+ */
+    flugos_ws2812_grb_t leds[6];
+    flugos_mosaico_encode_ws2812_trits(trits, leds);
+    assert(leds[0].g == 0xF5U && leds[2].r == 0xFFU && leds[1].b == 0x24U);
+    assert(flugos_mosaico_encode_nec_ir(0x8BU, 0x16U) == 0xE916748BU);
+    printf("  [PASS] ESP-Mosaico (0x16) Left H2 (0x50) / Right H1 (0x51), Quiescence Gate & 6x WS2812 Verified\n");
+
     printf("=== ALL FLUGOS 3-NODE MESH & TRILINGUAL HARVESTER ATTESTATIONS PASSED ===\n");
     return 0;
 }

@@ -2,12 +2,14 @@
 
 pub mod aye_simd;
 pub mod flugos_wire;
+pub mod mosaico_interaction;
 pub mod node_mouth_q15;
 
 #[cfg(test)]
 mod tests {
     use super::aye_simd::*;
     use super::flugos_wire::*;
+    use super::mosaico_interaction::*;
     use super::node_mouth_q15::*;
 
     #[test]
@@ -91,5 +93,28 @@ mod tests {
                 assert!(peak > 50, "Phoneme {:?} produced zero output", fm.ch as char);
             }
         }
+    }
+
+    #[test]
+    fn test_mosaico_interaction_module_and_quiescence_gate() {
+        let left = probe_mosaico_slot(MosaicoSlot::LeftH2, MOSAICO_BOARD_ID_INTERACTION).unwrap();
+        let right = probe_mosaico_slot(MosaicoSlot::RightH1, MOSAICO_BOARD_ID_INTERACTION).unwrap();
+        assert_eq!(left.eeprom_i2c_addr, 0x50);
+        assert_eq!(left.ldr_adc_gpio, 53);
+        assert_eq!(right.eeprom_i2c_addr, 0x51);
+        assert_eq!(right.ldr_adc_gpio, 46);
+        assert!(probe_mosaico_slot(MosaicoSlot::LeftH2, 0x99).is_none());
+
+        let mut gate = QuiescenceGateQ15::new(3000, 8000, 4);
+        for _ in 0..12 {
+            gate.step(20, false, false, false, 100);
+        }
+        assert!(gate.in_ultradreamstate);
+        assert!(!gate.step(500, true, false, false, 9000));
+
+        let leds = encode_ws2812_trits(&[1, 0, -1, 1, 0, 0]);
+        assert_eq!(leds[0].g, 0xF5);
+        assert_eq!(leds[2].r, 0xFF);
+        assert_eq!(encode_nec_ir(0x8B, 0x16), 0xE916748B);
     }
 }
