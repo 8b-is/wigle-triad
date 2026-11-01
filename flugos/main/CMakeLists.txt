@@ -1,0 +1,20 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "node_ear.c"
+        "node_brain.c"
+        "node_mouth.c"
+        "../common/flugos_mesh.c"
+    INCLUDE_DIRS
+        "."
+        "../common"
+    REQUIRES
+        driver
+        esp_wifi
+        esp_event
+        esp_netif
+        esp_timer
+        nvs_flash
+        spiffs
+        spi_flash
+)

@@ -1,0 +1,33 @@
+menu "FlugOS Voice Mesh Configuration"
+
+    choice FLUGOS_NODE_ROLE_SEL
+        prompt "FlugOS Node Role in 3-Node Voice Cluster"
+        default FLUGOS_ROLE_EAR
+        help
+            Select the hardware role for this ESP32-S3 node in the 3-node
+            offline voice-to-voice cluster.
+
+        config FLUGOS_ROLE_EAR
+            bool "Node 1: EAR (INMP441 I2S Mic + WebRTC VAD + WakeNet9 + IMA-ADPCM TX)"
+        config FLUGOS_ROLE_BRAIN
+            bool "Node 2: BRAIN (PSRAM Ring Buffer + INT8 Micro-STT + Intent State Machine)"
+        config FLUGOS_ROLE_MOUTH
+            bool "Node 3: MOUTH (Offline Quantized Formant/LPC TTS + MAX98357A I2S DAC)"
+    endchoice
+
+    config FLUGOS_NODE_ROLE
+        int
+        default 1 if FLUGOS_ROLE_EAR
+        default 2 if FLUGOS_ROLE_BRAIN
+        default 3 if FLUGOS_ROLE_MOUTH
+
+    config FLUGOS_WIFI_CHANNEL
+        int "ESP-NOW Wi-Fi Channel (1..13)"
+        range 1 13
+        default 6
+
+    config FLUGOS_ENABLE_LONG_RANGE
+        bool "Enable ESP-NOW Long-Range (Wi-Fi LR 1 Mbps) Mode"
+        default y
+
+endmenu
